@@ -37,8 +37,8 @@ the responses:
 checked 197 | identical 196 | different 1 | unparseable 0
 ```
 
-The single difference is `admin_setting/get_users`, which no longer returns
-`password` or `for_admin` — the intended security fix.
+The single difference is `admin_setting/get_users`, which no longer returns the
+`password` hash. (`for_admin` is still returned — see point 4 below.)
 
 Pages: 17/17 admin, 5/5 construction, 8/8 client return 200 through Apache.
 Write paths, rollups and the approval workflow: 14/14 checks pass.
@@ -59,8 +59,13 @@ deliberately, with inline comments explaining why.
    editing the address bar. The id now comes from the session; a mismatched URL
    id returns 403.
 3. **CSRF on every write.** The old app sent no token anywhere.
-4. **Passwords are never returned** in JSON, and `users.for_admin` (the
-   plaintext copy) is never read or written.
+4. **The password hash is never returned** in JSON. `users.for_admin` — the
+   plaintext copy — IS still returned and still written, by explicit decision:
+   the admin Show Users page has a Password column bound to it, and leaving it
+   unwritten would have made that column stale for every new account. The
+   change from the old app is that the endpoint serving it now requires an
+   authenticated admin. Note this keeps every password recoverable by anyone
+   with database or backup access.
 5. **`construction/update_misc` now exists.** `site_settings.php:3172` has always
    POSTed to it, but the controller never defined it — editing a Miscellaneous
    row silently 404'd.

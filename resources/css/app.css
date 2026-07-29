@@ -1,3 +1,28 @@
+/* ==========================================================================
+   BASCON — Tailwind CSS v4 design system
+   --------------------------------------------------------------------------
+   This file replaces the entire previous styling stack: bootstrap.css,
+   datatable.css, custom.css, the neon-* theme sheets, the jQuery UI stylesheet
+   and bascon-ui.css. None of them are loaded any more.
+
+   Two kinds of rule live here:
+
+     1. @theme tokens — the palette, fonts and radii that the utility classes
+        used throughout the Blade templates are generated from.
+
+     2. A components layer built with @apply. It exists for exactly two
+        reasons and nothing else:
+          a) markup this app does not author — DataTables, SweetAlert2 and the
+             jQuery UI datepicker each inject their own DOM with their own
+             class names, so CSS is the only handle available;
+          b) primitives repeated well over a hundred times across the views
+             (inputs, buttons, table cells), where inlining a twenty-utility
+             string at every call site would be unreadable.
+
+   Everything else — layout, spacing, one-off styling — is plain utility
+   classes in the templates.
+   ========================================================================== */
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -5,7 +30,1116 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* ------------------------------------------------------------------ theme */
+
+/* Dark mode is a class on <html>, not a media query: the user picks it from
+   the topbar switch and the choice is remembered. partials/head sets the class
+   before first paint so there is no flash. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Brand — the violet accent of the reference console. Every accented pixel
+       in the app resolves through this ramp, so the whole interface re-hues
+       from these eleven lines alone. */
+    --color-brand-50:  #f3f1ff;
+    --color-brand-100: #e9e5ff;
+    --color-brand-200: #d5cdff;
+    --color-brand-300: #b7a8ff;
+    --color-brand-400: #9678ff;
+    --color-brand-500: #7c4dff;
+    --color-brand-600: #6d33f5;
+    --color-brand-700: #5d24da;
+    --color-brand-800: #4e1fb1;
+    --color-brand-900: #421d90;
+    --color-brand-950: #280f62;
+
+    /* Semantic surfaces. These are the ONLY colours that describe elevation,
+       and they are the ones the dark theme swaps — see the `.dark` block below.
+       Components use bg-surface / bg-elevated / border-line rather than
+       bg-white / border-neutral-200 so that a single override flips them. */
+    --color-canvas:   #f4f4f5;   /* page background, behind everything */
+    --color-surface:  #ffffff;   /* cards, panels, the content sheet    */
+    --color-elevated: #fafafa;   /* inset fills: inputs, table headers   */
+    --color-line:     #e7e7ea;   /* every hairline border               */
+    --color-line-soft:#f1f1f3;   /* internal dividers                   */
+
+    --shadow-panel: 0 1px 2px rgb(9 9 11 / 0.04), 0 8px 24px -12px rgb(9 9 11 / 0.10);
+    --shadow-pop:   0 8px 32px -8px rgb(9 9 11 / 0.16), 0 2px 8px -2px rgb(9 9 11 / 0.06);
+
+    --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ------------------------------------------------------------- dark theme */
+
+/*  Two moves make the entire application dark-capable without touching the
+    forty-odd Blade templates:
+
+      1. the semantic surface tokens above are re-pointed, which covers every
+         panel, input, divider and table the design system draws;
+
+      2. the neutral ramp itself is inverted. The templates use the ramp the
+         way it reads — low numbers for fills, high numbers for text — so
+         flipping it turns `text-neutral-900` into near-white and
+         `bg-neutral-100` into a raised charcoal automatically.
+
+    The handful of places where an inverted ramp is wrong (a tooltip that is
+    deliberately dark-on-light, the modal scrim) are corrected explicitly at
+    the foot of this file. */
+.dark {
+    --color-canvas:   #0a0a0d;
+    --color-surface:  #131318;
+    --color-elevated: #1b1b21;
+    --color-line:     #26262e;
+    --color-line-soft:#1f1f26;
+
+    --color-neutral-50:  #17171c;
+    --color-neutral-100: #1e1e25;
+    --color-neutral-200: #292930;
+    --color-neutral-300: #3a3a44;
+    --color-neutral-400: #6b6b78;
+    --color-neutral-500: #8e8e9c;
+    --color-neutral-600: #a8a8b5;
+    --color-neutral-700: #c6c6d0;
+    --color-neutral-800: #e0e0e6;
+    --color-neutral-900: #f4f4f6;
+    --color-neutral-950: #ffffff;
+
+    /* Brand tints are backgrounds in light mode; in dark they have to sit on
+       a dark sheet, so the low end is darkened and the mid end brightened. */
+    --color-brand-50:  #1c1533;
+    --color-brand-100: #241a45;
+    --color-brand-600: #7c4dff;
+    --color-brand-700: #9678ff;
+
+    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px -12px rgb(0 0 0 / 0.7);
+    --shadow-pop:   0 8px 32px -8px rgb(0 0 0 / 0.7), 0 2px 8px -2px rgb(0 0 0 / 0.5);
+
+    color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------- base */
+
+@layer base {
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+        @apply bg-canvas text-neutral-900 font-sans antialiased;
+        font-size: 13.5px;
+        line-height: 1.55;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold text-neutral-900 tracking-[-0.015em];
+    }
+
+    /* Keyboard focus is always visible. Never remove this. */
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-brand-600 rounded-lg;
+    }
+
+    ::selection { @apply bg-brand-100 text-brand-900; }
+
+    /* Thin, unobtrusive scrollbars. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #d4d4d8 transparent;
+    }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb {
+        background: #d4d4d8;
+        border: 3px solid transparent;
+        background-clip: content-box;
+        border-radius: 9999px;
+    }
+    *::-webkit-scrollbar-thumb:hover { background: #a1a1aa; background-clip: content-box; }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+        }
+    }
+}
+
+/* ------------------------------------------------------------- components */
+
+@layer components {
+
+    /* ------------------------------------------------------------ buttons */
+
+    .ui-btn {
+        @apply inline-flex items-center justify-center gap-2 shrink-0
+               h-9 px-3.5 rounded-xl
+               text-[13px] font-semibold leading-none whitespace-nowrap
+               border border-transparent cursor-pointer select-none
+               transition-[background-color,border-color,color,box-shadow,transform] duration-150
+               active:translate-y-px
+               disabled:pointer-events-none disabled:opacity-50;
+    }
+    .ui-btn > svg { @apply size-4 shrink-0; }
+
+    .ui-btn-primary {
+        @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700
+               focus-visible:ring-4 focus-visible:ring-brand-600/20 focus-visible:outline-none;
+    }
+    .ui-btn-secondary {
+        @apply bg-surface text-neutral-800 border-neutral-200 shadow-xs
+               hover:bg-neutral-50 hover:border-neutral-300
+               focus-visible:ring-4 focus-visible:ring-neutral-900/10 focus-visible:outline-none;
+    }
+    .ui-btn-ghost {
+        @apply bg-transparent text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900
+               focus-visible:ring-4 focus-visible:ring-neutral-900/10 focus-visible:outline-none;
+    }
+    .ui-btn-outline {
+        @apply bg-transparent text-brand-700 border-brand-200 hover:bg-brand-50 hover:border-brand-300
+               focus-visible:ring-4 focus-visible:ring-brand-600/20 focus-visible:outline-none;
+    }
+    .ui-btn-success {
+        @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700
+               focus-visible:ring-4 focus-visible:ring-brand-600/20 focus-visible:outline-none;
+    }
+    .ui-btn-warning {
+        @apply bg-amber-500 text-white shadow-sm hover:bg-amber-600
+               focus-visible:ring-4 focus-visible:ring-amber-500/25 focus-visible:outline-none;
+    }
+    .ui-btn-danger {
+        @apply bg-rose-600 text-white shadow-sm hover:bg-rose-700
+               focus-visible:ring-4 focus-visible:ring-rose-600/20 focus-visible:outline-none;
+    }
+    .ui-btn-danger-soft {
+        @apply bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100
+               focus-visible:ring-4 focus-visible:ring-rose-600/20 focus-visible:outline-none;
+    }
+
+    .ui-btn-sm { @apply h-8 px-3 text-xs rounded-lg gap-1.5; }
+    .ui-btn-sm > svg { @apply size-3.5; }
+    .ui-btn-lg { @apply h-11 px-5 text-sm rounded-2xl; }
+    .ui-btn-icon { @apply w-9 px-0; }
+    .ui-btn-icon.ui-btn-sm { @apply w-8 px-0; }
+
+    /* Spinner state, applied by ui.js. The label is hidden rather than
+       removed so the button keeps its width. */
+    .ui-btn.is-loading { @apply relative text-transparent pointer-events-none; }
+    .ui-btn.is-loading > * { @apply invisible; }
+    .ui-btn.is-loading::after {
+        content: '';
+        @apply absolute top-1/2 left-1/2 size-4 -mt-2 -ml-2 rounded-full
+               border-2 border-current border-t-transparent text-white;
+        animation: ui-spin 0.6s linear infinite;
+    }
+    .ui-btn-secondary.is-loading::after,
+    .ui-btn-ghost.is-loading::after,
+    .ui-btn-outline.is-loading::after { @apply text-brand-600; }
+
+    @keyframes ui-spin { to { transform: rotate(360deg); } }
+
+    /* -------------------------------------------------------------- forms */
+
+    .ui-label { @apply block text-[12.5px] font-medium text-neutral-700 mb-1.5; }
+
+    .ui-input,
+    .ui-select,
+    .ui-textarea {
+        @apply block w-full h-10 px-3.5 rounded-xl
+               bg-neutral-50 text-neutral-900 text-[13.5px]
+               border border-neutral-200
+               transition-[background-color,border-color,box-shadow] duration-150
+               placeholder:text-neutral-400
+               hover:border-neutral-300
+               focus:bg-surface focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 focus:outline-none
+               disabled:bg-neutral-100 disabled:text-neutral-400 disabled:cursor-not-allowed;
+    }
+
+    .ui-textarea { @apply h-auto min-h-24 py-2.5 resize-y; }
+
+    /* The native arrow is replaced so selects match the text inputs. */
+    .ui-select {
+        @apply appearance-none pr-10 cursor-pointer bg-no-repeat;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-size: 1rem 1rem;
+    }
+    .ui-select[multiple] { @apply h-auto py-2; background-image: none; }
+
+    /* Spinners make numeric data entry worse, not better. */
+    .ui-input[type='number'] { -moz-appearance: textfield; }
+    .ui-input[type='number']::-webkit-outer-spin-button,
+    .ui-input[type='number']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .ui-hint  { @apply mt-1.5 text-xs text-neutral-500; }
+    .ui-error { @apply mt-1.5 flex items-center gap-1.5 text-xs font-medium text-rose-600; }
+    .ui-input.is-invalid,
+    .ui-select.is-invalid { @apply border-rose-300 focus:border-rose-500 focus:ring-rose-600/10; }
+
+    /* Floating-label field. The input must carry placeholder=" " so that
+       :placeholder-shown behaves. */
+    .ui-field { @apply relative; }
+    .ui-field > .ui-input { @apply h-13 pt-5 pb-1.5; }
+    .ui-field > label {
+        @apply absolute left-3.5 top-3.5 origin-left pointer-events-none
+               text-[13.5px] font-normal text-neutral-400
+               transition-[transform,color] duration-150;
+    }
+    .ui-field > .ui-input:focus ~ label,
+    .ui-field > .ui-input:not(:placeholder-shown) ~ label {
+        @apply -translate-y-2.5 scale-[0.78] text-neutral-500;
+    }
+    .ui-field > .ui-input:focus ~ label { @apply text-brand-600; }
+    .ui-field-trailing > .ui-input { @apply pr-11; }
+
+    .ui-field-btn {
+        @apply absolute right-1.5 top-1/2 -translate-y-1/2
+               inline-flex items-center justify-center size-8 rounded-lg cursor-pointer
+               text-neutral-400 transition-colors hover:text-neutral-700 hover:bg-neutral-100;
+    }
+    .ui-field-btn > svg { @apply size-4; }
+
+    /* Checkbox / radio */
+    .ui-check {
+        @apply size-4 shrink-0 appearance-none rounded-[5px] cursor-pointer
+               border border-neutral-300 bg-surface
+               transition-[background-color,border-color] duration-150
+               hover:border-brand-500
+               checked:bg-brand-600 checked:border-brand-600
+               focus-visible:ring-4 focus-visible:ring-brand-600/20 focus-visible:outline-none;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 0.7rem;
+    }
+    .ui-check:checked {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    }
+    .ui-radio { @apply rounded-full; }
+    .ui-radio:checked { @apply border-[5px] border-brand-600 bg-surface; background-image: none; }
+
+    /* Toggle switch */
+    .ui-switch {
+        @apply relative w-9 h-5 shrink-0 appearance-none rounded-full cursor-pointer
+               bg-neutral-300 transition-colors duration-200
+               checked:bg-brand-600
+               focus-visible:ring-4 focus-visible:ring-brand-600/20 focus-visible:outline-none
+               disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .ui-switch::after {
+        content: '';
+        @apply absolute top-0.5 left-0.5 size-4 rounded-full bg-surface shadow-sm
+               transition-transform duration-200;
+    }
+    .ui-switch:checked::after { @apply translate-x-4; }
+
+    /* File dropzone */
+    .ui-dropzone {
+        @apply relative flex flex-col items-center justify-center gap-1 text-center
+               px-5 py-7 rounded-2xl cursor-pointer
+               border border-dashed border-neutral-300 bg-neutral-50
+               transition-colors duration-150
+               hover:border-brand-400 hover:bg-brand-50/50;
+    }
+    .ui-dropzone.is-dragging { @apply border-brand-500 bg-brand-50; }
+    .ui-dropzone input[type='file'] { @apply absolute inset-0 size-full opacity-0 cursor-pointer; }
+
+    /* A settings-style form row, matching <x-field>. Used directly by the few
+       legacy rows that hold more than one control (a select plus an inline
+       "Add" button, for example) and so do not fit the component's slot. */
+    .ui-row {
+        @apply flex flex-wrap items-start gap-x-6 gap-y-1.5
+               border-b border-neutral-100 py-4 last:border-b-0;
+    }
+    .ui-row > label { @apply mb-0 w-full shrink-0 sm:w-[190px] sm:pt-2.5; }
+    .ui-row > div   { @apply min-w-0 flex-1 sm:max-w-md; }
+
+    /* Action bar at the foot of a form. */
+    .ui-form-actions {
+        @apply mt-6 flex flex-wrap items-center gap-2.5 border-t border-neutral-100 pt-5;
+    }
+    .ui-form-actions.is-end { @apply justify-end; }
+
+    /* Running totals. Several are injected by the pages' own AJAX callbacks as
+       a bare <h3>/<h4> carrying inline styles (`display:inline; margin-left:60px`),
+       which is why these overrides are marked important. */
+    .ui-total { @apply flex flex-wrap items-center gap-2.5; }
+    .ui-total:empty { @apply hidden; }
+    .ui-total h3,
+    .ui-total h4 {
+        @apply inline-flex! items-center gap-2 m-0! rounded-full
+               border border-brand-100 bg-brand-50 px-4 py-2
+               text-[13.5px]! font-semibold text-brand-800! tabular-nums;
+    }
+
+    /* -------------------------------------------------------------- cards */
+
+    .ui-card          { @apply bg-surface rounded-2xl border border-neutral-200/80; }
+    .ui-card-header   { @apply flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4 border-b border-neutral-100; }
+    .ui-card-title    { @apply flex-1 min-w-0 m-0 text-[14px] font-semibold text-neutral-900; }
+    .ui-card-subtitle { @apply w-full m-0 text-xs text-neutral-500; }
+    .ui-card-body     { @apply p-5; }
+    .ui-card-footer   { @apply flex flex-wrap items-center gap-2.5 px-5 py-4 border-t border-neutral-100 bg-neutral-50/60 rounded-b-2xl; }
+
+    /* ------------------------------------------------------------- badges */
+
+    .ui-badge {
+        @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md
+               text-[11px] font-semibold whitespace-nowrap border border-transparent;
+    }
+    .ui-badge::before { content: ''; @apply size-1.5 rounded-full bg-current opacity-80; }
+    .ui-badge-plain::before { @apply hidden; }
+
+    .ui-badge-neutral { @apply bg-neutral-100 text-neutral-600 border-neutral-200/70; }
+    .ui-badge-brand   { @apply bg-brand-50 text-brand-700 border-brand-100; }
+    .ui-badge-success { @apply bg-brand-50 text-brand-700 border-brand-100; }
+    .ui-badge-warning { @apply bg-amber-50 text-amber-700 border-amber-100; }
+    .ui-badge-danger  { @apply bg-rose-50 text-rose-700 border-rose-100; }
+    .ui-badge-info    { @apply bg-sky-50 text-sky-700 border-sky-100; }
+
+    /* ------------------------------------------------------------- alerts */
+
+    .ui-alert       { @apply flex items-start gap-3 p-3.5 rounded-xl border text-[13px]; }
+    .ui-alert > svg { @apply size-4 shrink-0 mt-0.5; }
+    .ui-alert-title { @apply block font-semibold mb-0.5; }
+
+    .ui-alert-success { @apply bg-brand-50 border-brand-100 text-brand-900; }
+    .ui-alert-warning { @apply bg-amber-50 border-amber-100 text-amber-900; }
+    .ui-alert-danger  { @apply bg-rose-50 border-rose-100 text-rose-900; }
+    .ui-alert-info    { @apply bg-sky-50 border-sky-100 text-sky-900; }
+
+    /* ------------------------------------------------------------- tables */
+
+    .ui-table-wrap { @apply w-full overflow-x-auto; }
+    .ui-table      { @apply w-full border-separate border-spacing-0 text-[13px]; }
+
+    .ui-table thead th {
+        @apply px-5 py-3 text-left align-middle whitespace-nowrap
+               bg-neutral-50/95 backdrop-blur-sm border-b border-neutral-200
+               text-[11px] font-semibold uppercase tracking-[0.06em] text-neutral-500;
+    }
+    .ui-table tbody td { @apply px-5 py-3.5 align-middle border-b border-neutral-100 text-neutral-700; }
+    .ui-table tbody tr:last-child td { @apply border-b-0; }
+    .ui-table tbody tr { @apply transition-colors duration-100; }
+    .ui-table tbody tr:hover td { @apply bg-neutral-50/70; }
+    .ui-table tfoot td { @apply px-5 py-3.5 bg-neutral-50 border-t border-neutral-200 font-semibold text-neutral-900; }
+
+    .ui-num { @apply tabular-nums; }
+
+    /* -------------------------------------------------------- empty state */
+
+    .ui-empty       { @apply flex flex-col items-center justify-center text-center px-6 py-14; }
+    .ui-empty-art   { @apply inline-flex items-center justify-center size-14 mb-4 rounded-2xl bg-neutral-100 text-neutral-400 ring-1 ring-neutral-200/70; }
+    .ui-empty-art > svg { @apply size-6; }
+    .ui-empty-title { @apply text-sm font-semibold text-neutral-900; }
+    .ui-empty-text  { @apply mt-1 max-w-sm text-[13px] text-neutral-500; }
+
+    /* ----------------------------------------------------------- skeleton */
+
+    .ui-skeleton { @apply relative overflow-hidden rounded-md bg-neutral-100; }
+    .ui-skeleton::after {
+        content: '';
+        @apply absolute inset-0;
+        background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+        transform: translateX(-100%);
+        animation: ui-shimmer 1.4s infinite;
+    }
+    @keyframes ui-shimmer { 100% { transform: translateX(100%); } }
+
+    /* --------------------------------------------------------------- tabs */
+
+    /* Driven by the tab shim in ui.js, which keeps Bootstrap's declarative
+       contract (data-toggle="tab" plus .active) so that no view JS had to be
+       rewritten.
+
+       The app nests tabs two and three deep — site settings has sections
+       inside sections inside sections — and one underlined strip repeated at
+       every level gives no clue which row you are reading. So the levels are
+       drawn differently: the outermost is an underlined strip across the top
+       of its card, and anything nested inside a pane is a segmented pill
+       group, which reads as subordinate to it. No view markup changed; the
+       distinction is entirely "is this list inside a tab pane". */
+    .ui-tabs {
+        @apply flex items-stretch gap-1 px-3 overflow-x-auto whitespace-nowrap
+               border-b border-line bg-elevated;
+        scrollbar-width: none;
+    }
+    .ui-tabs::-webkit-scrollbar { display: none; }
+    .ui-tabs > li { @apply list-none; }
+    .ui-tabs > li > a {
+        @apply relative block px-3.5 py-3.5 text-[13px] font-medium text-neutral-500
+               transition-colors duration-150 hover:text-neutral-900;
+    }
+    .ui-tabs > li > a::after {
+        content: '';
+        @apply absolute inset-x-2.5 -bottom-px h-0.5 rounded-full bg-brand-600
+               scale-x-0 transition-transform duration-200;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .ui-tabs > li.active > a { @apply text-brand-700 font-semibold; }
+    .ui-tabs > li.active > a::after { @apply scale-x-100; }
+
+    /* Nested level: a segmented control that sizes to its own content. */
+    .tab-pane > .ui-tabs {
+        @apply mb-5 w-fit max-w-full gap-1 rounded-xl border border-line bg-elevated p-1;
+        border-bottom-width: 1px;
+    }
+    .tab-pane > .ui-tabs > li > a {
+        @apply rounded-lg px-3.5 py-1.5 text-[12.5px];
+    }
+    .tab-pane > .ui-tabs > li > a::after { @apply hidden; }
+    .tab-pane > .ui-tabs > li.active > a {
+        @apply bg-surface text-brand-700 shadow-xs ring-1 ring-neutral-900/5;
+    }
+
+    .tab-pane        { @apply hidden; }
+    .tab-pane.active { @apply block; animation: ui-fade-up 0.24s var(--ease-smooth) both; }
+
+    /* A card whose whole body is tabs — the strip meets the card edge, and the
+       panes carry the padding the card body would have had. Third-level panes
+       inherit their parent's padding rather than adding more. */
+    .ui-card > .tab-content > .tab-pane { @apply p-5; }
+    .ui-card > .tab-content > .tab-pane .tab-pane { @apply p-0; }
+
+    @keyframes ui-fade-up {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* ------------------------------------------------------------- modals */
+
+    /* Structural rules for the modal shim in ui.js. The markup keeps the
+       Bootstrap class names and the data-dismiss attribute, so the ~15 views
+       that call $('#x').modal('show') needed no editing at all. */
+    .modal          { @apply fixed inset-0 z-50 hidden overflow-y-auto overscroll-contain px-4 py-6 sm:py-10; }
+    .modal.is-open  { @apply block; }
+
+    /* The scrim is a fixed dark wash in both themes — inverting it to a white
+       veil would wash the page out rather than recede it. */
+    .modal-backdrop {
+        @apply fixed inset-0 z-40 backdrop-blur-[3px] opacity-0
+               transition-opacity duration-200;
+        background-color: rgb(9 9 11 / 0.45);
+    }
+    .modal-backdrop.is-open { @apply opacity-100; }
+
+    .modal-dialog {
+        @apply relative z-50 mx-auto w-full max-w-lg
+               opacity-0 translate-y-3 scale-[0.98]
+               transition-[opacity,transform] duration-200;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .modal.is-open .modal-dialog { @apply opacity-100 translate-y-0 scale-100; }
+    .modal-dialog-lg { @apply max-w-3xl; }
+    .modal-dialog-sm { @apply max-w-sm; }
+
+    .modal-content { @apply bg-surface rounded-2xl shadow-pop ring-1 ring-neutral-900/5 overflow-hidden; }
+    .modal-header  { @apply flex items-start gap-4 px-5 py-4 border-b border-neutral-100; }
+    .modal-title   { @apply flex-1 min-w-0 m-0 text-[15px] font-semibold text-neutral-900; }
+    .modal-body    { @apply p-5 max-h-[70vh] overflow-y-auto; }
+    .modal-footer  { @apply flex items-center justify-end gap-2.5 px-5 py-4 border-t border-neutral-100 bg-neutral-50/60; }
+
+    .modal-close {
+        @apply inline-flex items-center justify-center size-8 -mr-1.5 -mt-0.5 shrink-0
+               rounded-lg text-neutral-400 cursor-pointer transition-colors
+               hover:bg-neutral-100 hover:text-neutral-700;
+    }
+    .modal-close > svg { @apply size-4; }
+
+    /* --------------------------------------------------------------- shell */
+
+    /* The layout is a "console": a full-height navigation panel pinned to the
+       left with its own surface and a single hairline, and the working area
+       beside it sitting directly on the canvas, so the cards inside it are the
+       only things that read as elevated.
+
+       Only the state-driven bits live here — collapsed rail and mobile drawer.
+       Everything static about the shell is utilities in the templates. */
+
+    .app-sidebar {
+        @apply fixed inset-y-0 left-0 z-50 flex w-[268px] flex-col
+               bg-surface border-r border-line
+               -translate-x-full transition-[transform,width] duration-300
+               lg:translate-x-0;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .app-shell { @apply min-w-0 lg:pl-[268px] transition-[padding] duration-300; }
+    .app-shell {
+        transition-timing-function: var(--ease-smooth);
+
+        /* Nothing in a data-entry app should scroll the whole page sideways —
+           wide tables carry their own horizontal scroller. Without this, one
+           over-wide row drags the sticky header and the entire content column
+           out from under the fixed sidebar. `clip` rather than `hidden`
+           because hidden would make this a scroll container and break the
+           sticky header inside it. */
+        overflow-x: clip;
+    }
+
+    /* Mobile drawer */
+    body.sidebar-open .app-sidebar { @apply translate-x-0 shadow-pop; }
+    .app-backdrop {
+        @apply fixed inset-0 z-40 backdrop-blur-[2px]
+               invisible opacity-0 transition-[opacity,visibility] duration-200 lg:hidden;
+        background-color: rgb(9 9 11 / 0.45);
+    }
+    body.sidebar-open .app-backdrop { @apply visible opacity-100; }
+
+    /* Collapsed desktop rail */
+    @media (min-width: 1024px) {
+        body.sidebar-collapsed .app-sidebar { @apply w-[76px]; }
+        body.sidebar-collapsed .app-shell   { @apply pl-[76px]; }
+        body.sidebar-collapsed .app-sidebar [data-nav-label],
+        body.sidebar-collapsed .app-sidebar .ui-nav-caret,
+        body.sidebar-collapsed .app-sidebar .ui-nav-sub,
+        body.sidebar-collapsed .app-sidebar [data-sidebar-hide] { @apply hidden; }
+        body.sidebar-collapsed .app-sidebar .ui-nav-link { @apply justify-center px-0; }
+        body.sidebar-collapsed .app-sidebar .ui-user-card { @apply justify-center p-2; }
+
+        /* The wordmark is 3:1, so on a 76px rail it would shrink to an
+           unreadable smear. Swap in the roof device cropped out of the same
+           artwork. Each pair keeps its own light/dark swap; these rules only
+           choose which pair is on show. */
+        body.sidebar-collapsed .app-logo { @apply px-3; }
+        body.sidebar-collapsed .app-logo [data-logo-full] { @apply hidden; }
+        body.sidebar-collapsed .app-logo [data-logo-mark] { @apply block; }
+        body.sidebar-collapsed .app-sidebar .ui-nav-link.is-active::before,
+        body.sidebar-collapsed .app-sidebar .ui-nav-parent.has-active::before { @apply hidden; }
+
+        /* Tooltip for the icon rail. Deliberately inverted against the sheet in
+           both themes, so it is exempt from the ramp flip. */
+        body.sidebar-collapsed .app-sidebar .ui-nav-link[data-tip]:hover::after {
+            content: attr(data-tip);
+            @apply absolute left-[calc(100%+10px)] top-1/2 z-60 -translate-y-1/2
+                   whitespace-nowrap rounded-lg px-2.5 py-1.5
+                   text-xs font-medium text-white shadow-pop;
+            background-color: #18181b;
+        }
+    }
+
+    /* The account card pinned to the foot of the navigation panel. */
+    .ui-user-card {
+        @apply flex items-center gap-3 rounded-2xl border border-line bg-elevated p-2.5
+               transition-colors duration-150 hover:border-brand-200;
+    }
+    .ui-avatar {
+        @apply inline-flex shrink-0 items-center justify-center rounded-full
+               text-[12px] font-bold uppercase tracking-wide text-white;
+        background-image: linear-gradient(140deg, var(--color-brand-400), var(--color-brand-600));
+    }
+
+    /* --------------------------------------------------------- navigation */
+
+    .ui-nav-link {
+        @apply relative flex items-center gap-3 h-10 px-3 rounded-xl
+               text-[13px] font-medium text-neutral-600 cursor-pointer
+               transition-colors duration-150
+               hover:bg-neutral-100 hover:text-neutral-900;
+    }
+    .ui-nav-link > svg { @apply size-[18px] shrink-0 text-neutral-400 transition-colors; }
+    .ui-nav-link:hover > svg { @apply text-neutral-600; }
+
+    /* Active rows carry a violet edge marker as well as the tint — the tint
+       alone is too quiet to find at a glance in a menu this long. */
+    .ui-nav-link.is-active::before,
+    .ui-nav-parent.has-active::before {
+        content: '';
+        @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-500;
+    }
+    .ui-nav-link.is-active { @apply bg-brand-50 text-brand-700 font-semibold; }
+    .ui-nav-link.is-active > svg { @apply text-brand-600; }
+
+    .ui-nav-parent.has-active { @apply bg-brand-50 text-brand-700 font-semibold; }
+    .ui-nav-parent.has-active > svg { @apply text-brand-600; }
+
+    .ui-nav-sublink {
+        @apply relative block px-3 py-2 rounded-lg text-[12.5px] font-medium text-neutral-500
+               transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-900;
+    }
+    .ui-nav-sublink.is-active { @apply bg-brand-50 text-brand-700 font-semibold; }
+
+    .ui-nav-heading {
+        @apply px-3 pb-1.5 pt-4 text-[10.5px] font-semibold uppercase
+               tracking-[0.11em] text-neutral-400;
+    }
+
+    /* Collapsible submenu, animated with the grid-rows technique so no fixed
+       max-height has to be guessed. */
+    .ui-nav-sub {
+        @apply grid overflow-hidden opacity-0 transition-[grid-template-rows,opacity] duration-200;
+        grid-template-rows: 0fr;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .ui-nav-group.is-open > .ui-nav-sub { @apply opacity-100; grid-template-rows: 1fr; }
+    .ui-nav-sub > div { @apply min-h-0; }
+    .ui-nav-caret { @apply size-3.5 shrink-0 text-neutral-400 transition-transform duration-200; }
+    .ui-nav-group.is-open .ui-nav-caret { @apply rotate-90; }
+
+    /* ---------------------------------------------------------- dropdowns */
+
+    .ui-menu {
+        @apply absolute z-50 mt-2 min-w-56 p-1.5 rounded-2xl bg-surface
+               shadow-pop ring-1 ring-neutral-900/5
+               invisible opacity-0 -translate-y-1 scale-[0.98]
+               transition-[opacity,transform,visibility] duration-150;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .ui-menu.is-open { @apply visible opacity-100 translate-y-0 scale-100; }
+
+    .ui-menu-item {
+        @apply flex items-center gap-2.5 px-2.5 py-2 rounded-xl
+               text-[13px] font-medium text-neutral-600 cursor-pointer transition-colors
+               hover:bg-neutral-100 hover:text-neutral-900;
+    }
+    .ui-menu-item > svg { @apply size-4 shrink-0 text-neutral-400; }
+    .ui-menu-item.is-danger { @apply text-rose-600 hover:bg-rose-50 hover:text-rose-700; }
+    .ui-menu-item.is-danger > svg { @apply text-rose-500; }
+    .ui-menu-sep { @apply my-1.5 h-px bg-neutral-100; }
+
+    /* ------------------------------------------------------------- toasts */
+
+    .ui-toast-host { @apply fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none; }
+    .ui-toast {
+        @apply flex items-start gap-3 w-80 p-3.5 rounded-2xl bg-surface
+               shadow-pop ring-1 ring-neutral-900/5 pointer-events-auto
+               opacity-0 translate-x-3 transition-[opacity,transform] duration-200;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .ui-toast.is-open   { @apply opacity-100 translate-x-0; }
+    .ui-toast-icon      { @apply inline-flex items-center justify-center size-8 shrink-0 rounded-xl; }
+    .ui-toast-icon > svg { @apply size-4; }
+    .ui-toast-success .ui-toast-icon { @apply bg-brand-50 text-brand-600; }
+    .ui-toast-error   .ui-toast-icon { @apply bg-rose-50 text-rose-600; }
+    .ui-toast-warning .ui-toast-icon { @apply bg-amber-50 text-amber-600; }
+    .ui-toast-info    .ui-toast-icon { @apply bg-sky-50 text-sky-600; }
+    .ui-toast-title { @apply text-[13px] font-semibold text-neutral-900; }
+    .ui-toast-text  { @apply text-xs text-neutral-500; }
+
+    /* ------------------------------------------------------------- topbar */
+
+    /* Square, quiet icon buttons — the hamburger, the theme switch and the
+       notification bell all share one shape. */
+    .ui-icon-btn {
+        @apply inline-flex size-9 shrink-0 cursor-pointer items-center justify-center
+               rounded-xl border border-line bg-surface text-neutral-500
+               transition-colors duration-150
+               hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-900
+               focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/20;
+    }
+    .ui-icon-btn > svg { @apply size-[18px]; }
+    .ui-icon-btn-plain { @apply border-transparent bg-transparent hover:border-transparent; }
+
+    /* Theme switch. Both glyphs are stacked in the same box and cross-faded, so
+       the button never changes width when the theme flips. */
+    .ui-theme-toggle > svg {
+        @apply absolute transition-[opacity,transform] duration-300;
+        transition-timing-function: var(--ease-smooth);
+    }
+    .ui-theme-toggle { @apply relative overflow-hidden; }
+    .ui-theme-toggle [data-icon='sun']  { @apply rotate-0 opacity-100; }
+    .ui-theme-toggle [data-icon='moon'] { @apply -rotate-90 opacity-0; }
+    .dark .ui-theme-toggle [data-icon='sun']  { @apply rotate-90 opacity-0; }
+    .dark .ui-theme-toggle [data-icon='moon'] { @apply rotate-0 opacity-100; }
+
+    /* ---------------------------------------------------------- segmented */
+
+    /* The list / grid switch from the reference. Buttons carry .is-active. */
+    .ui-segmented {
+        @apply inline-flex items-center gap-1 rounded-xl border border-line bg-elevated p-1;
+    }
+    .ui-segmented > button,
+    .ui-segmented > a {
+        @apply inline-flex size-8 cursor-pointer items-center justify-center rounded-lg
+               text-neutral-500 transition-colors duration-150 hover:text-neutral-900;
+    }
+    .ui-segmented > svg,
+    .ui-segmented > button > svg,
+    .ui-segmented > a > svg { @apply size-4; }
+    .ui-segmented > .is-active {
+        @apply bg-surface text-brand-600 shadow-xs ring-1 ring-neutral-900/5;
+    }
+
+    /* --------------------------------------------------------- filter bar */
+
+    /* The labelled control strip that sits above a table. Each child is a
+       <div> holding a label and one control; the bar wraps on narrow screens
+       rather than scrolling. */
+    .ui-filterbar {
+        @apply flex flex-wrap items-end gap-x-4 gap-y-3 rounded-2xl border border-line
+               bg-surface p-4 sm:p-5;
+    }
+    .ui-filterbar > div { @apply min-w-0 flex-1 basis-44; }
+    .ui-filterbar > div > label,
+    .ui-filterbar-label {
+        @apply mb-1.5 block text-[12px] font-medium text-neutral-500;
+    }
+    .ui-filterbar-actions { @apply flex shrink-0 grow-0 basis-auto items-center gap-2; }
+
+    /* ------------------------------------------------------- table extras */
+
+    /* Square media chip in the first column of a listing. */
+    .ui-thumb {
+        @apply inline-flex size-10 shrink-0 items-center justify-center overflow-hidden
+               rounded-lg border border-line bg-elevated text-neutral-400;
+    }
+    .ui-thumb > img { @apply size-full object-cover; }
+
+    /* Per-row edit / delete control.
+
+       These are emitted one at a time from inside DataTables render callbacks
+       — there is no wrapper element to hang a flex gap on — so the spacing
+       lives on the button itself. */
+    .ui-icon-action {
+        @apply inline-flex size-8 mr-1 cursor-pointer items-center justify-center
+               rounded-lg border border-line bg-surface align-middle text-neutral-500
+               transition-colors duration-150
+               hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-900;
+    }
+    .ui-icon-action > svg { @apply size-4 pointer-events-none; }
+    .ui-icon-action.is-danger {
+        @apply text-rose-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600;
+    }
+
+    /* The trailing action cluster: bare icons that fill in on hover. */
+    .ui-row-actions { @apply flex items-center justify-end gap-0.5; }
+    .ui-row-actions > a,
+    .ui-row-actions > button {
+        @apply inline-flex size-8 cursor-pointer items-center justify-center rounded-lg
+               text-neutral-400 transition-colors duration-150
+               hover:bg-neutral-100 hover:text-neutral-900;
+    }
+    .ui-row-actions > a > svg,
+    .ui-row-actions > button > svg { @apply size-4; }
+    .ui-row-actions .is-danger:hover { @apply bg-rose-50 text-rose-600; }
+
+    /* Rows that open a record on click (see initRowLinks in ui.js). The cursor
+       is the only affordance a table row can carry, so it matters. The action
+       cell keeps the default arrow — clicking there does something else. */
+    [data-row-href] { @apply cursor-pointer; }
+    [data-row-href] a { @apply font-medium text-neutral-900 underline-offset-2 hover:underline; }
+    [data-row-href] td:last-child { @apply cursor-default; }
+
+    /* Two-line identity cell: title over a muted slug. */
+    .ui-cell-title { @apply text-[13px] font-semibold text-neutral-900; }
+    .ui-cell-sub   { @apply text-[12px] text-neutral-500; }
+
+    /* --------------------------------------------------- route progress */
+
+    .ui-progress {
+        @apply fixed top-0 left-0 z-[200] h-0.5 w-0 opacity-0
+               transition-[width,opacity] duration-200;
+        background-image: linear-gradient(to right, var(--color-brand-500), var(--color-brand-700));
+    }
+    .ui-progress.is-active { @apply opacity-100; }
+}
+
+/* ==========================================================================
+   Third-party markup
+   --------------------------------------------------------------------------
+   DataTables, SweetAlert2 and the jQuery UI datepicker each build their own
+   DOM. Their class names are the only handle available, so they are restyled
+   here rather than in the templates.
+   ========================================================================== */
+
+@layer components {
+
+    /* -------------------------------------------------------- DataTables */
+
+    .dataTables_wrapper { @apply relative overflow-x-auto text-[13px] text-neutral-600; }
+    .dataTables_wrapper::after { content: ''; @apply table clear-both; }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter { @apply m-0 px-5 py-3.5; }
+    .dataTables_wrapper .dataTables_length { @apply float-left; }
+    .dataTables_wrapper .dataTables_filter { @apply float-right; }
+
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_filter label {
+        @apply inline-flex items-center gap-2 m-0 text-xs font-medium text-neutral-500;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        @apply h-8 min-w-16 pl-2.5 pr-7 rounded-lg appearance-none cursor-pointer bg-no-repeat
+               bg-surface border border-neutral-200 text-[13px] text-neutral-900
+               focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 focus:outline-none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-position: right 0.5rem center;
+        background-size: 0.875rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        @apply h-8 w-56 max-w-[46vw] m-0 pl-8 pr-3 rounded-lg bg-no-repeat
+               bg-neutral-50 border border-neutral-200 text-[13px] text-neutral-900
+               placeholder:text-neutral-400
+               focus:bg-surface focus:border-brand-500 focus:ring-4 focus:ring-brand-600/10 focus:outline-none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+        background-position: left 0.6rem center;
+        background-size: 0.9rem;
+    }
+
+    /* Export buttons (Buttons extension). */
+    .dt-buttons { @apply float-left inline-flex flex-wrap gap-2 py-3.5 pl-5; }
+    .dt-button,
+    button.dt-button, div.dt-button, a.dt-button {
+        @apply inline-flex! items-center gap-1.5 h-8 m-0! px-3! rounded-lg!
+               bg-surface! border! border-neutral-200! text-neutral-800!
+               text-xs! font-semibold! leading-none! cursor-pointer
+               shadow-xs transition-colors duration-150;
+        background-image: none !important;
+    }
+    .dt-button:hover,
+    button.dt-button:hover, div.dt-button:hover, a.dt-button:hover {
+        @apply bg-neutral-50! border-neutral-300! text-neutral-900!;
+    }
+
+    table.dataTable { @apply w-full! m-0! border-separate! border-spacing-0 text-[13px]; border: 0; }
+
+    table.dataTable thead th {
+        @apply px-5 py-3 text-left align-middle whitespace-nowrap
+               bg-neutral-50/95 backdrop-blur-sm border-b border-neutral-200
+               text-[11px] font-semibold uppercase tracking-[0.06em] text-neutral-500;
+    }
+    table.dataTable tbody td { @apply px-5 py-3.5 align-middle border-b border-neutral-100 text-neutral-700; }
+    table.dataTable tbody tr { @apply transition-colors duration-100; }
+    table.dataTable tbody tr:hover > td { @apply bg-neutral-50/70; }
+    table.dataTable tfoot td,
+    table.dataTable tfoot th { @apply px-5 py-3.5 bg-neutral-50 border-t border-neutral-200 font-semibold text-neutral-900; }
+
+    table.dataTable thead th.sorting,
+    table.dataTable thead th.sorting_asc,
+    table.dataTable thead th.sorting_desc {
+        @apply relative pr-8! cursor-pointer outline-none;
+        background-image: none !important;
+    }
+    table.dataTable thead th.sorting::after,
+    table.dataTable thead th.sorting_asc::after,
+    table.dataTable thead th.sorting_desc::after {
+        content: '';
+        @apply absolute right-4 top-1/2 -translate-y-1/2 size-3 opacity-40
+               bg-center bg-no-repeat transition-opacity;
+        background-size: 0.75rem;
+    }
+    table.dataTable thead th.sorting::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E");
+    }
+    table.dataTable thead th.sorting_asc::after {
+        @apply opacity-100;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 15 7-7 7 7'/%3E%3C/svg%3E");
+    }
+    table.dataTable thead th.sorting_desc::after {
+        @apply opacity-100;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
+    }
+    table.dataTable thead th.sorting_asc,
+    table.dataTable thead th.sorting_desc { @apply text-neutral-900; }
+
+    table.dataTable td.dataTables_empty { @apply py-12! text-center text-neutral-500; }
+
+    /* client/total_payment injects its grand-total row wrapped in <h3> tags.
+       Keep it emphatic, but at table scale rather than heading scale. */
+    table.dataTable tbody h3 { @apply m-0 text-[13px] font-bold text-neutral-900; }
+
+    .dataTables_wrapper .dataTables_info { @apply float-left m-0 px-5 py-3.5 text-xs text-neutral-500 tabular-nums; }
+    .dataTables_wrapper .dataTables_paginate { @apply float-right m-0 px-4 py-2.5; }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        @apply inline-flex! items-center justify-center min-w-8 h-8 mx-0.5! px-2.5!
+               rounded-lg! border! border-transparent! bg-transparent!
+               text-[13px] font-semibold text-neutral-600! tabular-nums cursor-pointer
+               transition-colors duration-150;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover { @apply bg-neutral-100! text-neutral-900!; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        @apply bg-brand-600! border-brand-600! text-white! shadow-xs;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+        @apply bg-transparent! text-neutral-300! cursor-not-allowed;
+    }
+
+    .dataTables_wrapper .dataTables_processing {
+        @apply absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2
+               w-auto! h-auto! m-0! px-5 py-3 rounded-xl
+               bg-surface shadow-pop ring-1 ring-neutral-900/5
+               text-[13px] font-semibold text-neutral-700;
+    }
+
+    /* ------------------------------------------------- DataTables toolbars */
+
+    /* Left to itself the library drops its controls into the page as bare
+       floats, which is why they used to hang above and below the table with
+       nothing tying them to it. The `dom` default in ui.js names two
+       containers instead — a toolbar and a footer — and every listing in the
+       app gets the same frame from these rules.
+
+       They come after the float declarations above deliberately: the
+       containers have to out-specify them to undo the floating. */
+    .dataTables_wrapper .ui-dt-bar {
+        @apply flex flex-wrap items-center gap-x-3 gap-y-2
+               px-4 py-3 border-b border-line bg-elevated;
+    }
+    .dataTables_wrapper .ui-dt-foot {
+        @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-1
+               px-3 py-2 border-t border-line;
+    }
+
+    .dataTables_wrapper .ui-dt-bar > div,
+    .dataTables_wrapper .ui-dt-foot > div { @apply float-none m-0 p-0; }
+
+    /* Search sits at the far right of the toolbar; the pager at the far right
+       of the footer. Everything else keeps source order. */
+    .dataTables_wrapper .ui-dt-bar > .dataTables_filter { @apply ml-auto; }
+    .dataTables_wrapper .ui-dt-foot > .dataTables_paginate { @apply ml-auto; }
+
+    .dataTables_wrapper .ui-dt-bar::after,
+    .dataTables_wrapper .ui-dt-foot::after { content: none; }
+
+    /* Inside a tab pane the table is one item among several — a form above it,
+       a running total beside it — rather than the whole card. There it needs
+       its own frame, or the toolbar strip floats with nothing holding it.
+       Tables that ARE the card body (x-card flush) keep meeting the card edge
+       and must not gain a second border.
+
+       No overflow rule here: the wrapper is already overflow-x-auto, which is
+       what clips the corners. Setting overflow-hidden would take horizontal
+       scrolling on wide tables away with it. */
+    .tab-pane .dataTables_wrapper { @apply rounded-xl border border-line; }
+
+    /* -------------------------------------------------------- SweetAlert2 */
+
+    .swal2-container { @apply backdrop-blur-[3px]; background: rgb(9 9 11 / 0.4) !important; }
+    .swal2-popup {
+        @apply rounded-2xl! p-6! font-sans! ring-1 ring-neutral-900/5;
+        box-shadow: var(--shadow-pop) !important;
+    }
+    .swal2-title { @apply text-lg! font-semibold! text-neutral-900! tracking-[-0.015em]; }
+    .swal2-html-container, .swal2-content { @apply text-[13.5px]! text-neutral-500!; }
+    .swal2-actions { @apply gap-2.5 mt-5!; }
+    .swal2-styled {
+        @apply h-10 px-4! rounded-xl! shadow-none! font-sans! text-[13px]! font-semibold!
+               transition-colors duration-150;
+    }
+    .swal2-styled.swal2-confirm { @apply bg-brand-600! text-white! hover:bg-brand-700!; }
+    .swal2-styled.swal2-cancel  { @apply bg-surface! text-neutral-800! ring-1 ring-neutral-200 hover:bg-neutral-50!; }
+    .swal2-icon { @apply mt-1! mb-4! mx-auto!; }
+
+    /* -------------------------------------------------- jQuery UI datepicker */
+
+    /* Every date field in the app is a jQuery UI datepicker. The widget's own
+       stylesheet is no longer loaded, so it is rebuilt from scratch here. */
+    .ui-datepicker {
+        @apply w-72 p-3 rounded-2xl bg-surface font-sans text-[13px] shadow-pop ring-1 ring-neutral-900/5;
+        border: 0 !important;
+        z-index: 1200 !important;
+    }
+    .ui-datepicker .ui-datepicker-header { @apply relative pb-2.5 bg-transparent border-0 rounded-none font-semibold; }
+    .ui-datepicker .ui-datepicker-title {
+        @apply mx-9 text-center text-[13px] font-semibold text-neutral-900;
+        line-height: 2rem;
+    }
+    .ui-datepicker .ui-datepicker-title select {
+        @apply h-7 mx-1 px-1.5 rounded-lg bg-surface border border-neutral-200 text-xs text-neutral-900;
+    }
+    .ui-datepicker .ui-datepicker-prev,
+    .ui-datepicker .ui-datepicker-next {
+        @apply top-0 size-8 rounded-lg cursor-pointer transition-colors hover:bg-neutral-100;
+        background: transparent !important;
+        border: 0 !important;
+    }
+    .ui-datepicker .ui-datepicker-prev { @apply left-0; }
+    .ui-datepicker .ui-datepicker-next { @apply right-0; }
+    .ui-datepicker .ui-datepicker-prev:hover { top: 0; left: 0; }
+    .ui-datepicker .ui-datepicker-next:hover { top: 0; right: 0; }
+
+    .ui-datepicker .ui-datepicker-prev span,
+    .ui-datepicker .ui-datepicker-next span {
+        @apply absolute top-1/2 left-1/2 size-4 -mt-2 -ml-2 bg-center bg-no-repeat;
+        background-size: 1rem;
+        text-indent: -9999px;
+    }
+    .ui-datepicker .ui-datepicker-prev span {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352525b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E");
+    }
+    .ui-datepicker .ui-datepicker-next span {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352525b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+    }
+
+    .ui-datepicker table { @apply w-full m-0 border-separate border-spacing-0.5 text-[13px]; }
+    .ui-datepicker th { @apply py-1.5 border-0 text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-400; }
+    .ui-datepicker td { @apply p-0 border-0; }
+    .ui-datepicker td a,
+    .ui-datepicker td span {
+        @apply block h-8 leading-8 rounded-lg text-center font-medium text-neutral-600! transition-colors duration-100;
+        background: transparent !important;
+        border: 0 !important;
+    }
+    .ui-datepicker td a:hover { @apply bg-neutral-100! text-neutral-900!; }
+    .ui-datepicker .ui-datepicker-today a { @apply bg-brand-50! text-brand-700! font-semibold; }
+    .ui-datepicker td.ui-datepicker-current-day a,
+    .ui-datepicker .ui-state-active { @apply bg-brand-600! text-white! font-semibold; }
+    .ui-datepicker .ui-state-disabled { @apply opacity-35; }
+
+    .ui-datepicker .ui-datepicker-buttonpane {
+        @apply -mx-3 -mb-3 mt-2.5 px-3 py-2.5 border-t border-neutral-100 bg-neutral-50;
+    }
+    .ui-datepicker .ui-datepicker-buttonpane button {
+        @apply h-8 px-3 rounded-lg bg-surface border border-neutral-200
+               text-xs font-semibold text-neutral-800 cursor-pointer hover:bg-neutral-50;
+    }
+}
+
+/* ==========================================================================
+   Dark-theme corrections
+   --------------------------------------------------------------------------
+   Everything else flips for free — the semantic surface tokens and the
+   inverted neutral ramp at the top of this file do the work. What is left here
+   are the specific places where "invert it" is the wrong answer:
+
+     - fills that are meant to stay dark in both themes (scrims, tooltips);
+     - hard-coded hex values that no token reaches (the scrollbar);
+     - third-party CSS that paints its own white and would otherwise punch a
+       hole in the page (SweetAlert2).
+
+   These rules are deliberately unlayered so they outrank the utilities they
+   correct, regardless of specificity.
+   ========================================================================== */
+
+.dark { scrollbar-color: #3a3a44 transparent; }
+.dark *::-webkit-scrollbar-thumb { background: #3a3a44; background-clip: content-box; }
+.dark *::-webkit-scrollbar-thumb:hover { background: #4d4d5a; background-clip: content-box; }
+
+/* Selection has to stay legible: the brand tints are near-black in dark. */
+.dark ::selection { background-color: #3a2b6b; color: #ffffff; }
+
+/* Views that were written before the theme existed still say bg-white when
+   they mean "this is a sheet". */
+.dark .bg-white { background-color: var(--color-surface); }
+
+/* SweetAlert2 ships its own white popup and light input styling. */
+.dark .swal2-popup { background: var(--color-surface) !important; }
+.dark .swal2-input,
+.dark .swal2-textarea,
+.dark .swal2-select {
+    background: var(--color-elevated) !important;
+    border-color: var(--color-line) !important;
+    color: var(--color-neutral-900) !important;
+}
+
+/* Native date/time pickers render a black glyph on a dark field otherwise. */
+.dark input[type='date']::-webkit-calendar-picker-indicator,
+.dark input[type='time']::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.6); }
+
+/* ------------------------------------------------------------------ print */
+
+@media print {
+    aside, header, .ui-btn, .dt-buttons,
+    .dataTables_filter, .dataTables_length, .dataTables_paginate { display: none !important; }
+    body { background: #fff; }
+    .ui-card { border: 1px solid #ddd; break-inside: avoid; }
 }

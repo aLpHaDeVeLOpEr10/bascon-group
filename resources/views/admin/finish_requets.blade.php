@@ -1,33 +1,24 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <span>Request</span>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Finish Request</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Civil Request</strong>
-                </li>
-            </ol>
-
-            <h2>Civil Request</h2>
-            <br />
+<x-page-header title="Finishing Requests"
+               subtitle="Approve or reject finishing material requests raised from sites." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
+            <div class="ui-card" data-collapsed="0">
 
 
-                        <div class="panel-body">
-                            <table id="show_user" width="100%" style="white-space: nowrap;" class="table ">
+                        <div class="ui-card-body">
+                            <table id="show_user" width="100%" style="white-space: nowrap;" class="ui-table">
                                 <thead>
 
-                                <tr style="background-color: aliceblue;">
-                                        </th>
+                                <tr>
                                         <th>Sr No</th>
                                         <th>Name</th>
                                         <th>Project</th>
@@ -37,10 +28,6 @@
                                         <th>price</th>
                                         <th>date</th>
                                         <th>Action</th>
-                              
-
-
-
 
                                     </tr>
                                 </thead>
@@ -50,23 +37,15 @@
 
                     </div>
 
-                </div>
-            </div>
-
-
 <!-- update_modal.php -->
 
 <!-- update_modal.php -->
 
-
-
-
-
-        </div>
+        
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
     $(document).ready(function () {
         var oAllLinksTable = $('#show_user').DataTable({
@@ -92,8 +71,8 @@
                 
                 "render": function (data, type, row) {
                     // 'data' parameter contains the row data
-                    return '<button class="btn btn-primary" onclick="accept_request(' + data.id + ')">Accept</button>'+"  "+
-                    '<button class="btn btn-danger" onclick="reject_request(' + data.id + ')">Reject</button>' ;
+                    return '<button class="ui-btn ui-btn-primary" onclick="accept_request(' + data.id + ')">Accept</button>'+"  "+
+                    '<button class="ui-btn ui-btn-danger" onclick="reject_request(' + data.id + ')">Reject</button>' ;
                            
                 }
             }

@@ -1,53 +1,31 @@
 @extends('layouts.app')
 
-@push('styles')
-<style>
-    .label_class {
-        font-size: 12px;
-        display: flex;
-        text-align: end;
-        align-items: end;
-        justify-content: end;
-    }
-</style>
-@endpush
+@section('breadcrumbs')
+    <a href="{{ url('construction/show_site') }}">Construction</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Site details</span>
+@endsection
 
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Site Details</strong>
-                </li>
-            </ol>
-
-            <h2>
-                {{ $name }}
-            </h2>
-            <br />
+<x-page-header :title="$name"
+               subtitle="Materials, labour, miscellaneous costs and running totals for this site." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary " style="padding-bottom: 30px;">
+            {{-- The tab strip meets the card edge, so the card clips it; the
+                 panes carry the padding the body would otherwise have. --}}
+            <div class="ui-card overflow-hidden">
 
 
                         <div>
 
                             <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" role="tablist">
+                            <ul class="ui-tabs" role="tablist">
                                 <li role="presentation"><a href="#A_category" aria-controls="home" role="tab" data-toggle="tab">Civil Materials</a></li>
                                 <li role="presentation"><a href="#B_category" aria-controls="profile" role="tab" data-toggle="tab">Finshing Materials</a></li>
                                 <li role="presentation"><a href="#labour" aria-controls="profile" role="tab" data-toggle="tab">Labour</a></li>
                                 <li role="presentation"><a href="#Misc" id="total_misc" aria-controls="profile" role="tab" data-toggle="tab">Miscellaneous</a></li>
 
                                 <li role="presentation"><a href="#payment" aria-controls="profile" id="total_pay" role="tab" data-toggle="tab">Sub Total</a></li>
-
-
 
                             </ul>
                         </div>
@@ -58,7 +36,7 @@
 
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane" id="A_category">
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#add_material" aria-controls="home" role="tab" data-toggle="tab">Add Meterial</a>
                                     </li>
                                     <li role="presentation"><a href="#show_material" aria-controls="profile" role="tab" data-toggle="tab">Show Meterial</a></li>
@@ -69,66 +47,49 @@
                                     <div role="tabpanel" class="tab-pane" id="add_material">
 
 
-                                        <form role="form" class="form-horizontal" id="brick_addition_form" action="{{ url('construction/Add_brick') }}">
+                                        <form role="form" id="brick_addition_form" action="{{ url('construction/Add_brick') }}">
 
-                                            <div class="form-group">
-                                                <label class="col-sm-3 control-label">Select List</label>
-
-                                                <div class="col-sm-5">
-                                                    <select class="form-control" name="catgory" id="catgory">
+                                            <x-field label="Select List">
+    <select class="ui-select" name="catgory" id="catgory">
                                                         <option> Select Material</option>
                                                         @foreach ($civilCategories as $row)
 
                                                             <option> {{ $row->material_name }}</option>
                                                         @endforeach
                                                     </select>
-                                                </div>
-                                            </div>
+</x-field>
 
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Quantity</label>
+                                            <x-field label="Quantity">
+    <input type="number" class="ui-input" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
+</x-field>
 
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Price</label>
-
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="brick_price" id="field-1" placeholder="Add Price" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="selected_date1" id="datepicker1" placeholder="Select a date" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
+                                            <x-field label="Price">
+    <input type="number" class="ui-input" name="brick_price" id="field-1" placeholder="Add Price" required>
+</x-field>
+                                            <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date1" id="datepicker1" placeholder="Select a date" required>
+</x-field>
+                                            <div class="ui-row">
 
                                                 
-                                                <div class="col-sm-5">
-                                                    <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
+                                                <div class="min-w-0 flex-1">
+                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-3 col-sm-5">
-                                                    <button type="submit" class="btn btn-default submit-form">Add</button>
-                                                </div>
-                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                         </form>
                                     </div>
 
 
                                     <div role="tabpanel" class="tab-pane" id="show_material">
 
-                                        <div style="display: flex;">
-                                            <label class="col-sm-3 control-label label_class">Select List</label>
+                                        <div class="ui-row">
+                                            <label class="ui-label" >Select List</label>
 
-                                            <div class="col-sm-2">
-                                                <select class="form-control get_category" id="category" name="catgory">
+                                            <div class="shrink-0">
+                                                <select class="ui-select get_category" id="category" name="catgory">
                                                     <option> Select Material</option>
                                                     @foreach ($civilCategories as $row)
 
@@ -138,20 +99,16 @@
                                             </div>
                                         </div>
 
-
-
-
-
-                                        <div style="margin-top:30px;" id="total_price">
+                                        <div class="ui-total my-5" id="total_price">
 
                                         </div>
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="show_site" width="100%" class="table table-bordered">
+                                            <table id="show_site" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -166,20 +123,16 @@
 
                                     </div>
 
-
-
                                 </div>
 
 
                             </div>
                             <!-- End A_category -->
 
-
-
                             <!-- Start B_category -->
                             <div role="tabpanel" class="tab-pane" id="B_category">
 
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#tab_3" aria-controls="home" role="tab" data-toggle="tab">Add Detail</a></li>
                                     <li role="presentation"><a href="#tab_4" aria-controls="profile" role="tab" data-toggle="tab">Show details</a></li>
 
@@ -187,73 +140,52 @@
 
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane" id="tab_3">
-                                        <form role="form" class="form-horizontal" id="Bcategory_form" action="{{ url('construction/Add_b_category') }}">
+                                        <form role="form" id="Bcategory_form" action="{{ url('construction/Add_b_category') }}">
 
 
-                                            <div class="form-group">
-                                                <label class="col-sm-3 control-label">Select List</label>
-
-                                                <div class="col-sm-5">
-                                                    <select class="form-control" name="catgory" id="b_catecory">
+                                            <x-field label="Select List">
+    <select class="ui-select" name="catgory" id="b_catecory">
                                                         <option> Select Material</option>
                                                         @foreach ($finishCategories as $row)
 
                                                             <option> {{ $row->material_name }}</option>
                                                         @endforeach
                                                     </select>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Detail</label>
+</x-field>
+                                            <x-field label="Detail">
+    <input type="text" class="ui-input" name="Detail" id="field-1" placeholder="Add Detail" required>
+</x-field>
 
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="Detail" id="field-1" placeholder="Add Detail" required>
-                                                </div>
-                                            </div>
+                                            <x-field label="Quantity">
+    <input type="number" class="ui-input" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
+</x-field>
 
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Quantity</label>
-
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Price</label>
-
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="brick_price" id="field-1" placeholder="Add Price" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="selected_date2" id="datepicker2" placeholder="Select a date" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
+                                            <x-field label="Price">
+    <input type="number" class="ui-input" name="brick_price" id="field-1" placeholder="Add Price" required>
+</x-field>
+                                            <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date2" id="datepicker2" placeholder="Select a date" required>
+</x-field>
+                                            <div class="ui-row">
 
                                                 
-                                                <div class="col-sm-5">
-                                                    <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
+                                                <div class="min-w-0 flex-1">
+                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-3 col-sm-5">
-                                                    <button type="submit" class="btn btn-default submit-form">Add</button>
-                                                </div>
-                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                         </form>
 
 
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="tab_4">
-                                        <div class="form-group" style="display: flex;">
-                                            <label class="col-sm-3 control-label label_class">Select List</label>
+                                        <div class="ui-row">
+                                            <label class="ui-label" >Select List</label>
 
-                                            <div class="col-sm-2">
-                                                <select class="form-control get__b_category" id="b_category" name="catgory">
+                                            <div class="shrink-0">
+                                                <select class="ui-select get__b_category" id="b_category" name="catgory">
                                                     <option> Select Material</option>
                                                     @foreach ($finishCategories as $row)
 
@@ -264,20 +196,16 @@
 
                                         </div>
 
-
-
-
-
-                                        <div style="margin-top:30px;" id="total_price_b">
+                                        <div class="ui-total my-5" id="total_price_b">
 
                                         </div>
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="b_categoer_table" width="100%" class="table table-bordered">
+                                            <table id="b_categoer_table" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -303,7 +231,7 @@
 
                             <div role="tabpanel" class="tab-pane" id="labour">
 
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
 
                                     <li role="presentation"><a href="#instalment" aria-controls="home" role="tab" data-toggle="tab">Add Instalment</a></li>
                                     <li role="presentation"><a href="#show_instalment" aria-controls="profile" role="tab" data-toggle="tab">Show Instalment</a></li>
@@ -312,66 +240,49 @@
 
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane" id="instalment">
-                                        <form role="form" class="form-horizontal" id="labour_form" action="{{ url('construction/labour_instalment') }}">
+                                        <form role="form" id="labour_form" action="{{ url('construction/labour_instalment') }}">
 
                                             
-                                            <div class="form-group">
-                                                <label class="col-sm-3 control-label">Select List</label>
-
-                                                <div class="col-sm-5">
-                                                    <select class="form-control" name="labour_type" id="c_category">
+                                            <x-field label="Select List">
+    <select class="ui-select" name="labour_type" id="c_category">
                                                         <option> Select </option>
                                                         @foreach ($labourTypes as $row)
 
                                                             <option> {{ $row->type }}</option>
                                                         @endforeach
                                                     </select>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Detail</label>
+</x-field>
+                                            <x-field label="Detail">
+    <input type="text" class="ui-input" name="Detail" id="field-1" placeholder="Add Detail" required>
+</x-field>
 
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="Detail" id="field-1" placeholder="Add Detail" required>
-                                                </div>
-                                            </div>
+                                            <x-field label="Paid">
+    <input type="number" class="ui-input" name="bill_labour" id="field-1" placeholder="Add ammount" required>
+</x-field>
 
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Paid</label>
-
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="bill_labour" id="field-1" placeholder="Add ammount" required>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="selected_date" id="datepicker" placeholder="Select a date" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
+                                            <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date" id="datepicker" placeholder="Select a date" required>
+</x-field>
+                                            <div class="ui-row">
 
 
-                                                <div class="col-sm-5">
-                                                    <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
+                                                <div class="min-w-0 flex-1">
+                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-3 col-sm-5">
-                                                    <button type="submit" class="btn btn-default submit-form">Add</button>
-                                                </div>
-                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                         </form>
 
 
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="show_instalment">
-                                        <div class="form-group" style="display: flex;">
-                                            <label class="col-sm-3 control-label label_class">Select List</label>
+                                        <div class="ui-row">
+                                            <label class="ui-label" >Select List</label>
 
-                                            <div class="col-sm-2">
-                                                <select class="form-control get__labour" id="labour_value" name="labour_value">
+                                            <div class="shrink-0">
+                                                <select class="ui-select get__labour" id="labour_value" name="labour_value">
                                                     <option> Select </option>
                                                     @foreach ($labourTypes as $row)
 
@@ -382,18 +293,13 @@
 
                                         </div>
 
+                                        <div class="mt-4">
 
 
+                                            <table id="labour_table" width="100%" class="ui-table">
 
-
-
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
-
-
-                                            <table id="labour_table" width="100%" class="table table-bordered">
-
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -405,7 +311,7 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:30px;" id="total_price_labour">
+                                            <div class="ui-total my-5" id="total_price_labour">
 
                                             </div>
                                         </div>
@@ -419,7 +325,7 @@
                             <!-- Start Miscellaneous -->
                             <div role="tabpanel" class="tab-pane" id="Misc">
 
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
 
                                     <li role="presentation"><a href="#micsc_detail" aria-controls="home" role="tab" data-toggle="tab">Add Detail</a></li>
                                     <li role="presentation"><a href="#show_misc" aria-controls="profile" role="tab" data-toggle="tab">Show Miscellaneous</a></li>
@@ -428,54 +334,39 @@
 
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane" id="micsc_detail">
-                                        <form role="form" class="form-horizontal" id="misc_form" action="{{ url('construction/misc_add') }}">
+                                        <form role="form" id="misc_form" action="{{ url('construction/misc_add') }}">
 
-                                            
+                                            <x-field label="Detail">
+    <input type="text" class="ui-input" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
+</x-field>
 
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Detail</label>
+                                            <x-field label="Ammount">
+    <input type="number" class="ui-input" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
+</x-field>
 
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
+                                            <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date3" id="datepicke6" placeholder="Select a date" required>
+</x-field>
+                                            <div class="ui-row">
+
+
+                                                <div class="min-w-0 flex-1">
+                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                                 </div>
                                             </div>
-
-                                            <div class="form-group">
-                                                <label for="field-1" class="col-sm-3 control-label">Ammount</label>
-
-                                                <div class="col-sm-5">
-                                                    <input type="number" class="form-control" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                                <div class="col-sm-5">
-                                                    <input type="text" class="form-control" name="selected_date3" id="datepicke6" placeholder="Select a date" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-
-
-                                                <div class="col-sm-5">
-                                                    <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-3 col-sm-5">
-                                                    <button type="submit" class="btn btn-default submit-form">Add</button>
-                                                </div>
-                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                         </form>
 
 
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="show_misc">
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
-                                            <div id="misclanious_total"></div>
-                                            <table id="misc_table" width="100%" class="table table-bordered">
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                        <div class="mt-4">
+                                            <div class="ui-total mb-4" id="misclanious_total"></div>
+                                            <table id="misc_table" width="100%" class="ui-table">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -497,13 +388,11 @@
 
                             <!-- End Miscellaneous -->
 
-
-
                             <!-- Start Payment -->
 
                             <div role="tabpanel" class="tab-pane" id="payment">
 
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
 
                                     <li role="presentation"><a href="#civil_total" aria-controls="home" role="tab" data-toggle="tab">Civil Total</a></li>
                                     <li role="presentation"><a href="#finish_total" aria-controls="profile" role="tab" data-toggle="tab">Finishing Total</a></li>
@@ -521,13 +410,13 @@
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane" id="civil_total">
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="civil_account" width="100%" class="table table-bordered">
+                                            <table id="civil_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -537,19 +426,19 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div id="civil_total324"></div>
+                                            <div class="ui-total mb-4" id="civil_total324"></div>
                                         </div>
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="finish_total">
 
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="finish_account" width="100%" class="table table-bordered">
+                                            <table id="finish_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -560,20 +449,20 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:10px;" id="finish_total324"></div>
+                                            <div class="ui-total my-4" id="finish_total324"></div>
                                         </div>
 
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="Total_entries">
 
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="Total_entries_account" width="100%" class="table table-bordered">
+                                            <table id="Total_entries_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -586,7 +475,7 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:10px;" id="finish_total324"></div>
+                                            <div class="ui-total my-4" id="finish_total324"></div>
                                         </div>
 
                                     </div>
@@ -594,13 +483,13 @@
                                     <div role="tabpanel" class="tab-pane" id="Miscellaneous_total">
 
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="miscle_account" width="100%" class="table table-bordered">
+                                            <table id="miscle_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -609,7 +498,7 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:10px;" id="miscle_account123"></div>
+                                            <div class="ui-total my-4" id="miscle_account123"></div>
                                         </div>
 
                                     </div>
@@ -617,13 +506,13 @@
                                     <div role="tabpanel" class="tab-pane" id="Labour_total">
 
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="Labour_account" width="100%" class="table table-bordered">
+                                            <table id="Labour_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
@@ -633,65 +522,50 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:10px;" id="Labour_account123"></div>
+                                            <div class="ui-total my-4" id="Labour_account123"></div>
                                         </div>
 
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="return">
 
-                                        <ul class="nav nav-tabs" role="tablist">
+                                        <ul class="ui-tabs" role="tablist">
 
                                             <li role="presentation"><a href="#return_add" aria-controls="home" role="tab" data-toggle="tab">Return Add</a></li>
                                             <li role="presentation"><a href="#return_show" id="return_tab" aria-controls="profile" role="tab" data-toggle="tab">Return Show</a></li>
                                         </ul>
                                         <div class="tab-content">
                                             <div role="tabpanel" class="tab-pane" id="return_add">
-                                                <form role="form" class="form-horizontal" id="return_form" action="{{ url('construction/return_payment') }}">
+                                                <form role="form" id="return_form" action="{{ url('construction/return_payment') }}">
 
-                                                    
+                                                    <x-field label="Detail">
+    <input type="text" class="ui-input" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
+</x-field>
 
-                                                    <div class="form-group">
-                                                        <label for="field-1" class="col-sm-3 control-label">Detail</label>
+                                                    <x-field label="Ammount">
+    <input type="number" class="ui-input" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
+</x-field>
 
-                                                        <div class="col-sm-5">
-                                                            <input type="text" class="form-control" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
+                                                    <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date3" id="datepicke3" placeholder="Select a date" required>
+</x-field>
+                                                    <div class="ui-row">
+
+
+                                                        <div class="min-w-0 flex-1">
+                                                            <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                                         </div>
                                                     </div>
-
-                                                    <div class="form-group">
-                                                        <label for="field-1" class="col-sm-3 control-label">Ammount</label>
-
-                                                        <div class="col-sm-5">
-                                                            <input type="number" class="form-control" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="form-group">
-                                                        <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                                        <div class="col-sm-5">
-                                                            <input type="text" class="form-control" name="selected_date3" id="datepicke3" placeholder="Select a date" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-
-
-                                                        <div class="col-sm-5">
-                                                            <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <div class="col-sm-offset-3 col-sm-5">
-                                                            <button type="submit" class="btn btn-default submit-form">Add</button>
-                                                        </div>
-                                                    </div>
+                                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                                 </form>
                                             </div>
                                             <div role="tabpanel" class="tab-pane" id="return_show">
-                                                <div class="container" style="width: 90%;margin-top: 15px;">
-                                                    <div id="return_total"></div>
-                                                    <table id="return_table" width="100%" class="table table-bordered">
-                                                        <thead class="thead-dark">
-                                                            <tr style="background-color: aliceblue;">
+                                                <div class="mt-4">
+                                                    <div class="ui-total mb-4" id="return_total"></div>
+                                                    <table id="return_table" width="100%" class="ui-table">
+                                                        <thead>
+                                                            <tr>
                                                                 <!-- Add your table headers here -->
                                                                 <th>Sr No</th>
                                                                 <th>Date</th>
@@ -710,18 +584,16 @@
                                         </div>
                                     </div>
 
-
-
                                     <div role="tabpanel" class="tab-pane" id="grand_total">
 
 
-                                        <div class="container" style="width: 90%;margin-top: 15px;">
+                                        <div class="mt-4">
 
 
-                                            <table id="grand_account" width="100%" class="table table-bordered">
+                                            <table id="grand_account" width="100%" class="ui-table">
 
-                                                <thead class="thead-dark">
-                                                    <tr style="background-color: aliceblue;">
+                                                <thead>
+                                                    <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Type</th>
@@ -730,8 +602,11 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div style="margin-top:30px;" id="total_price_managments">
-                                                <h3 style="display: inline; margin-left:60px;">Payments Recieved: {{ $payment_recieved }}&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspRemaining Balace: {{ $Remainung_Balace }} </h3>
+                                            <div class="ui-total my-5" id="total_price_managments">
+                                                {{-- Two figures, so two pills — the run of &nbsp; that used to
+                                                     separate them stretched the row off the side of the card. --}}
+                                                <h3>Payments Recieved: @money($payment_recieved)</h3>
+                                                <h3>Remaining Balace: @money($Remainung_Balace)</h3>
                                             </div>
 
                                         </div>
@@ -745,55 +620,44 @@
 
                         </div>
                     </div>
-                </div>
+                
 
-                <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel">Update User</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <h2 class="modal-title" id="updateModalLabel">Update User</h2>
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Update form goes here -->
                                 <form id="updateForm">
 
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Material</label>
+
+                                        <input type="text" class="ui-input" name="type" id="field-1" placeholder="Plot No" required>
+
+                                        <input type="hidden" class="ui-input" name="id" id="civil_id" placeholder="Material" required>
+</div>
+
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Quantity</label>
 
 
-                                    <div class="form-group">
-                                        <label for="field-1">Material</label>
+                                        <input type="text" class="ui-input" name="quantity" id="sector" placeholder="Quantity" required>
+</div>
 
-                                        <input type="text" class="form-control" name="type" id="field-1" placeholder="Plot No" required>
-
-                                        <input type="hidden" class="form-control" name="id" id="civil_id" placeholder="Material" required>
-
-                                    </div>
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Price</label>
 
 
-
-                                    <div class="form-group">
-                                        <label for="field-1">Quantity</label>
-
-
-                                        <input type="text" class="form-control" name="quantity" id="sector" placeholder="Quantity" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Price</label>
-
-
-                                        <input type="text" class="form-control" name="price" id="field-1" placeholder="Price" required>
-
-                                    </div>
-
-
+                                        <input type="text" class="ui-input" name="price" id="field-1" placeholder="Price" required>
+</div>
 
                                     <!-- Add other fields as needed -->
 
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                                 </form>
                             </div>
                         </div>
@@ -801,213 +665,161 @@
                 </div>
 
 
-                <div class="modal fade" id="finishModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal" id="finishModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel">Update User</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <h2 class="modal-title" id="updateModalLabel">Update User</h2>
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Update form goes here -->
                                 <form id="finishForm">
 
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Material</label>
+
+                                        <input type="text" class="ui-input" name="type" id="field-1" placeholder="Plot No" required>
+
+                                        <input type="hidden" class="ui-input" name="id" id="finish_id" placeholder="Material" required>
+</div>
+
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Detail</label>
 
 
-                                    <div class="form-group">
-                                        <label for="field-1">Material</label>
+                                        <input type="text" class="ui-input" name="detail" id="detail" placeholder="detail" required>
+</div>
 
-                                        <input type="text" class="form-control" name="type" id="field-1" placeholder="Plot No" required>
-
-                                        <input type="hidden" class="form-control" name="id" id="finish_id" placeholder="Material" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Detail</label>
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Quantity</label>
 
 
-                                        <input type="text" class="form-control" name="detail" id="detail" placeholder="detail" required>
+                                        <input type="text" class="ui-input" name="quantity" id="sector" placeholder="Quantity" required>
+</div>
 
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Quantity</label>
-
-
-                                        <input type="text" class="form-control" name="quantity" id="sector" placeholder="Quantity" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Price</label>
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Price</label>
 
 
-                                        <input type="text" class="form-control" name="price" id="field-1" placeholder="Price" required>
-
-                                    </div>
-
-
+                                        <input type="text" class="ui-input" name="price" id="field-1" placeholder="Price" required>
+</div>
 
                                     <!-- Add other fields as needed -->
 
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-
-                <div class="modal fade" id="openlabourModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal" id="openlabourModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel">Update Labour</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <h2 class="modal-title" id="updateModalLabel">Update Labour</h2>
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Update form goes here -->
                                 <form id="labourForm">
 
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Labour</label>
+
+                                        <input type="text" class="ui-input" name="type" id="field-1" placeholder="Labour" required>
+
+                                        <input type="hidden" class="ui-input" name="id" id="labour_id" placeholder="Material" required>
+</div>
+
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Description</label>
 
 
-                                    <div class="form-group">
-                                        <label for="field-1">Labour</label>
+                                        <input type="text" class="ui-input" name="description" id="detail" placeholder="Description" required>
+</div>
 
-                                        <input type="text" class="form-control" name="type" id="field-1" placeholder="Labour" required>
-
-                                        <input type="hidden" class="form-control" name="id" id="labour_id" placeholder="Material" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Description</label>
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Paid</label>
 
 
-                                        <input type="text" class="form-control" name="description" id="detail" placeholder="Description" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Paid</label>
-
-
-                                        <input type="text" class="form-control" name="instalmet" id="sector" placeholder="Instalmet" required>
-
-                                    </div>
-
-
-
-
-
+                                        <input type="text" class="ui-input" name="instalmet" id="sector" placeholder="Instalmet" required>
+</div>
 
                                     <!-- Add other fields as needed -->
 
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-
-                <div class="modal fade" id="openmiscrModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal" id="openmiscrModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel">Update Miscellaneous</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <h2 class="modal-title" id="updateModalLabel">Update Miscellaneous</h2>
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Update form goes here -->
                                 <form id="miscForm">
 
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Detail</label>
+
+                                        <input type="text" class="ui-input" name="detail" id="field-1" placeholder="Detail" required>
+
+                                        <input type="hidden" class="ui-input" name="id" id="misc_id" placeholder="Material" required>
+</div>
+
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Ammount</label>
 
 
-                                    <div class="form-group">
-                                        <label for="field-1">Detail</label>
-
-                                        <input type="text" class="form-control" name="detail" id="field-1" placeholder="Detail" required>
-
-                                        <input type="hidden" class="form-control" name="id" id="misc_id" placeholder="Material" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Ammount</label>
-
-
-                                        <input type="text" class="form-control" name="price" id="detail" placeholder="Ammount" required>
-
-                                    </div>
-
-
-
-
-
-
+                                        <input type="text" class="ui-input" name="price" id="detail" placeholder="Ammount" required>
+</div>
 
                                     <!-- Add other fields as needed -->
 
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-
-                <div class="modal fade" id="openreturnrModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal" id="openreturnrModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel">Update Miscellaneous</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <h2 class="modal-title" id="updateModalLabel">Update Miscellaneous</h2>
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Update form goes here -->
                                 <form id="returnform">
 
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Detail</label>
+
+                                        <input type="text" class="ui-input" name="detail" id="field-1" placeholder="Detail" required>
+
+                                        <input type="hidden" class="ui-input" name="id" id="return_id" placeholder="Material" required>
+</div>
+
+                                    <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Ammount</label>
 
 
-                                    <div class="form-group">
-                                        <label for="field-1">Detail</label>
-
-                                        <input type="text" class="form-control" name="detail" id="field-1" placeholder="Detail" required>
-
-                                        <input type="hidden" class="form-control" name="id" id="return_id" placeholder="Material" required>
-
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1">Ammount</label>
-
-
-                                        <input type="text" class="form-control" name="price" id="detail" placeholder="Ammount" required>
-
-                                    </div>
-
-
-
-
-
-
+                                        <input type="text" class="ui-input" name="price" id="detail" placeholder="Ammount" required>
+</div>
 
                                     <!-- Add other fields as needed -->
 
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                                 </form>
                             </div>
                         </div>
@@ -1016,7 +828,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
     $(function() {
         $("#datepicker").datepicker({
@@ -1113,7 +925,7 @@
                 sites_data.forEach(function(record, index) {
                     record.serial_number = index + 1;
                 });
-                $('#total_price').html('<h4 style="display: inline; margin-left:60px;">Total Amount: ' + total_price + '</h4>');
+                $('#total_price').html('<h4>Total Amount: ' + money(total_price) + '</h4>');
 
                 var oAllLinksTable = $('#show_site').DataTable({
                     "data": sites_data,
@@ -1129,8 +941,8 @@
                                 // 'data' parameter contains the row data
                                 return '<div>' +
                                     '<div>' + data.type + '</div>' +
-                                    '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteCivil(' + data.id + ')"></i>';
+                                    '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteCivil(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
 
                                 '</div>';
@@ -1145,11 +957,11 @@
 
                     ],
 
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
 
 
@@ -1168,7 +980,7 @@
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="3"></td>' +
                                     '<td>Total Quantity: ' + quantity + '</td>' +
-                                    '<td>Total Amount: ' + total_price + '</td>' +
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' +
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1187,7 +999,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1252,7 +1064,9 @@
     });
 </script>
 <script>
-    $('.get__b_category').click(function() {
+    // 'change', not 'click': on a <select>, click fires when the list is merely
+    // opened, so every click reloaded the table before a choice had been made.
+    $('.get__b_category').on('change', function() {
         var Category = $('#b_category').val();
 
         // Destroy existing DataTable if it exists
@@ -1274,7 +1088,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#total_price_b').html('<h4 style="display: inline; margin-left:60px;">Total Amount: ' + total_price + '</h4>');
+                $('#total_price_b').html('<h4>Total Amount: ' + money(total_price) + '</h4>');
 
                 var oAllLinksTable = $('#b_categoer_table').DataTable({
                     "data": sites_data,
@@ -1300,17 +1114,17 @@
                             "data": null,
                             "render": function(data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openfinishModal(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deletefinish(' + data.id + ')"></i>';
+                                return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openfinishModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deletefinish(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                             }
                         }
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
                                 // Add watermark
                                 $(win.document.body).prepend(
@@ -1338,7 +1152,7 @@
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' +
                                     '<td>Total Quantity: ' + quantity + '</td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1350,7 +1164,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1519,7 +1333,8 @@
     });
 </script>
 <script>
-    $('.get__labour').click(function() {
+    // 'change' for the same reason as .get__b_category above.
+    $('.get__labour').on('change', function() {
         var Category = $('#labour_value').val();
 
         // Destroy existing DataTable if it exists
@@ -1541,7 +1356,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#total_price_labour').html('<h4 style="display: inline; margin-left:60px;">Projcet Done: ' + total_priceaaa + '  &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspTotal payed: ' + total_price + '</h4>');
+                $('#total_price_labour').html('<h4>Projcet Done: ' + money(total_priceaaa) + '</h4><h4>Total payed: ' + money(total_price) + '</h4>');
 
                 var oAllLinksTable = $('#labour_table').DataTable({
                     "data": sites_data,
@@ -1566,17 +1381,17 @@
                             "data": null,
                             "render": function(data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openmiscrModal(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deletelabour(' + data.id + ')"></i>';
+                                return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openmiscrModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deletelabour(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                             }
                         }
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
                                 // Add watermark
                                 $(win.document.body).prepend(
@@ -1603,7 +1418,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1613,7 +1428,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1648,7 +1463,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#civil_total324').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#civil_total324').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
 
                 // Initialize DataTable and store the instance in the variable
                 civilAccountTable = $('#civil_account').DataTable({
@@ -1670,11 +1485,11 @@
                         },
 
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
                                 // Add watermark
                                 $(win.document.body).prepend(
@@ -1696,7 +1511,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1706,7 +1521,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1740,7 +1555,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#misclanious_total').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#misclanious_total').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
 
                 // Initialize DataTable and store the instance in the variable
                 miscTable = $('#misc_table').DataTable({
@@ -1763,17 +1578,17 @@
                             "data": null,
                             "render": function(data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openmiscrModal(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deletemisc(' + data.id + ')"></i>';
+                                return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openmiscrModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deletemisc(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                             }
                         }
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
                                 // Add watermark
                                 $(win.document.body).prepend(
@@ -1800,7 +1615,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="3"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1810,7 +1625,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1844,7 +1659,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#return_total').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#return_total').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
 
                 // Initialize DataTable and store the instance in the variable
                 returnTable = $('#return_table').DataTable({
@@ -1867,17 +1682,17 @@
                             "data": null,
                             "render": function(data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openreturnrModal22(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="return_delete(' + data.id + ')"></i>';
+                                return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openreturnrModal22(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="return_delete(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                             }
                         }
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             customize: function(win) {
                                 // Add watermark
                                 $(win.document.body).prepend(
@@ -1904,7 +1719,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="3"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -1914,7 +1729,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -1985,7 +1800,7 @@
                 var total_price = response.total_price;
                 var sites_data = response.data;
 
-                $('#finish_total324').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#finish_total324').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
                 // Add a new column with serial numbers starting from 1
                 sites_data.forEach(function(record, index) {
                     record.serial_number = index + 1;
@@ -2014,11 +1829,11 @@
                         },
 
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             exportOptions: {
                                 columns: ':visible' // Export only visible columns
                             },
@@ -2043,7 +1858,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="5"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -2053,7 +1868,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -2116,11 +1931,11 @@
                             title: 'source'
                         },
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             exportOptions: {
                                 columns: ':visible'
                             },
@@ -2135,7 +1950,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'total_entries'
                         }
                     ]
@@ -2169,7 +1984,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#miscle_account123').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#miscle_account123').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
 
                 // Initialize DataTable and store the instance in the variable
                 miscleAccountTable = $('#miscle_account').DataTable({
@@ -2188,11 +2003,11 @@
                         },
 
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             exportOptions: {
                                 columns: ':visible' // Export only visible columns
                             },
@@ -2217,7 +2032,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="3"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -2227,7 +2042,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -2261,7 +2076,7 @@
                     record.serial_number = index + 1;
                 });
 
-                $('#Labour_account123').html('<h3 style="display: inline; margin-left:0px;">Total Amount: ' + total_price + '</h3>');
+                $('#Labour_account123').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
 
                 // Initialize DataTable and store the instance in the variable
                 labourAccountTable = $('#Labour_account').DataTable({
@@ -2283,11 +2098,11 @@
                         },
 
                     ],
-                    dom: 'lBfrtip',
+                    dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
                             text: 'Print Record',
-                            className: 'btn btn-secondary',
+                            className: 'dt-button',
                             exportOptions: {
                                 columns: ':visible' // Export only visible columns
                             },
@@ -2312,7 +2127,7 @@
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' + // totalQuantity is your variable for the total quantity
-                                    '<td>Total Amount: ' + total_price + '</td>' + // totalPrice is your variable for the Total Amount
+                                    '<td>Total Amount: ' + money(total_price) + '</td>' + // totalPrice is your variable for the Total Amount
                                     '</tr>';
 
                                 // Append the total row after the table body
@@ -2322,7 +2137,7 @@
                         {
                             extend: 'excel',
                             text: 'Download Excel',
-                            className: 'btn btn-primary',
+                            className: 'dt-button',
                             filename: 'data_export'
                         }
                     ]
@@ -3111,11 +2926,11 @@
 
     $(document).ready(function() {
         var dataTable = $('#grand_account').DataTable({
-            dom: 'lBfrtip',
+            dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
                     text: 'Print Record',
-                    className: 'btn btn-secondary',
+                    className: 'dt-button',
                     exportOptions: {
                         columns: ':visible' // Export only visible columns
                     },
@@ -3137,7 +2952,7 @@
                 {
                     extend: 'excel',
                     text: 'Download Excel',
-                    className: 'btn btn-primary',
+                    className: 'dt-button',
                     filename: 'data_export'
                 }
             ]
@@ -3147,31 +2962,31 @@
         dataTable.row.add([
             '1',
             'Civil Total',
-            '{{ $civil_price }}',
+            '@money($civil_price)',
         ]).draw();
 
         dataTable.row.add([
             '2',
             'Finish Total',
-            '{{ $finish_price }}',
+            '@money($finish_price)',
         ]).draw();
 
         dataTable.row.add([
             '3',
             'Labour total',
-            '{{ $labour_price }}',
+            '@money($labour_price)',
         ]).draw();
 
         dataTable.row.add([
             '4',
             'Miscellaneous Total',
-            '{{ $misc_price }}',
+            '@money($misc_price)',
         ]).draw();
 
         dataTable.row.add([
             '<h3>5</h3>',
             '<h3>Grand Total</h3>',
-            '<h3>{{ $Grand_total }}</h3>',
+            '<h3>@money($Grand_total)</h3>',
         ]).draw();
     });
 </script>

@@ -1,29 +1,21 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <a href="{{ url('admin_setting/show_expense') }}">Money Management</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Add Expense</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Add Expensive</strong>
-                </li>
-            </ol>
-
-            <h2>Add Expensive</h2>
-            <br />
+<x-page-header title="Add Expense"
+               subtitle="Record an expense against the business." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
+            <div class="ui-card" data-collapsed="0">
                         <div>
 
                             <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" role="tablist">
+                            <ul class="ui-tabs" role="tablist">
                                 <li role="presentation"><a href="#A_category" aria-controls="home" role="tab" data-toggle="tab">Add Expense</a></li>
                                 <li role="presentation"><a href="#B_category" id="payment_recieved" aria-controls="profile" role="tab" data-toggle="tab">Add Miscellaneous Credit</a></li>
 
@@ -35,13 +27,10 @@
 
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane" id="A_category">
-                                <form role="form" class="form-horizontal" id="add_expense" action="{{ url('admin_setting/save_expense') }}">
+                                <form role="form" id="add_expense" action="{{ url('admin_setting/save_expense') }}">
 
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Select </label>
-
-                                        <div class="col-sm-5">
-                                            <select class="form-control" name="type">
+                                    <x-field label="Select">
+    <select class="ui-select" name="type">
                                                 <option>
                                                     Select
                                                 </option>
@@ -57,95 +46,68 @@
                                                     Basharat
                                                 </option>
                                             </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Detail</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="detail" id="field-1" placeholder="Add Detail" required>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Amount</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="amount" id="field-1" placeholder="Add Amount" required>
-                                        </div>
-                                    </div>
+</x-field>
+                                    <x-field label="Detail">
+    <input type="text" class="ui-input" name="detail" id="field-1" placeholder="Add Detail" required>
+</x-field>
+                                    <x-field label="Amount">
+    <input type="text" class="ui-input" name="amount" id="field-1" placeholder="Add Amount" required>
+</x-field>
                                    
 
-                                    <div class="form-group">
-                                        <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="selected_date" id="datepicker" placeholder="Select a date" required>
-                                        </div>
-                                    </div>
+                                    <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date" id="datepicker" placeholder="Select a date" required>
+</x-field>
 
 
 
 
 
 
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-3 col-sm-5">
-                                            <button type="submit" class="btn btn-default">Add</button>
-                                        </div>
-                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-secondary">Add</button>
+</div>
                                 </form>
 
                             </div>
 
                             <!-- Start B_category -->
                             <div role="tabpanel" class="tab-pane" id="B_category">
-                                <form role="form" class="form-horizontal" id="add_expense1" action="{{ url('admin_setting/save_misc_Admin') }}">
+                                <form role="form" id="add_expense1" action="{{ url('admin_setting/save_misc_Admin') }}">
 
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Detail </label>
+                                    <x-field label="Detail">
+    <input type="text" class="ui-input" name="detail" id="field-1" placeholder="Add Detail" required>
+</x-field>
 
-                                        <div class="col-sm-5">
-                                        <input type="text" class="form-control" name="detail" id="field-1" placeholder="Add Detail" required>
-                                        </div>
-                                    </div>
+                                    <x-field label="Amount">
+    <input type="text" class="ui-input" name="Amount" id="field-1" placeholder="Add Amount" required>
+</x-field>
 
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Amount</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="Amount" id="field-1" placeholder="Add Amount" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="Selected_date" id="datepicker1" placeholder="Select a date" required>
-                                        </div>
-                                    </div>
+                                    <x-field label="Date">
+    <input type="text" class="ui-input" name="Selected_date" id="datepicker1" placeholder="Select a date" required>
+</x-field>
 
 
 
 
 
 
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-3 col-sm-5">
-                                            <button type="submit" class="btn btn-default">Add</button>
-                                        </div>
-                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-secondary">Add</button>
+</div>
                                 </form>
                             </div>
                         </div>
 
                     </div>
 
-                </div>
-            </div>
+                
+            
 
 
 
 
-        </div>
+        
 @endsection
 
 @push('scripts')

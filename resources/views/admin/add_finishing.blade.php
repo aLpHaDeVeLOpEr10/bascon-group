@@ -1,59 +1,22 @@
 @extends('layouts.admin')
 
-@push('styles')
-<style>
-    #show_user td {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
-
-    #show_user th {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
-
-
-
-
-    .action {
-        width: 10% !important;
-    }
-</style>
-@endpush
+@section('breadcrumbs')
+    <span>Category</span>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Finishing Materials</span>
+@endsection
 
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Add Finishing</strong>
-                </li>
-            </ol>
-
-            <h2>Add Finishing</h2>
-            <br />
+<x-page-header title="Finishing Materials"
+               subtitle="Manage the finishing material catalogue and its categories." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
+            <div class="ui-card" data-collapsed="0">
 
                         <div>
 
                             <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" role="tablist">
+                            <ul class="ui-tabs" role="tablist">
                                 <li role="presentation"><a href="#A_category" aria-controls="home" role="tab"
                                         data-toggle="tab">Add Category</a></li>
                                 <li role="presentation"><a href="#B_category" aria-controls="profile" role="tab"
@@ -67,25 +30,19 @@
 
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane" id="A_category">
-                                <div class="panel-body">
+                                <div class="ui-card-body">
 
-                                    <form role="form" class="form-horizontal" id="material_add"
+                                    <form role="form" id="material_add"
                                         action="{{ url('admin_setting/save_Bmaterial') }}">
 
-                                        <div class="form-group">
-                                            <label for="field-1" class="col-sm-3 control-label">Category Name</label>
-
-                                            <div class="col-sm-5">
-                                                <input type="text" class="form-control" name="name" id="field-1"
+                                        <x-field label="Category Name">
+    <input type="text" class="ui-input" name="name" id="field-1"
                                                     placeholder="Name" required>
-                                            </div>
-                                        </div>
+</x-field>
 
-                                        <div class="form-group">
-                                            <div class="col-sm-offset-3 col-sm-5">
-                                                <button type="submit" class="btn btn-default">Add</button>
-                                            </div>
-                                        </div>
+                                        <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-secondary">Add</button>
+</div>
                                     </form>
 
                                 </div>
@@ -94,14 +51,13 @@
 
                             <div role="tabpanel" style="padding:30px;" class="tab-pane" id="B_category">
 
-                                <table id="show_user" width="100%" class="table table-bordered">
+                                <table id="show_user" width="100%" class="ui-table">
                                     <thead>
 
-                                    <tr style="background-color: aliceblue;">
-                                            </th>
+                                    <tr>
                                             <th>Sr No</th>
                                             <th>Name</th>
-                                            <th class="action">Action</th>
+                                            <th class="w-24">Action</th>
 
                                         </tr>
                                     </thead>
@@ -112,14 +68,8 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-
-
-
-
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+        
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 @endsection
 
 @push('scripts')
@@ -189,7 +139,7 @@
                             "data": null,
                             "render": function (data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<button class="btn btn-danger" onclick="deleteUser(' + data.id + ')">Delete</button>';
+                                return '<button class="ui-btn ui-btn-danger" onclick="deleteUser(' + data.id + ')">Delete</button>';
                             }
                         }
 

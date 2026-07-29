@@ -1,32 +1,24 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <a href="{{ url('admin_setting/add_user') }}">Registration</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Show user</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Show user</strong>
-                </li>
-            </ol>
-
-            <h2>Show User</h2>
-            <br />
+<x-page-header title="Users"
+               subtitle="Every account with access to the system." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
+            <div class="ui-card" data-collapsed="0">
 
 
-                        <div class="panel-body">
-                            <table width="100%" id="show_user" class="table ">
+                        <div class="ui-card-body">
+                            <table width="100%" id="show_user" class="ui-table">
                                 <thead>
 
-                                    <tr style="background-color: aliceblue;">
+                                    <tr>
 
                                         <th>Sr No</th>
                                         <th>Name</th>
@@ -37,8 +29,6 @@
                                         <th>Contact</th>
                                         <th>Role</th>
 
-
-
                                     </tr>
                                 </thead>
                             </table>
@@ -47,83 +37,69 @@
 
                     </div>
 
-                </div>
-            </div>
-        </div>
-    </div>
-
+        
 
     <!-- update_modal.php -->
 
     <!-- update_modal.php -->
 
-    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h2 class="modal-title" id="updateModalLabel">Update User</h2>
+                    <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                 </div>
                 <div class="modal-body">
                     <!-- Update form goes here -->
                     <form id="updateForm">
 
-                        <div class="form-group">
-                            <label for="field-1">Name</label>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Name</label>
 
 
-                            <input type="text" class="form-control" name="name" id="field-1" placeholder="Name" required>
+                            <input type="text" class="ui-input" name="name" id="field-1" placeholder="Name" required>
+</div>
 
-                        </div>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Username</label>
 
-                        <div class="form-group">
-                            <label for="field-1">Username</label>
+                            <input type="text" class="ui-input" name="username" id="field-1" placeholder="Username" required>
 
-                            <input type="text" class="form-control" name="username" id="field-1" placeholder="Username" required>
+                            <input type="hidden" class="ui-input" name="id" id="field-1" placeholder="Username" required>
+</div>
 
-                            <input type="hidden" class="form-control" name="id" id="field-1" placeholder="Username" required>
-
-                        </div>
-
-
-
-                        <div class="form-group">
-                            <label for="field-1">Email</label>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Email</label>
 
 
-                            <input type="email" class="form-control" name="email" id="sector" placeholder="Email" required>
-
-                        </div>
-                        <div class="form-group">
-                            <label for="field-1">Password</label>
-
-
-                            <input type="text" class="form-control" name="password" id="change_password" placeholder="Password" >
-
-                        </div>
-
-                        <div class="form-group">
-                            <label for="field-1">Address</label>
+                            <input type="email" class="ui-input" name="email" id="sector" placeholder="Email" required>
+</div>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Password</label>
 
 
-                            <input type="text" class="form-control" name="address" id="sector" placeholder="Address" required>
+                            <input type="text" class="ui-input" name="password" id="change_password" placeholder="Password" >
+</div>
 
-                        </div>
-                        <div class="form-group">
-                            <label for="field-1">Contact</label>
-
-
-                            <input type="number" class="form-control" name="contact" id="sector" placeholder="Contact" required>
-
-                        </div>
-
-                        <div class="form-group">
-                            <label for="field-1">Select</label>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Address</label>
 
 
-                            <select class="form-control" name="role">
+                            <input type="text" class="ui-input" name="address" id="sector" placeholder="Address" required>
+</div>
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Contact</label>
+
+
+                            <input type="number" class="ui-input" name="contact" id="sector" placeholder="Contact" required>
+</div>
+
+                        <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Select</label>
+
+
+                            <select class="ui-select" name="role">
                                 <option> Select Material</option>
 
 
@@ -131,23 +107,22 @@
                                 <option> Client</option>
 
                             </select>
-
-                        </div>
+</div>
 
 
                         <!-- Add other fields as needed -->
 
-                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</body>
+{{-- stray </body> from the CodeIgniter view removed --}}
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
     $(document).ready(function() {
         var oAllLinksTable = $('#show_user').DataTable({
@@ -167,8 +142,8 @@
                         // 'data' parameter contains the row data
                         return '<div>' +
                             '<div>' + data.name + '</div>' +
-                            '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                            '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteUser(' + data.id + ')"></i>'
+                            '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                            '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteUser(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
 
 
                         '</div>';

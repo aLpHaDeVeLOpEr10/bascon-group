@@ -1,33 +1,24 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <span>Project Management</span>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Show site</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Show Construction site</strong>
-                </li>
-            </ol>
-
-            <h2>Show Construction site</h2>
-            <br />
+<x-page-header title="Construction Sites"
+               subtitle="Every construction project and its management fees." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
+            <div class="ui-card" data-collapsed="0">
 
 
-                        <div class="panel-body">
-                            <table id="show_site" width="100%" style="white-space: nowrap;" class="table ">
+                        <div class="ui-card-body">
+                            <table id="show_site" width="100%" style="white-space: nowrap;" class="ui-table">
                                 <thead>
 
-                                    <tr style="background-color: aliceblue;">
-                                        </th>
+                                    <tr>
                                         <th>Sr No</th>
                                         <th>Plot NO</th>
                                         <th>Phase</th>
@@ -45,66 +36,60 @@
 
                     </div>
 
-                </div>
-            </div>
+                
+            
 
 
 
 
-        </div>
+        
 
-        <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="updateModalLabel">Update Sites</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <h2 class="modal-title" id="updateModalLabel">Update Sites</h2>
+                        <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                     </div>
                     <div class="modal-body">
                         <!-- Update form goes here -->
                         <form id="updateForm">
 
-                            <div class="form-group">
-                                <label for="field-1">Phase</label>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Phase</label>
 
 
-                                <input type="text" class="form-control" name="phase" id="field-1" placeholder="Phase" required>
+                                <input type="text" class="ui-input" name="phase" id="field-1" placeholder="Phase" required>
+</div>
 
-                            </div>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Plot No</label>
 
-                            <div class="form-group">
-                                <label for="field-1">Plot No</label>
+                                <input type="text" class="ui-input" name="project_name" id="field-1" placeholder="Plot No" required>
 
-                                <input type="text" class="form-control" name="project_name" id="field-1" placeholder="Plot No" required>
-
-                                <input type="hidden" class="form-control" name="id" id="field-1" placeholder="Username" required>
-
-                            </div>
+                                <input type="hidden" class="ui-input" name="id" id="field-1" placeholder="Username" required>
+</div>
 
 
 
-                            <div class="form-group">
-                                <label for="field-1">Price</label>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Price</label>
 
 
-                                <input type="text" class="form-control" name="total_price" id="total_price" placeholder="Price" required>
-
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="field-1">Sector</label>
+                                <input type="text" class="ui-input" name="total_price" id="total_price" placeholder="Price" required>
+</div>
 
 
-                                <input type="text" class="form-control" name="sector" id="sector" placeholder="Sector" required>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Sector</label>
 
-                            </div>
+
+                                <input type="text" class="ui-input" name="sector" id="sector" placeholder="Sector" required>
+</div>
 
                             <!-- Add other fields as needed -->
 
-                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                         </form>
                     </div>
                 </div>
@@ -147,8 +132,8 @@
                             "data": null,
                             "render": function(data, type, row) {
                                 // 'data' parameter contains the row data
-                                return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                                    '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteUser(' + data.id + ')"></i>';
+                                return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                    '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteUser(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                             }
                         }

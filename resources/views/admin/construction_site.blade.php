@@ -1,31 +1,21 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <a href="{{ url('admin_setting/show_con_site') }}">Project Management</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Site details</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Site Details</strong>
-                </li>
-            </ol>
-
-            <h2>
-                {{ $name }}
-            </h2>
-            <br />
+<x-page-header :title="$name"
+               subtitle="Construction project detail, instalments and payments." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary " style="padding-bottom: 30px;">
+            <div class="ui-card" style="padding-bottom: 30px;">
                         <div>
 
                             <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" role="tablist">
+                            <ul class="ui-tabs" role="tablist">
                                 <li role="presentation"><a href="#installments" aria-controls="home" role="tab" data-toggle="tab">Installment</a></li>
                                 <li role="presentation"><a href="#payments" id="payments_recieved" aria-controls="profile" role="tab" data-toggle="tab">Payment</a></li>
 
@@ -36,7 +26,7 @@
                             <div role="tabpanel" class="tab-pane" id="installments">
 
                                 <!-- Nav tabs -->
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#A_category" aria-controls="home" role="tab" data-toggle="tab">Add Installment</a></li>
                                     <li role="presentation"><a href="#B_category" id="payment_recieved" aria-controls="profile" role="tab" data-toggle="tab">Instalment Recieved</a></li>
 
@@ -46,7 +36,7 @@
                             <div role="tabpanel" class="tab-pane" id="payments">
 
                                 <!-- Nav tabs -->
-                                <ul class="nav nav-tabs" role="tablist">
+                                <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#paymentssdf_category" aria-controls="home" role="tab" data-toggle="tab">Add payment</a></li>
                                     <li role="presentation"><a href="#B_payment_category" id="payments_category" aria-controls="profile" role="tab" data-toggle="tab">Payment Recieved</a></li>
 
@@ -59,70 +49,44 @@
 
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane" id="A_category">
-                                <form role="form" class="form-horizontal" id="brick_addition_form" action="{{ url('admin_setting/Add_cons_instal') }}">
+                                <form role="form" id="brick_addition_form" action="{{ url('admin_setting/Add_cons_instal') }}">
 
+                                    <x-field label="Instalment">
+    <input type="number" class="ui-input" name="price" id="field-1" placeholder="Add Instalment" required>
+</x-field>
 
+                                    <x-field label="Source">
+    <input type="text" class="ui-input" name="source" id="field-1" placeholder="Add Source" required>
+</x-field>
 
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Instalment</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="number" class="form-control" name="price" id="field-1" placeholder="Add Instalment" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Source</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="source" id="field-1" placeholder="Add Source" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="selected_date" id="datepicker" placeholder="Select a date" required>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
+                                    <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date" id="datepicker" placeholder="Select a date" required>
+</x-field>
+                                    <div class="ui-row">
 
                                         
-                                        <div class="col-sm-5">
-                                            <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id" id="sector" required>
+                                        <div class="min-w-0 flex-1">
+                                            <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-3 col-sm-5">
-                                            <button type="submit" class="btn btn-default submit-form">Add</button>
-                                        </div>
-                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                 </form>
-
-
-
-
-
-
 
                             </div>
                             <!-- End A_category -->
 
-
-
                             <!-- Start B_category -->
                             <div role="tabpanel" class="tab-pane" id="B_category">
 
+                                <div class="mt-4">
 
 
-
-                                <div class="container" style="width: 90%;margin-top: 15px;">
-
-
-                                    <table id="b_categoer_table" width="100%" class="table table-bordered">
+                                    <table id="b_categoer_table" width="100%" class="ui-table">
 
                                         <thead>
-                                            <tr style="background-color: aliceblue;">
+                                            <tr>
                                                 <!-- Add your table headers here -->
                                                 <th>Sr No</th>
                                                 <th>Price</th>
@@ -132,8 +96,8 @@
                                             </tr>
                                         </thead>
                                     </table>
-                                    <div style="margin-top:30px;" id="total_price_managments">
-                                        <h4 style="display: inline; margin-left:60px;">Total Fee:{{ $total_fee }} &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspTotal Instalments:{{ $total_instalments }} </h4>
+                                    <div class="ui-total my-5" id="total_price_managments">
+                                        <h4>Total Fee:@money($total_fee)</h4><h4>Total Instalments:@money($total_instalments)</h4>
                                     </div>
                                 </div>
 
@@ -141,70 +105,44 @@
 
 
                             <div role="tabpanel" class="tab-pane" id="paymentssdf_category">
-                                <form role="form" class="form-horizontal" id="brick_addition_form1" action="{{ url('admin_setting/Add_cons_payment') }}">
+                                <form role="form" id="brick_addition_form1" action="{{ url('admin_setting/Add_cons_payment') }}">
 
+                                    <x-field label="Payment">
+    <input type="number" class="ui-input" name="price1" id="field-1" placeholder="Add Payment" required>
+</x-field>
 
+                                    <x-field label="Source">
+    <input type="text" class="ui-input" name="source1" id="field-1" placeholder="Add Source" required>
+</x-field>
 
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Payment</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="number" class="form-control" name="price1" id="field-1" placeholder="Add Payment" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-1" class="col-sm-3 control-label">Source</label>
-
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="source1" id="field-1" placeholder="Add Source" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="field-2" class="col-sm-3 control-label">Date</label>
-                                        <div class="col-sm-5">
-                                            <input type="text" class="form-control" name="selected_date1" id="datepicker1" placeholder="Select a date" required>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
+                                    <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date1" id="datepicker1" placeholder="Select a date" required>
+</x-field>
+                                    <div class="ui-row">
 
                                         
-                                        <div class="col-sm-5">
-                                            <input type="hidden" class="form-control" value="{{ $const_id }}" name="proj_id1" id="sector1" required>
+                                        <div class="min-w-0 flex-1">
+                                            <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id1" id="sector1" required>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-3 col-sm-5">
-                                            <button type="submit" class="btn btn-default submit-form">Add</button>
-                                        </div>
-                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
                                 </form>
-
-
-
-
-
-
 
                             </div>
                             <!-- End A_category -->
 
-
-
                             <!-- Start B_category -->
                             <div role="tabpanel" class="tab-pane" id="B_payment_category">
 
+                                <div class="mt-4">
 
 
-
-                                <div class="container" style="width: 90%;margin-top: 15px;">
-
-
-                                    <table id="b_categoer_table1" width="100%" class="table table-bordered">
+                                    <table id="b_categoer_table1" width="100%" class="ui-table">
 
                                         <thead>
-                                            <tr style="background-color: aliceblue;">
+                                            <tr>
                                                 <!-- Add your table headers here -->
                                                 <th>Sr No</th>
                                                 <th>Price</th>
@@ -216,75 +154,56 @@
                                             </tr>
                                         </thead>
                                     </table>
-                                    <div style="margin-top:30px;" id="total_price_managments">
-                                        <h4 style="display: inline; margin-left:60px;">Total Payments:{{ $total_payments }} </h4>
+                                    <div class="ui-total my-5" id="total_price_managments">
+                                        <h4>Total Payments:@money($total_payments)</h4>
                                     </div>
                                 </div>
 
                             </div>
 
-
-
-
-
                         </div>
                         <!-- End B_category -->
 
-
-
-
                     </div>
 
-                </div>
-            </div>
-        </div>
+        
 
-        <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="updateModalLabel">Update Payment</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <h2 class="modal-title" id="updateModalLabel">Update Payment</h2>
+                        <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                     </div>
                     <div class="modal-body">
                         <!-- Update form goes here -->
                         <form id="updateForm">
 
-                            <div class="form-group">
-                                <label for="field-1">Price</label>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Price</label>
 
 
-                                <input type="text" class="form-control" name="payment" id="field-1" placeholder="Price" required>
+                                <input type="text" class="ui-input" name="payment" id="field-1" placeholder="Price" required>
+</div>
 
-                            </div>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Source</label>
 
-                            <div class="form-group">
-                                <label for="field-1">Source</label>
+                                <input type="text" class="ui-input" name="source" id="field-1" placeholder="Source" required>
 
-                                <input type="text" class="form-control" name="source" id="field-1" placeholder="Source" required>
+                                <input type="hidden" class="ui-input" name="id" id="field-1" placeholder="Username" required>
+</div>
 
-                                <input type="hidden" class="form-control" name="id" id="field-1" placeholder="Username" required>
-
-                            </div>
-
-
-
-                            <div class="form-group">
-                                <label for="field-1">Date</label>
+                            <div class="mb-4 space-y-1.5">
+    <label for="field-1" class="ui-label">Date</label>
 
 
-                                <input type="text" class="form-control" name="date" id="datepicker2" placeholder="Date" required>
-
-                            </div>
-
-
-
+                                <input type="text" class="ui-input" name="date" id="datepicker2" placeholder="Date" required>
+</div>
 
                             <!-- Add other fields as needed -->
 
-                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="submit" class="ui-btn ui-btn-primary">Update</button>
                         </form>
                     </div>
                 </div>
@@ -481,22 +400,22 @@
                     "data": "date"
                 }
             ],
-            dom: 'lBfrtip',
+            dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
                     text: 'Print DataTable',
-                    className: 'btn btn-secondary',
+                    className: 'dt-button',
                     customize: function(win) {
                         // Add custom content to the print view
                         $(win.document.body).prepend('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;"><img src="{{ asset('assets/images/water_mak.jpeg') }}" style="width:500px;" /></div>');
-                        $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Fee: {{ $total_fee }}   &nbsp&nbsp&nbsp&nbspTotal Instalments: {{ $total_instalments }}  </td></tr></tfoot>');
+                        $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Fee: @money($total_fee)   &nbsp&nbsp&nbsp&nbspTotal Instalments: @money($total_instalments)  </td></tr></tfoot>');
                     }
 
                 },
                 {
                     extend: 'excel',
                     text: 'Download Excel',
-                    className: 'btn btn-primary',
+                    className: 'dt-button',
                     filename: 'data_export'
                 }
             ],
@@ -539,27 +458,27 @@
                     "data": null,
                     "render": function(data, type, row) {
                         // 'data' parameter contains the row data
-                        return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                            '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteUser(' + data.id + ')"></i>';
+                        return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                            '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteUser(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                     }
                 }
             ],
-            dom: 'lBfrtip',
+            dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
                     text: 'Print DataTable',
-                    className: 'btn btn-secondary',
+                    className: 'dt-button',
                     customize: function(win) {
                         // Add custom content to the print view
                         $(win.document.body).prepend('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;"><img src="{{ asset('assets/images/water_mak.jpeg') }}" style="width:500px;" /></div>');
-                        $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Payments: {{ $total_payments }}  </td></tr></tfoot>');
+                        $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Payments: @money($total_payments)  </td></tr></tfoot>');
                     }
                 },
                 {
                     extend: 'excel',
                     text: 'Download Excel',
-                    className: 'btn btn-primary',
+                    className: 'dt-button',
                     filename: 'data_export'
                 }
             ],

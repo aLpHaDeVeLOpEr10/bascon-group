@@ -1,86 +1,36 @@
 @extends('layouts.app')
 
-@push('styles')
-<style>
-    #show_payment td {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
+@section('title', 'Project Management Fee · BASCON GROUP')
 
-    #show_payment th {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
-
-
-
-
-    .action {
-        width: 10% !important;
-    }
-</style>
-@endpush
+@section('breadcrumbs')
+    <a href="{{ url('client/total_payment') }}">Payments</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Project Management Fee</span>
+@endsection
 
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
+<x-page-header title="Project Management Fee"
+               subtitle="Management fees and the instalments paid against them." />
 
-                <li class="active">
+{{-- Both figures come straight from the controller, as before — only the
+     presentation changed. --}}
+<div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <x-stat-card label="Total fee" :value="money($total_fee)" icon="wallet" />
+    <x-stat-card label="Total instalments" :value="money($total_instalments)" icon="check" tone="success" />
+</div>
 
-                    <strong> Payment</strong>
-                </li>
-            </ol>
-
-            <h2>Show Installments</h2>
-            <br />
-
-
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
-
-
-                        <div class="panel-body">
-
-                            <table id="b_categoer_table" width="100%" class="table table-bordered">
-
-                                <thead>
-                                    <tr style="background-color: aliceblue;">
-                                        <!-- Add your table headers here -->
-                                        <th>Sr No</th>
-                                        <th>Fee</th>
-                                        <th>Source</th>
-                                        <th>Date</th>
-
-                                    </tr>
-                                </thead>
-                            </table>
-                            <div style="margin-top:30px;" id="total_price_managments">
-                                <h4 style="display: inline; margin-left:60px;">Total Fee:{{ $total_fee }} &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspTotal Instalments:{{ $total_instalments }}</h4>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
-
-
-
-
-        </div>
+<x-card flush>
+    <table id="b_categoer_table" width="100%" class="ui-table">
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Fee</th>
+                <th>Source</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+    </table>
+</x-card>
 @endsection
 
 @push('scripts')
@@ -99,22 +49,22 @@
             { "data": "source" },
             { "data": "date" }
         ],
-        dom: 'Bfrtip',
+        dom: '<"ui-dt-bar"Bf>rt<"ui-dt-foot"ip>',
         buttons: [
             {
                 extend: 'print',
                 text: 'Print DataTable',
-                className: 'btn btn-secondary',
+                className: 'dt-button',
                 customize: function(win) {
                     // Add custom content to the print view
                     $(win.document.body).prepend('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;"><img src="{{ asset('assets/images/water_mak.jpeg') }}" style="width:500px;" /></div>');
-                    $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Fee: {{ $total_fee }}   &nbsp&nbsp&nbsp&nbspTotal Instalments: {{ $total_instalments }} </td></tr></tfoot>');
+                    $(win.document.body).find('table').prepend('<tfoot><tr><td colspan="3">Total Fee: @money($total_fee)   &nbsp&nbsp&nbsp&nbspTotal Instalments: @money($total_instalments) </td></tr></tfoot>');
                 }
             },
             {
                 extend: 'excel',
                 text: 'Download Excel',
-                className: 'btn btn-primary',
+                className: 'dt-button',
                 filename: 'data_export'
             }
         ],

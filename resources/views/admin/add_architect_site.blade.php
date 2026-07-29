@@ -1,26 +1,18 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <a href="{{ url('admin_setting/show_site') }}">Architecture</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Add site</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Add site</strong>
-                </li>
-            </ol>
-
-            <h2>Add site</h2>
-            <br />
+<x-page-header title="Add Architecture Site"
+               subtitle="Register a personal architecture project." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
-                        <ul class="nav nav-tabs" role="tablist">
+            <div class="ui-card" data-collapsed="0">
+                        <ul class="ui-tabs" role="tablist">
                             <li role="presentation" class="active"><a href="#add_personal_architect" aria-controls="home" role="tab" data-toggle="tab">Personal Project</a></li>
 
                         </ul>
@@ -30,51 +22,33 @@
 
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane active" id="add_personal_architect">
-                                <div class="panel-body">
+                                <div class="ui-card-body">
 
-                                    <form role="form" class="form-horizontal" id="site_add" action="{{ url('admin_setting/save_site') }}">
+                                    <form role="form" id="site_add" action="{{ url('admin_setting/save_site') }}">
 
-                                        <div class="form-group">
-                                            <label for="field-1" class="col-sm-3 control-label">Phase</label>
+                                        <x-field label="Phase">
+    <input type="text" class="ui-input" name="phase" id="field-1" placeholder="Add Phase" required>
+</x-field>
 
-                                            <div class="col-sm-5">
-                                                <input type="text" class="form-control" name="phase" id="field-1" placeholder="Add Phase" required>
-                                            </div>
-                                        </div>
+                                        <x-field label="PLot No">
+    <input type="text" class="ui-input" name="project_name" id="field-1" placeholder="Add Name" required>
+</x-field>
 
-                                        <div class="form-group">
-                                            <label for="field-1" class="col-sm-3 control-label">PLot No</label>
+                                        <x-field label="Sector">
+    <input type="text" class="ui-input" name="sector" id="sector" placeholder="Add Sector" required>
+</x-field>
 
-                                            <div class="col-sm-5">
-                                                <input type="text" class="form-control" name="project_name" id="field-1" placeholder="Add Name" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="field-1" class="col-sm-3 control-label">Sector</label>
-
-                                            <div class="col-sm-5">
-                                                <input type="text" class="form-control" name="sector" id="sector" placeholder="Add Sector" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="field-1" class="col-sm-3 control-label">Total Fee</label>
-
-                                            <div class="col-sm-5">
-                                                <input type="number" class="form-control" name="price" id="price" placeholder="Add Fee" required>
-                                            </div>
-                                        </div>
+                                        <x-field label="Total Fee">
+    <input type="number" class="ui-input" name="price" id="price" placeholder="Add Fee" required>
+</x-field>
 
 
 
 
 
-                                        <div class="form-group">
-                                            <div class="col-sm-offset-3 col-sm-5">
-                                                <button type="submit" class="btn btn-default">Add</button>
-                                            </div>
-                                        </div>
+                                        <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-secondary">Add</button>
+</div>
                                     </form>
 
                                 </div>
@@ -84,13 +58,13 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
+                
+            
 
 
 
 
-        </div>
+        
 @endsection
 
 @push('scripts')

@@ -1,68 +1,27 @@
 @extends('layouts.admin')
 
-@push('styles')
-<style>
-    #show_user td {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
-
-    #show_user th {
-        border: 1px solid #A9A9A9;
-        /* Change 'black' to your desired border color */
-        font-family: 'Your Modern Font', sans-serif;
-        /* Replace 'Your Modern Font' with your desired modern font */
-        font-size: 16px;
-        /* Adjust the font size as needed */
-    }
-
-
-
-
-    .action {
-        width: 10% !important;
-    }
-</style>
-@endpush
+@section('breadcrumbs')
+    <span>Settings</span>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Manage</span>
+@endsection
 
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Set Restiction</strong>
-                </li>
-            </ol>
-
-            <h2>Set Restiction</h2>
-            <br />
+<x-page-header title="Set Restriction"
+               subtitle="Control what each role is allowed to reach." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
-
-                     
+            <div class="ui-card" data-collapsed="0">
 
                             <!--Start A_category -->
                        
-                                <div class="panel-body">
+                                <div class="ui-card-body">
 
-                                    <form role="form" class="form-horizontal" id="material_add"
+                                    <form role="form" id="material_add"
                                         action="{{ url('admin_setting/save_setting') }}">
 
-                                        <div class="form-group">
-                                                <label class="col-sm-3 control-label">Civil Setting</label>
-                                        <div class="col-sm-5">
-                                                    <select class="form-control" id="civil" name="civil">
+                                        <x-field label="Civil Setting">
+    <select class="ui-select" id="civil" name="civil">
                                                     <option> Select Material</option>
                                                        
                                                         
@@ -70,12 +29,9 @@
                                                         <option value="0">Instant</option>
                                            
                                                     </select>
-                                                </div>
-                                        </div>
-                                          <div class="form-group">
-                                                <label class="col-sm-3 control-label">Finish Setting</label>
-                                                <div class="col-sm-5">
-                                                    <select class="form-control" id="finish" name="finish">
+</x-field>
+                                          <x-field label="Finish Setting">
+    <select class="ui-select" id="finish" name="finish">
                                                     <option> Select Material</option>
                                                        
                                                         
@@ -83,22 +39,18 @@
                                                         <option value="0">Instant</option>
                                            
                                                     </select>
-                                                </div>
-                                          </div>
+</x-field>
 
 
-                                        <div class="form-group">
-                                            <div class="col-sm-offset-3 col-sm-5">
-                                                <button type="submit" class="btn btn-default">Set</button>
-                                            </div>
-                                        </div>
+                                        <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-secondary">Set</button>
+</div>
                                     </form>
 
                                 </div>
 
-
-
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
+</div>
 @endsection
 
 @push('scripts')

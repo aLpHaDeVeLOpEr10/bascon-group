@@ -1,29 +1,21 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+    <span>Money Management</span>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Show Expense</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
-
-                <li class="active">
-
-                    <strong>Show Expense</strong>
-                </li>
-            </ol>
-
-            <h2>Show Expense</h2>
-            <br />
+<x-page-header title="Expenses"
+               subtitle="Recorded expenses and miscellaneous costs." />
 
 
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0" style="padding: 0px 20px;">
+            <div class="ui-card" data-collapsed="0" style="padding: 0px 20px;">
                         <div>
 
                             <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" role="tablist">
+                            <ul class="ui-tabs" role="tablist">
                                 <li role="presentation" class="active"><a href="#A_category" aria-controls="home" role="tab" data-toggle="tab">Show Expense</a></li>
                                 <li role="presentation"><a href="#B_category" id="payment_recieved" aria-controls="profile" role="tab" data-toggle="tab">Show Miscellaneous Credit</a></li>
 
@@ -32,11 +24,10 @@
 
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="A_category">
-                                <table id="show_expense" width="100%" style="white-space: nowrap;" class="table ">
+                                <table id="show_expense" width="100%" style="white-space: nowrap;" class="ui-table">
                                     <thead>
 
-                                        <tr style="background-color: aliceblue;">
-                                            </th>
+                                        <tr>
                                             <th>Sr No</th>
                                             <th>Date</th>
                                             <th>Ammount</th>
@@ -47,15 +38,21 @@
                                         </tr>
                                     </thead>
                                 </table>
-                                <div style="margin-top:25px; padding-bottom:15px;"><span style="font-size: 14px; font-weight: bold;">Total Amount: </span> <span style="font-size: 14px;">{{ $total_price }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 14px; font-weight: bold;">Total Expense: </span> <span style="font-size: 14px;"> {{ $expense_total }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 14px; font-weight: bold;">Remainig Total: </span> <span style="font-size: 14px;"> {{ $total_remaining }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br><br><span style="margin-top:10px ;font-size: 14px; font-weight: bold;">Amount recieved by Hussnian: </span> <span style="font-size: 14px;"> {{ $hussnain_total }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 14px; font-weight: bold;">Amount recieved by Basharat: </span> <span style="font-size: 14px;"> {{ $basharat_total }}</span></div>
+                                {{-- Five figures, so five pills. They used to be one line separated by runs of &nbsp;. --}}
+                                <div class="ui-total mt-6 mb-4">
+                                    <h4>Total Amount: @money($total_price)</h4>
+                                    <h4>Total Expense: @money($expense_total)</h4>
+                                    <h4>Remainig Total: @money($total_remaining)</h4>
+                                    <h4>Amount recieved by Hussnian: @money($hussnain_total)</h4>
+                                    <h4>Amount recieved by Basharat: @money($basharat_total)</h4>
+                                </div>
 
                             </div>
                             <div role="tabpanel" class="tab-pane" id="B_category">
-                                <table id="show_expense1" width="100%" style="white-space: nowrap;" class="table ">
+                                <table id="show_expense1" width="100%" style="white-space: nowrap;" class="ui-table">
                                     <thead>
 
-                                        <tr style="background-color: aliceblue;">
-                                            </th>
+                                        <tr>
                                             <th>Sr No</th>
                                             <th>Date</th>
                                             <th>Detail</th>
@@ -70,34 +67,32 @@
                         </div>
                     </div>
 
-                </div>
+                
 
-            </div>
-        </div>
-
-
+            
+        
 
 
-    </div>
 
-    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+
+    
+
+    <div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update Expense</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h2 class="modal-title" id="updateModalLabel">Update Expense</h2>
+                    <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                 </div>
                 <div class="modal-body">
                     <!-- Update form goes here -->
                     <form id="updateForm">
 
-                        <div class="form-group">
-                            <label for="field-1" class="col-sm-12 control-label">Select </label>
+                        <div class="ui-row">
+                            <label for="field-1" class="ui-label" >Select </label>
 
-                            <div class="col-sm-12">
-                                <select class="form-control" id="type" class="col-sm-12" name="type">
+                            <div class="min-w-0 flex-1">
+                                <select class="ui-select" id="type" name="type">
                                     <option>
                                         Select
                                     </option>
@@ -116,28 +111,21 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="field-1" class="col-sm-12  control-label">Amount</label>
-
-                            <div class="col-sm-12">
-                                <input type="text" class="form-control" name="ammount" id="field-1" placeholder="Add Amount" required>
-                                <input type="hidden" class="form-control" name="id" id="field-1" required>
-                            </div>
-                        </div>
+                        <x-field label="Amount">
+    <input type="text" class="ui-input" name="ammount" id="field-1" placeholder="Add Amount" required>
+                                <input type="hidden" class="ui-input" name="id" id="field-1" required>
+</x-field>
 
 
 
-                        <div class="form-group">
-                            <label for="field-2" class="col-sm-12 control-label">Date</label>
-                            <div class="col-sm-12">
-                                <input type="text" class="form-control" name="date" id="datepicker" placeholder="Select a date" required>
-                            </div>
-                        </div>
+                        <x-field label="Date">
+    <input type="text" class="ui-input" name="date" id="datepicker" placeholder="Select a date" required>
+</x-field>
 
 
                         <!-- Add other fields as needed -->
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary" style="margin-left:15px;margin-top:10px;">Update</button>
+                        <div class="ui-row">
+                            <button type="submit" class="ui-btn ui-btn-primary" style="margin-left:15px;margin-top:10px;">Update</button>
                         </div>
                     </form>
                 </div>
@@ -150,51 +138,38 @@
 
 
 
-    <div class="modal fade" id="updateModal1" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal" id="updateModal1" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update Miscellaneous</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h2 class="modal-title" id="updateModalLabel">Update Miscellaneous</h2>
+                    <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                 </div>
                 <div class="modal-body">
                     <!-- Update form goes here -->
                     <form id="updateForm1">
 
 
-                        <div class="form-group">
-                            <label for="field-1" class="col-sm-3 control-label">Detail </label>
+                        <x-field label="Detail">
+    <input type="text" class="ui-input" name="detail" id="detail" placeholder="Add Detail" required>
+</x-field>
 
-                            <div class="col-sm-12">
-                                <input type="text" class="form-control" name="detail" id="detail" placeholder="Add Detail" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="field-1" class="col-sm-12  control-label">Amount</label>
-
-                            <div class="col-sm-12">
-                            <input type="text" class="form-control" name="Amount" id="Amount" placeholder="Add Amount" required>
-                                <input type="hidden" class="form-control" name="id1" id="id1" required>
-                            </div>
-                        </div>
+                        <x-field label="Amount">
+    <input type="text" class="ui-input" name="Amount" id="Amount" placeholder="Add Amount" required>
+                                <input type="hidden" class="ui-input" name="id1" id="id1" required>
+</x-field>
 
 
 
-                        <div class="form-group">
-                            <label for="field-2" class="col-sm-12 control-label">Date</label>
-                            <div class="col-sm-12">
-                            <input type="text" class="form-control" name="Selected_date" id="datepicker1" placeholder="Select a date" required>
-                            </div>
-                        </div>
+                        <x-field label="Date">
+    <input type="text" class="ui-input" name="Selected_date" id="datepicker1" placeholder="Select a date" required>
+</x-field>
 
 
                         <!-- Add other fields as needed -->
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary" style="margin-left:15px;margin-top:10px;">Update</button>
-                        </div>
+                        <div class="mb-4 space-y-1.5">
+    <button type="submit" class="ui-btn ui-btn-primary" style="margin-left:15px;margin-top:10px;">Update</button>
+</div>
                     </form>
                 </div>
             </div>
@@ -240,17 +215,17 @@
                         "data": null,
                         "render": function(data, type, row) {
                             // 'data' parameter contains the row data
-                            return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                                '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="expensedelete(' + data.id + ')"></i>';
+                            return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="expensedelete(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                         }
                     }
                 ],
-                dom: 'lBfrtip',
+                dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                 buttons: [{
                         extend: 'print',
                         text: 'Print Record',
-                        className: 'btn btn-secondary',
+                        className: 'dt-button',
                         customize: function(win) {
                             // Add custom content to the print view
                             $(win.document.body).prepend('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;"><img src="{{ asset('assets/images/water_mak.jpeg') }}"  style="width:500px;" /></div>');
@@ -262,7 +237,7 @@
                     {
                         extend: 'excel',
                         text: 'Download Excel',
-                        className: 'btn btn-primary',
+                        className: 'dt-button',
                         filename: 'data_export'
                     }
                 ],
@@ -302,17 +277,17 @@
                         "data": null,
                         "render": function(data, type, row) {
                             // 'data' parameter contains the row data
-                            return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal1(' + data.id + ')"></i>&nbsp' +
-                                '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteUser(' + data.id + ')"></i>';
+                            return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal1(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                                '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteUser(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
 
                         }
                     }
                 ],
-                dom: 'lBfrtip',
+                dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                 buttons: [{
                         extend: 'print',
                         text: 'Print Record',
-                        className: 'btn btn-secondary',
+                        className: 'dt-button',
                         customize: function(win) {
                             // Add custom content to the print view
                             $(win.document.body).prepend('<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;"><img src="{{ asset('assets/images/water_mak.jpeg') }}"  style="width:500px;" /></div>');
@@ -324,7 +299,7 @@
                     {
                         extend: 'excel',
                         text: 'Download Excel',
-                        className: 'btn btn-primary',
+                        className: 'dt-button',
                         filename: 'data_export'
                     }
                 ],

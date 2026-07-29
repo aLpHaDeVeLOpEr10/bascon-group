@@ -1,92 +1,60 @@
 @extends('layouts.admin')
 
+@section('title', 'Add Construction Site · BASCON GROUP')
+
+@section('breadcrumbs')
+    <a href="{{ url('admin_setting/show_con_site') }}">Project Management</a>
+    <span data-crumb-sep>/</span>
+    <span data-crumb-current>Add site</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3" >
-                                <li>
-                        <a href="index.html"><i class="fa-home"></i>Home</a>
-                    </li>
-                            
-                        <li class="active">
-        
-                                    <strong>Add Construction site</strong>
-                            </li>
-                            </ol>
-                    
-        <h2>Add Construction site</h2>
-        <br />
-        
-        
-        <div class="row">
-            <div class="col-md-12">
-                
-                <div class="panel panel-primary" data-collapsed="0">
-    
-                    
-                    <div class="panel-body">
-                  
-                        <form role="form" class="form-horizontal" id="site_con_add" action="{{ url('admin_setting/save_con_site') }}">
-            
-                            <div class="form-group">
-                                <label for="field-1" class="col-sm-3 control-label">Phase</label>
-                                
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" name="phase"id="field-1" placeholder="Add Phase" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="field-1" class="col-sm-3 control-label">PLot No</label>
-                                
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" name="project_name" id="field-1" placeholder="Add Name" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="field-1" class="col-sm-3 control-label">Sector</label>
-                                
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" name="sector" id="sector" placeholder="Add Sector" required>
-                                </div>
-                            </div>
+<x-page-header title="Add Construction Site"
+               subtitle="Register a plot and set the management and architect fees for it." />
 
-                            <div class="form-group">
-                                <label for="field-1" class="col-sm-3 control-label">Management fee</label>
-                                
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" name="price" id="price" placeholder="Add Fee" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="field-1" class="col-sm-3 control-label">Architect fee</label>
-                                
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" name="architect_fee" id="architect_fee" placeholder="Add Fee">
-                                </div>
-                            </div>
-                            
-                            
-                    
-                
-                            
-                            <div class="form-group">
-                                <div class="col-sm-offset-3 col-sm-5">
-                                    <button type="submit" class="btn btn-default">Add</button>
-                                </div>
-                            </div>
-                        </form>
-                        
-                    </div>
-                
-                </div>
-            
-            </div>
+<x-card title="Site details">
+    {{-- Field names, ids and the action URL are unchanged — the submit handler
+         below still serialises this form and POSTs it exactly as before. --}}
+    <form role="form" id="site_con_add" action="{{ url('admin_setting/save_con_site') }}">
+
+        <x-field label="Phase">
+    <input type="text" class="ui-input" name="phase" id="field-phase"
+                       placeholder="e.g. Phase 5" required>
+</x-field>
+
+        <x-field label="Plot No">
+    <input type="text" class="ui-input" name="project_name" id="field-plot"
+                       placeholder="e.g. 412-A" required>
+</x-field>
+
+        <x-field label="Sector">
+    <input type="text" class="ui-input" name="sector" id="sector"
+                       placeholder="e.g. G-13" required>
+</x-field>
+
+        <x-field label="Management fee">
+    <input type="text" class="ui-input" name="price" id="price"
+                       placeholder="Add fee" required>
+</x-field>
+
+        <x-field label="Architect fee">
+    <input type="text" class="ui-input" name="architect_fee" id="architect_fee"
+                       placeholder="Add fee">
+                <span class="ui-hint">Optional.</span>
+</x-field>
+
+        <div class="ui-form-actions">
+            <button type="submit" class="ui-btn ui-btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 5v14" /><path d="M5 12h14" />
+                </svg>
+                Add site
+            </button>
+            <a href="{{ url('admin_setting/show_con_site') }}" class="ui-btn ui-btn-secondary">Cancel</a>
         </div>
-
-
-
-    
-</div>
+    </form>
+</x-card>
 @endsection
 
 @push('scripts')

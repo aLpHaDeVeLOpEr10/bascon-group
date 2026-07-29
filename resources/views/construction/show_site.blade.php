@@ -1,112 +1,87 @@
 @extends('layouts.app')
 
+@section('title', 'Sites · BASCON GROUP')
+
+@section('breadcrumbs')
+    <span data-crumb-current>Sites</span>
+@endsection
+
 @section('content')
-<ol class="breadcrumb bc-3">
-                <li>
-                    <a href="index.html"><i class="fa-home"></i>Home</a>
-                </li>
+<x-page-header title="Sites"
+               subtitle="Open a site to record its materials, labour and payments.">
+    <x-slot:actions>
+        <a href="{{ url('construction/add_site') }}" class="ui-btn ui-btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14" /><path d="M5 12h14" />
+            </svg>
+            Add site
+        </a>
+    </x-slot:actions>
+</x-page-header>
 
-                <li class="active">
+<x-card flush>
+    {{-- Table id and column order are unchanged; the DataTable below binds to
+         them. A stray </th> in the original header row is dropped. --}}
+    <table id="show_site" width="100%" style="white-space: nowrap;" class="ui-table">
+        <thead>
+            <tr>
+                <th>Sr No</th>
+                <th>Plot No.</th>
+                <th>Sector</th>
+                <th>Phase</th>
+                <th class="w-px whitespace-nowrap text-right">Action</th>
+            </tr>
+        </thead>
+    </table>
+</x-card>
 
-                    <strong>Show site</strong>
-                </li>
-            </ol>
-
-            <h2>Show site</h2>
-            <br />
-
-
-            <div class="row">
-                <div class="col-md-12">
-
-                    <div class="panel panel-primary" data-collapsed="0">
-
-
-                        <div class="panel-body">
-                            <table id="show_site" width="100%" style="white-space: nowrap;" class="table ">
-                                <thead>
-
-                                <tr style="background-color: aliceblue;">
-                                        </th>
-                                        <th>Sr No</th>
-                                        <th>Plot No.</th>
-                                        <th>Sector</th>
-                                        <th>Phase</th>
-                                        <th>Action</th>
-
-
-
-
-                                    </tr>
-                                </thead>
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
+<div class="modal" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="updateModalLabel">Update site</h2>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
             </div>
 
+            <div class="modal-body">
+                {{-- Field names and the form id are unchanged; the prefill and
+                     submit handlers below rely on them. --}}
+                <form id="updateForm">
 
+                    <div class="mb-4 space-y-1.5">
+    <label for="update-phase" class="ui-label">Phase</label>
+                        <input type="text" class="ui-input" name="phase" id="update-phase"
+                               placeholder="Phase" required>
+</div>
 
+                    <div class="mb-4 space-y-1.5">
+    <label for="update-plot" class="ui-label">Plot No</label>
+                        <input type="text" class="ui-input" name="project_name" id="update-plot"
+                               placeholder="Plot No" required>
 
-        </div>
+                        <input type="hidden" name="id">
+</div>
 
-        <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update User</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <!-- Update form goes here -->
-                    <form id="updateForm">
+                    <div class="mb-4 space-y-1.5">
+    <label for="sector" class="ui-label">Sector</label>
+                        <input type="text" class="ui-input" name="sector" id="sector"
+                               placeholder="Sector" required>
+</div>
 
-                        <div class="form-group">
-                            <label for="field-1">Phase</label>
-
-
-                            <input type="text" class="form-control" name="phase" id="field-1" placeholder="Phase" required>
-
-                        </div>
-
-                        <div class="form-group">
-                            <label for="field-1">Plot No</label>
-
-                            <input type="text" class="form-control" name="project_name" id="field-1" placeholder="Plot No" required>
-
-                            <input type="hidden" class="form-control" name="id" id="field-1" placeholder="Username" required>
-
-                        </div>
-
-
-
-                        <div class="form-group">
-                            <label for="field-1">Sector</label>
-
-
-                            <input type="text" class="form-control" name="sector" id="sector" placeholder="Sector" required>
-
-                        </div>
-                        
-
-
-                        <!-- Add other fields as needed -->
-
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </form>
-                </div>
+                    <div class="ui-form-actions is-end">
+                        <button type="button" class="ui-btn ui-btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="ui-btn ui-btn-primary">Update</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+{{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
     $(document).ready(function () {
         var oAllLinksTable = $('#show_site').DataTable({
@@ -132,8 +107,8 @@
                 "data": null,
                 "render": function (data, type, row) {
                     // 'data' parameter contains the row data
-                    return '<i title="Edit" class="fas fa-edit btn btn-primary" onclick="openUpdateModal(' + data.id + ')"></i>&nbsp' +
-                            '<i title="Delete" class="fas fa-trash-alt btn btn-danger" onclick="deleteUser(' + data.id + ')"></i>';
+                    return '<button type="button" title="Edit" aria-label="Edit" class="ui-icon-action" onclick="openUpdateModal(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>' +
+                            '<button type="button" title="Delete" aria-label="Delete" class="ui-icon-action is-danger" onclick="deleteUser(' + data.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>';
          
                 }
             }
@@ -142,7 +117,11 @@
             "createdRow": function (row, data, dataIndex) {
                 // Set the ID for each row
                 $(row).attr("id", 'tr_' + data.id);
-                
+
+                // Clicking anywhere in the row opens the site, except on the
+                // action buttons and the plot-number link, which ui.js skips.
+                $(row).attr("data-row-href", "{{ url('construction/show_details') }}/" + data.id);
+
                 // Set the content for the first cell (Sr No)
                 $('td:eq(0)', row).html(dataIndex + 1);
             }

@@ -1,3 +1,7 @@
+{{--
+    Back-office shell. Mirrors layouts/app.blade.php but uses the admin guard
+    for the display name and the admin logout route.
+--}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,25 +9,30 @@
     @include('partials.head')
 </head>
 
-<body class="page-body page-fade gray">
+<body class="min-h-screen bg-canvas">
 
-    <div class="page-container">
+    <a href="#main-content"
+       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100
+              focus:rounded-xl focus:bg-surface focus:px-4 focus:py-2.5 focus:text-[13px]
+              focus:font-semibold focus:shadow-pop">
+        Skip to main content
+    </a>
 
-        @include('partials.admin_sidebar')
+    @include('partials.admin_sidebar')
 
-        <div class="main-content">
+    <div class="app-shell flex min-h-screen flex-col">
 
-            @include('partials.topbar', [
-                'logoutUrl' => url('admin/logout'),
-                'displayName' => auth('admin')->user()->Name ?? '',
-            ])
+        @include('partials.topbar', [
+            'logoutUrl' => url('admin/logout'),
+            'displayName' => auth('admin')->user()->Name ?? '',
+        ])
 
+        <main id="main-content" tabindex="-1" class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
             @yield('content')
-
-            @include('partials.scripts')
-
-        </div>
+        </main>
     </div>
+
+    @include('partials.scripts')
 
 </body>
 

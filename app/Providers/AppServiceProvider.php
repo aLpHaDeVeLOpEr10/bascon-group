@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Auth\LegacyHashUserProvider;
 use App\Services\RollupService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,5 +30,10 @@ class AppServiceProvider extends ServiceProvider
             return (new LegacyHashUserProvider($app['hash'], $config['model']))
                 ->setLegacyPlaintext((bool) ($config['legacy_plaintext'] ?? false));
         });
+
+        // @money($value) — sugar over the money() helper in app/Support, which
+        // is where the format itself is defined. Both spellings work in a
+        // view; the directive reads better inline, the function composes.
+        Blade::directive('money', fn ($expression) => "<?php echo e(money($expression)); ?>");
     }
 }
