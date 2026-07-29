@@ -303,6 +303,12 @@ function currentTheme() {
 }
 
 function initTheme() {
+    // Pages that opt out (the sign-in screens) keep the light palette no
+    // matter what is stored. Returning before the storage listener is bound
+    // matters as much as the rest: without it, toggling the theme in another
+    // tab would repaint a locked page behind the user's back.
+    if (doc.documentElement.hasAttribute('data-theme-lock')) return;
+
     applyTheme(currentTheme());
 
     $$('[data-theme-toggle]').forEach((btn) =>

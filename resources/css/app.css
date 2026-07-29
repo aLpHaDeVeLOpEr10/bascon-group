@@ -109,16 +109,69 @@
     --color-neutral-950: #ffffff;
 
     /* Brand tints are backgrounds in light mode; in dark they have to sit on
-       a dark sheet, so the low end is darkened and the mid end brightened. */
+       a dark sheet, so the low end is darkened and the mid end brightened.
+
+       The deep end inverts outright. 800 and 900 are only ever used as text on
+       one of those tints — the totals pill, the success alert, the selection
+       highlight — so left alone they would paint dark violet on dark violet.
+       Nothing in the app uses them as a fill; that was checked, and it is what
+       makes this safe. */
     --color-brand-50:  #1c1533;
     --color-brand-100: #241a45;
     --color-brand-600: #7c4dff;
     --color-brand-700: #9678ff;
+    --color-brand-800: #c9baff;
+    --color-brand-900: #e4dcff;
 
     --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px -12px rgb(0 0 0 / 0.7);
     --shadow-pop:   0 8px 32px -8px rgb(0 0 0 / 0.7), 0 2px 8px -2px rgb(0 0 0 / 0.5);
 
     color-scheme: dark;
+}
+
+/* ------------------------------------------------------------ table wash */
+
+/*  The same violet / cyan / amber mixture as the page background, packaged for
+    use inside a card.
+
+    It goes on the parts of a table that frame the data — the header row, the
+    toolbar and footer strips, the totals row, the hover state — and never
+    behind the cells themselves. A gradient under a column of figures makes the
+    same number look like two different shades at the top and bottom of the
+    page, which is precisely the thing a table exists to prevent.
+
+    Kept as variables rather than repeated because six rules use them and they
+    have to shift together when the palette does. */
+:root {
+    --wash-strip: linear-gradient(100deg,
+        rgb(124 77 255 / 0.10) 0%,
+        rgb(34 211 238 / 0.09) 48%,
+        rgb(251 146 60 / 0.09) 100%);
+
+    --wash-hover: linear-gradient(100deg,
+        rgb(124 77 255 / 0.09) 0%,
+        rgb(34 211 238 / 0.07) 100%);
+
+    /* The totals pill: stronger, because it is meant to be the thing your eye
+       lands on when the table finishes loading. */
+    --wash-total: linear-gradient(100deg,
+        rgb(124 77 255 / 0.16) 0%,
+        rgb(34 211 238 / 0.13) 100%);
+}
+
+.dark {
+    --wash-strip: linear-gradient(100deg,
+        rgb(124 77 255 / 0.20) 0%,
+        rgb(34 211 238 / 0.12) 48%,
+        rgb(244 114 182 / 0.12) 100%);
+
+    --wash-hover: linear-gradient(100deg,
+        rgb(124 77 255 / 0.16) 0%,
+        rgb(34 211 238 / 0.10) 100%);
+
+    --wash-total: linear-gradient(100deg,
+        rgb(124 77 255 / 0.30) 0%,
+        rgb(34 211 238 / 0.20) 100%);
 }
 
 /* ------------------------------------------------------------------- base */
@@ -131,6 +184,62 @@
         font-size: 13.5px;
         line-height: 1.55;
         font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    /*
+        Page wash.
+
+        A flat sheet behind a page of white cards reads as unfinished, so the
+        canvas carries three wide, very low-opacity colour blooms — violet from
+        the brand ramp, a cool cyan and a warm amber — which mix where they
+        overlap and give the corners of the screen a tint that changes as the
+        window resizes. Over that sits a barely-there grid, which is what stops
+        the empty right-hand side of a short table from looking like a void.
+
+        Deliberate constraints:
+
+          - it is a fixed pseudo-element rather than a background-attachment on
+            <body>, which scrolls smoothly on iOS where fixed attachment
+            visibly stutters, and which costs nothing to switch off;
+          - z-index -1 keeps it behind every card, and pointer-events: none
+            keeps it out of the way of selection and clicks;
+          - the blooms are sized in vw/vh so they scale with the viewport
+            instead of tiling on a wide monitor;
+          - nothing here animates. A moving background behind data people are
+            reading all day is a novelty that wears out in an afternoon.
+
+        Alphas are the whole design. Much above these and text contrast on the
+        canvas starts to drift between the top and bottom of the page.
+    */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+
+        background-image:
+            radial-gradient(60vw 55vh at 8% -8%,   rgb(124 77 255 / 0.28), transparent 62%),
+            radial-gradient(55vw 50vh at 98% 2%,   rgb(34 211 238 / 0.22), transparent 58%),
+            radial-gradient(65vw 55vh at 78% 102%, rgb(251 146 60 / 0.17), transparent 60%),
+            radial-gradient(50vw 45vh at 22% 108%, rgb(124 77 255 / 0.17), transparent 60%),
+            linear-gradient(rgb(9 9 11 / 0.022) 1px, transparent 1px),
+            linear-gradient(90deg, rgb(9 9 11 / 0.022) 1px, transparent 1px);
+        background-size: auto, auto, auto, auto, 34px 34px, 34px 34px;
+    }
+
+    /* Dark mode gets the same composition at a different weight: the blooms
+       have to be stronger to register against near-black, and the grid flips
+       to a light rule. */
+    .dark body::before {
+        background-image:
+            radial-gradient(60vw 55vh at 8% -8%,   rgb(124 77 255 / 0.26), transparent 62%),
+            radial-gradient(55vw 50vh at 98% 2%,   rgb(34 211 238 / 0.14), transparent 58%),
+            radial-gradient(65vw 55vh at 78% 102%, rgb(244 114 182 / 0.12), transparent 60%),
+            radial-gradient(50vw 45vh at 22% 108%, rgb(99 102 241 / 0.16), transparent 60%),
+            linear-gradient(rgb(255 255 255 / 0.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgb(255 255 255 / 0.028) 1px, transparent 1px);
+        background-size: auto, auto, auto, auto, 34px 34px, 34px 34px;
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -375,16 +484,23 @@
         @apply inline-flex! items-center gap-2 m-0! rounded-full
                border border-brand-100 bg-brand-50 px-4 py-2
                text-[13.5px]! font-semibold text-brand-800! tabular-nums;
+        background-image: var(--wash-total);
     }
 
     /* -------------------------------------------------------------- cards */
 
     .ui-card          { @apply bg-surface rounded-2xl border border-neutral-200/80; }
-    .ui-card-header   { @apply flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4 border-b border-neutral-100; }
+    .ui-card-header   {
+        @apply flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4 border-b border-neutral-100 rounded-t-2xl;
+        background-image: var(--wash-strip);
+    }
     .ui-card-title    { @apply flex-1 min-w-0 m-0 text-[14px] font-semibold text-neutral-900; }
     .ui-card-subtitle { @apply w-full m-0 text-xs text-neutral-500; }
     .ui-card-body     { @apply p-5; }
-    .ui-card-footer   { @apply flex flex-wrap items-center gap-2.5 px-5 py-4 border-t border-neutral-100 bg-neutral-50/60 rounded-b-2xl; }
+    .ui-card-footer   {
+        @apply flex flex-wrap items-center gap-2.5 px-5 py-4 border-t border-neutral-100 bg-neutral-50/60 rounded-b-2xl;
+        background-image: var(--wash-strip);
+    }
 
     /* ------------------------------------------------------------- badges */
 
@@ -418,16 +534,21 @@
     .ui-table-wrap { @apply w-full overflow-x-auto; }
     .ui-table      { @apply w-full border-separate border-spacing-0 text-[13px]; }
 
+    /* The wash goes on the ROW, not the cells. A linear-gradient painted on
+       each <th> restarts at every cell boundary, which turns one sweep across
+       the table into a row of repeating stripes. */
+    .ui-table thead tr { background-image: var(--wash-strip); }
     .ui-table thead th {
         @apply px-5 py-3 text-left align-middle whitespace-nowrap
-               bg-neutral-50/95 backdrop-blur-sm border-b border-neutral-200
+               bg-transparent border-b border-neutral-200
                text-[11px] font-semibold uppercase tracking-[0.06em] text-neutral-500;
     }
     .ui-table tbody td { @apply px-5 py-3.5 align-middle border-b border-neutral-100 text-neutral-700; }
     .ui-table tbody tr:last-child td { @apply border-b-0; }
     .ui-table tbody tr { @apply transition-colors duration-100; }
-    .ui-table tbody tr:hover td { @apply bg-neutral-50/70; }
-    .ui-table tfoot td { @apply px-5 py-3.5 bg-neutral-50 border-t border-neutral-200 font-semibold text-neutral-900; }
+    .ui-table tbody tr:hover { background-image: var(--wash-hover); }
+    .ui-table tfoot tr { background-image: var(--wash-strip); }
+    .ui-table tfoot td { @apply px-5 py-3.5 bg-transparent border-t border-neutral-200 font-semibold text-neutral-900; }
 
     .ui-num { @apply tabular-nums; }
 
@@ -561,9 +682,12 @@
        Only the state-driven bits live here — collapsed rail and mobile drawer.
        Everything static about the shell is utilities in the templates. */
 
+    /* The panel is translucent so the page wash reads behind the navigation
+       rather than stopping at its edge — otherwise the colour only ever shows
+       in the gutters and the sidebar looks pasted on. */
     .app-sidebar {
         @apply fixed inset-y-0 left-0 z-50 flex w-[268px] flex-col
-               bg-surface border-r border-line
+               bg-surface/75 backdrop-blur-xl border-r border-line
                -translate-x-full transition-[transform,width] duration-300
                lg:translate-x-0;
         transition-timing-function: var(--ease-smooth);
@@ -581,8 +705,9 @@
         overflow-x: clip;
     }
 
-    /* Mobile drawer */
-    body.sidebar-open .app-sidebar { @apply translate-x-0 shadow-pop; }
+    /* Mobile drawer. Opaque here on purpose: over the dimming scrim, a
+       translucent panel shows the darkened page through the navigation. */
+    body.sidebar-open .app-sidebar { @apply translate-x-0 bg-surface shadow-pop; }
     .app-backdrop {
         @apply fixed inset-0 z-40 backdrop-blur-[2px]
                invisible opacity-0 transition-[opacity,visibility] duration-200 lg:hidden;
@@ -899,16 +1024,22 @@
 
     table.dataTable { @apply w-full! m-0! border-separate! border-spacing-0 text-[13px]; border: 0; }
 
+    /* On the row, not the cells — see the note on .ui-table thead above. The
+       sorting rules further down set `background-image: none !important` on
+       individual <th>s to kill DataTables' own sort arrows, which is exactly
+       why the wash cannot live on the cell. */
+    table.dataTable thead tr { background-image: var(--wash-strip); }
     table.dataTable thead th {
         @apply px-5 py-3 text-left align-middle whitespace-nowrap
-               bg-neutral-50/95 backdrop-blur-sm border-b border-neutral-200
+               bg-transparent border-b border-neutral-200
                text-[11px] font-semibold uppercase tracking-[0.06em] text-neutral-500;
     }
     table.dataTable tbody td { @apply px-5 py-3.5 align-middle border-b border-neutral-100 text-neutral-700; }
     table.dataTable tbody tr { @apply transition-colors duration-100; }
-    table.dataTable tbody tr:hover > td { @apply bg-neutral-50/70; }
+    table.dataTable tbody tr:hover { background-image: var(--wash-hover); }
+    table.dataTable tfoot tr { background-image: var(--wash-strip); }
     table.dataTable tfoot td,
-    table.dataTable tfoot th { @apply px-5 py-3.5 bg-neutral-50 border-t border-neutral-200 font-semibold text-neutral-900; }
+    table.dataTable tfoot th { @apply px-5 py-3.5 bg-transparent border-t border-neutral-200 font-semibold text-neutral-900; }
 
     table.dataTable thead th.sorting,
     table.dataTable thead th.sorting_asc,
@@ -983,10 +1114,12 @@
     .dataTables_wrapper .ui-dt-bar {
         @apply flex flex-wrap items-center gap-x-3 gap-y-2
                px-4 py-3 border-b border-line bg-elevated;
+        background-image: var(--wash-strip);
     }
     .dataTables_wrapper .ui-dt-foot {
         @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-1
-               px-3 py-2 border-t border-line;
+               px-3 py-2 border-t border-line bg-elevated;
+        background-image: var(--wash-strip);
     }
 
     .dataTables_wrapper .ui-dt-bar > div,
@@ -1141,5 +1274,6 @@
     aside, header, .ui-btn, .dt-buttons,
     .dataTables_filter, .dataTables_length, .dataTables_paginate { display: none !important; }
     body { background: #fff; }
+    body::before { display: none !important; }   /* the page wash is screen-only */
     .ui-card { border: 1px solid #ddd; break-inside: avoid; }
 }

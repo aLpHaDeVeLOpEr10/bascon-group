@@ -20,7 +20,10 @@
     "Welcome Back!" heading.
 --}}
 <!DOCTYPE html>
-<html lang="en">
+{{-- Locked to the light theme: this page is a designed split panel with its own
+     navy brand side, not a surface the theme tokens are meant to repaint. The
+     lock is read by the inline bootstrap in partials/head and by ui.js. --}}
+<html lang="en" data-theme-lock="light">
 
 <head>
     @include('partials.head')

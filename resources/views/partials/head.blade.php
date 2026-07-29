@@ -44,12 +44,19 @@
 
     Light is the default; dark is only applied when the user has chosen it.
     The switch itself lives in the topbar and is wired up in resources/js/ui.js.
+
+    A page can opt out entirely with data-theme-lock on its <html> element —
+    the sign-in screens do, being designed compositions rather than surfaces
+    the theme tokens should repaint. ui.js honours the same attribute.
 --}}
 <script>
     (function () {
+        var root = document.documentElement;
+        if (root.hasAttribute('data-theme-lock')) return;
+
         try {
             if (localStorage.getItem('bascon:theme') === 'dark') {
-                document.documentElement.classList.add('dark');
+                root.classList.add('dark');
                 var meta = document.querySelector('meta[name="theme-color"]');
                 if (meta) meta.setAttribute('content', '#0a0a0d');
             }
