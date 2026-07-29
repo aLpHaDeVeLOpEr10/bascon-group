@@ -309,9 +309,12 @@ class AdminSettingController extends Controller
     // -------------------------------------------------------------- creates
 
     /**
-     * Admin_setting.php:26-66. The legacy version stored md5($password) AND a
-     * plaintext copy in `for_admin`. This stores bcrypt and never writes the
-     * plaintext column.
+     * Admin_setting.php:26-66.
+     *
+     * The hash is upgraded from md5 to bcrypt, but the plaintext copy in
+     * `for_admin` is still written: the Show Users page displays it in its
+     * Password column, and leaving it unwritten would make that column show
+     * stale or blank values for every account created from here on.
      */
     public function saveUser(Request $request)
     {
@@ -332,6 +335,8 @@ class AdminSettingController extends Controller
             'email' => $data['email'],
             'address' => $data['address'] ?? '',
             'password' => Hash::make($data['password']),
+            // plaintext copy shown in the Show Users "Password" column
+            'for_admin' => $data['password'],
             'contact' => $data['contact'] ?? '',
         ];
 
@@ -584,9 +589,12 @@ class AdminSettingController extends Controller
         $attributes = collect($data)->only('name', 'username', 'email', 'address', 'contact', 'role')->all();
 
         // Legacy only touched the password when a new one was typed
-        // (Admin_setting.php:205). Same here, but stored as bcrypt.
+        // (Admin_setting.php:205). Same here, but stored as bcrypt — and the
+        // plaintext copy is refreshed alongside it so the Show Users Password
+        // column keeps matching the real password.
         if (! empty($data['password'])) {
             $attributes['password'] = Hash::make($data['password']);
+            $attributes['for_admin'] = $data['password'];
         }
 
         return $this->ok($user->update($attributes));
