@@ -10,7 +10,6 @@
     $lede = $lede ?? 'Track civil and finishing materials, labour instalments and client payments across all your projects.';
     $points = $points ?? [];
 @endphp
-
 <div class="auth-brand-side" aria-hidden="true">
     <span class="auth-orb auth-orb-1"></span>
     <span class="auth-orb auth-orb-2"></span>
