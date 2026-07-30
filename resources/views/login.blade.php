@@ -35,7 +35,6 @@
     <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
         <div class="grid w-full max-w-6xl rounded-[28px] bg-white shadow-[0_24px_70px_-20px_rgb(15_23_42/0.28)]
                     lg:grid-cols-2">
-
             {{-- ------------------------------------------------- form side --}}
             <div class="flex flex-col justify-center px-7 py-10 sm:px-12 sm:py-14">
 
