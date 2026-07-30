@@ -33,7 +33,6 @@
 <body class="min-h-screen bg-[#eef1fb]">
 
     <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
-
         <div class="grid w-full max-w-6xl rounded-[28px] bg-white shadow-[0_24px_70px_-20px_rgb(15_23_42/0.28)]
                     lg:grid-cols-2">
 
