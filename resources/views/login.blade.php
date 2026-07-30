@@ -167,7 +167,6 @@
                     © {{ date('Y') }} BASCON Group. All rights reserved.
                 </p>
             </div>
-
             {{-- ------------------------------------------------ brand side --}}
             {{-- Hidden below lg so the form gets the full width on mobile. --}}
             <div class="hidden rounded-[0px_28px_28px_0px] bg-[#0b1120] px-11 py-12 text-white lg:flex lg:flex-col lg:justify-center">
