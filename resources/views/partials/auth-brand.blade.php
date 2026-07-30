@@ -42,6 +42,5 @@
             </ul>
         @endif
     </div>
-
     <div class="auth-brand-foot">© {{ date('Y') }} BASCON Group. All rights reserved.</div>
 </div>
