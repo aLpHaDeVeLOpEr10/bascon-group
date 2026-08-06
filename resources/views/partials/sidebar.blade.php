@@ -20,12 +20,10 @@
 --}}
 @php
     $user = auth('web')->user();
-
     $navName = trim((string) ($user->name ?? '')) ?: 'Account';
     $navRole = trim((string) ($user->role ?? '')) ?: 'Worker';
     $navInitials = collect(preg_split('/\s+/', $navName))
         ->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('');
-
     // request()->is() takes a path pattern; links are built with url(), so the
     // pattern is just the path portion of each one.
     $is = fn (string $path) => request()->is($path);
