@@ -146,7 +146,6 @@
             </div>
         @endif
     </nav>
-
     {{-- Account card. Collapsed to just the avatar on the icon rail. --}}
     <div class="shrink-0 border-t border-line p-3">
         <div class="ui-user-card">
