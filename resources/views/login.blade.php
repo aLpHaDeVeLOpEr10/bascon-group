@@ -122,10 +122,10 @@
                             </svg>
                         </button>
                     </div>
-
                     {{-- Options --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
                         <label class="flex cursor-pointer select-none items-center gap-3 text-[15px] text-neutral-600">
+
                             <input type="checkbox" id="remember-me"
                                    class="ui-check size-5 rounded-[4px] border-2 border-neutral-400
                                           hover:border-neutral-500
