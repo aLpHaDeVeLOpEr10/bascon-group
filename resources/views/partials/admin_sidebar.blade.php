@@ -7,7 +7,6 @@
 --}}
 @php
     $is = fn (string $path) => request()->is($path);
-
     $navName = trim((string) (auth('admin')->user()->Name ?? '')) ?: 'Administrator';
     $navInitials = collect(preg_split('/\s+/', $navName))
         ->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('');
