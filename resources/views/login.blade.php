@@ -151,7 +151,6 @@
                             have your password changed.
                         </span>
                     </div>
-
                     <button type="submit"
                             class="ui-btn mt-3 h-[62px] w-full rounded-xl bg-[#0b1120] text-[17px] font-bold
                                    text-white shadow-sm transition hover:bg-[#161f34]
