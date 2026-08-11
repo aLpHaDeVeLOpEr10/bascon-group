@@ -225,7 +225,6 @@
     <script>
         // "Keep me signed in" prefills the email on the next visit. See the
         // note at the top of this file: the password is never stored and the
-        // session lifetime is unchanged.
         (function () {
             var KEY = 'bascon:remembered-email';
             var form = document.getElementById('login-form');
