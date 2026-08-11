@@ -155,7 +155,6 @@
                 <p class="truncate text-[13px] font-semibold text-neutral-900">{{ $navName }}</p>
                 <p class="truncate text-[11.5px] text-neutral-500">{{ $navRole }}</p>
             </div>
-
             <a href="{{ url('Login/logout') }}"
                data-sidebar-hide
                aria-label="Log out"
