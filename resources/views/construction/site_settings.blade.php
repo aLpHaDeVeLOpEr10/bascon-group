@@ -471,11 +471,11 @@
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
+                                                        <th>Source</th>
                                                         <th>Type</th>
                                                         <th>Detail</th>
                                                         <th>Quantity</th>
                                                         <th>Price</th>
-                                                        <th>Source</th>
 
                                                     </tr>
                                                 </thead>
@@ -1907,6 +1907,10 @@
 
                 AllAccountTable = $('#Total_entries_account').DataTable({
                     data: sites_data,
+                    // Source sits right after the date: this table pools Civil,
+                    // Finishing, Labour and Miscellaneous rows together, so
+                    // which ledger a row came from belongs up front rather than
+                    // stranded in the last column.
                     columns: [{
                             data: 'serial_number',
                             title: '#'
@@ -1914,6 +1918,10 @@
                         {
                             data: 'date',
                             title: 'Date'
+                        },
+                        {
+                            data: 'source',
+                            title: 'Source'
                         },
                         {
                             data: 'type',
@@ -1930,10 +1938,6 @@
                         {
                             data: 'price',
                             title: 'Price'
-                        },
-                         {
-                            data: 'source',
-                            title: 'source'
                         },
                     ],
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
