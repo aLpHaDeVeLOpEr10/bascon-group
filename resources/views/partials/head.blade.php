@@ -64,6 +64,35 @@
     })();
 </script>
 
+{{--
+    Sidebar rail bootstrap, and it has to be inline here for the same reason
+    the theme does.
+
+    The collapsed rail used to be restored in ui.js at DOMContentLoaded. By
+    then the sidebar had already painted at its full 268px, and .app-sidebar
+    carries a 300ms width transition — so every single page load visibly
+    ANIMATED the navigation shut. It read as the sidebar closing itself each
+    time you opened a page.
+
+    Applied before first paint the panel simply renders at its final width,
+    and a transition never starts. The class goes on <html> rather than <body>
+    because <body> does not exist yet at this point in the parse; the
+    stylesheet's rules are written as descendant selectors so either host
+    element works, and ui.js toggles the same one.
+
+    Not gated on data-theme-lock: the sign-in screens have no sidebar, so
+    there is nothing here for that attribute to protect.
+--}}
+<script>
+    (function () {
+        try {
+            if (localStorage.getItem('bascon:sidebar-collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) { /* private mode — start expanded */ }
+    })();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"

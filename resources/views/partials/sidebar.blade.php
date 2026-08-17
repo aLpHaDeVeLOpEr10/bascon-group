@@ -46,30 +46,26 @@
 <aside class="app-sidebar" id="app-sidebar" aria-label="Main navigation">
 
     {{--
-        The logo is the same artwork in both themes, but it ships as two
-        colourways: assets/images/bg.png is the WHITE one — which is why it
-        vanished against a light sidebar — and logo_trans.png is the black one.
-        Both originals are 18080x5840 and ~850KB, so the sidebar uses
-        downscaled 560px copies (logo-dark / logo-light, ~15KB each) generated
-        from them; the originals are untouched.
+        The logo ships as two colourways: assets/images/bg.png is the WHITE one
+        and logo_trans.png is the black one. Both originals are 18080x5840 and
+        ~850KB, so the sidebar uses downscaled 560px copies (logo-dark /
+        logo-light, ~15KB each) generated from them; the originals are
+        untouched.
 
-        Swapping them in CSS rather than JavaScript keeps the correct one
-        painted on the very first frame.
+        Only the white artwork is used now. The pair used to be swapped on the
+        theme, but the panel is dark in both themes, so the black one has
+        nothing to sit on — see the .app-sidebar token block in app.css.
     --}}
     <div class="app-logo shrink-0 border-b border-line p-4">
         <a href="{{ url('/') }}" class="block rounded-lg" aria-label="BASCON Group — home">
             <span data-logo-full class="block">
-                <img src="{{ asset('assets/images/logo-light.png') }}" alt="BASCON Group"
-                     width="560" height="181" class="h-auto w-full object-contain dark:hidden" />
-                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" aria-hidden="true"
-                     width="560" height="181" class="hidden h-auto w-full object-contain dark:block" />
+                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="BASCON Group"
+                     width="560" height="181" class="h-auto w-full object-contain" />
             </span>
 
             <span data-logo-mark class="hidden">
-                <img src="{{ asset('assets/images/logo-mark-light.png') }}" alt="BASCON Group"
-                     width="240" height="68" class="h-auto w-full object-contain dark:hidden" />
-                <img src="{{ asset('assets/images/logo-mark-dark.png') }}" alt="" aria-hidden="true"
-                     width="240" height="68" class="hidden h-auto w-full object-contain dark:block" />
+                <img src="{{ asset('assets/images/logo-mark-dark.png') }}" alt="BASCON Group"
+                     width="240" height="68" class="h-auto w-full object-contain" />
             </span>
         </a>
     </div>

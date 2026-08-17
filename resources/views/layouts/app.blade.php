@@ -10,7 +10,21 @@
     because a few legacy views still emit unbalanced closing tags of their own.
 --}}
 <!DOCTYPE html>
-<html lang="en">
+{{--
+    A page opts into opening with the navigation rail collapsed by declaring
+    @section('collapse-sidebar'). Sections are collected while the child view
+    renders, which happens before this layout is evaluated, so the flag is
+    already known here.
+
+    Rendered as a class on <html> rather than left to JavaScript for the same
+    reason partials/head restores the stored preference inline: applied after
+    first paint, the sidebar's 300ms width transition would play and the panel
+    would visibly animate shut on arrival.
+
+    This is a starting position, not a lock. The topbar toggle still works on
+    these pages, and it writes the usual preference.
+--}}
+<html lang="en" @class(['sidebar-collapsed' => View::hasSection('collapse-sidebar')])>
 
 <head>
     @include('partials.head')

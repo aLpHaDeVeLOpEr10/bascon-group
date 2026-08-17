@@ -86,6 +86,11 @@ class ConstructionController extends Controller
 
     // ---------------------------------------------------------------- reads
 
+    /**
+     * Every site, running and closed. The Sites screen fetches this once and
+     * splits it between its two tabs client-side, so switching tabs costs no
+     * request — `site_status` is in the payload for that.
+     */
     public function getSite()
     {
         return response()->json(['data' => Site::all()]);
@@ -303,7 +308,11 @@ class ConstructionController extends Controller
             'phase' => ['required', 'string', 'max:200'],
             'project_name' => ['required', 'string', 'max:200'],
             'sector' => ['nullable', 'string', 'max:200'],
+            'site_status' => ['nullable', 'in:'.implode(',', Site::statuses())],
         ]);
+
+        // A new site is always being built unless the form says otherwise.
+        $data['site_status'] = $data['site_status'] ?? Site::STATUS_RUNNING;
 
         return $this->ok(Site::create($data)->exists);
     }
@@ -435,11 +444,20 @@ class ConstructionController extends Controller
             'phase' => ['nullable', 'string', 'max:200'],
             'project_name' => ['nullable', 'string', 'max:200'],
             'sector' => ['nullable', 'string', 'max:200'],
+            'site_status' => ['nullable', 'in:'.implode(',', Site::statuses())],
         ]);
 
         $site = Site::findOrFail($data['id']);
 
-        return $this->ok($site->update($request->only('phase', 'project_name', 'sector')));
+        $fields = $request->only('phase', 'project_name', 'sector');
+
+        // Absent from the payload means "leave it alone" — only the Sites
+        // screen's modal sends it.
+        if (isset($data['site_status'])) {
+            $fields['site_status'] = $data['site_status'];
+        }
+
+        return $this->ok($site->update($fields));
     }
 
     /** Rollups are refreshed after an edit — the legacy code did not do this,

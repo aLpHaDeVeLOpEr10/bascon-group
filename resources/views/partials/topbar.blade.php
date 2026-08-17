@@ -69,6 +69,7 @@
             aria-controls="app-sidebar"
             aria-expanded="true"
             aria-label="Collapse sidebar"
+            title="Collapse sidebar"
             class="ui-icon-btn hidden lg:inline-flex">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

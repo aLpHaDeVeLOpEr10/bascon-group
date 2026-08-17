@@ -55,22 +55,18 @@
 
 <aside class="app-sidebar" id="app-sidebar" aria-label="Admin navigation">
 
-    {{-- Two colourways of one logo, swapped in CSS. See partials/sidebar. --}}
+    {{-- The light-on-dark colourway only; the panel is dark in both themes. --}}
     <div class="app-logo shrink-0 border-b border-line p-4">
         <a href="{{ url('admin_setting/add_user') }}" class="block rounded-lg"
            aria-label="BASCON Group — admin home">
             <span data-logo-full class="block">
-                <img src="{{ asset('assets/images/logo-light.png') }}" alt="BASCON Group"
-                     width="560" height="181" class="h-auto w-full object-contain dark:hidden" />
-                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" aria-hidden="true"
-                     width="560" height="181" class="hidden h-auto w-full object-contain dark:block" />
+                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="BASCON Group"
+                     width="560" height="181" class="h-auto w-full object-contain" />
             </span>
 
             <span data-logo-mark class="hidden">
-                <img src="{{ asset('assets/images/logo-mark-light.png') }}" alt="BASCON Group"
-                     width="240" height="68" class="h-auto w-full object-contain dark:hidden" />
-                <img src="{{ asset('assets/images/logo-mark-dark.png') }}" alt="" aria-hidden="true"
-                     width="240" height="68" class="hidden h-auto w-full object-contain dark:block" />
+                <img src="{{ asset('assets/images/logo-mark-dark.png') }}" alt="BASCON Group"
+                     width="240" height="68" class="h-auto w-full object-contain" />
             </span>
         </a>
     </div>

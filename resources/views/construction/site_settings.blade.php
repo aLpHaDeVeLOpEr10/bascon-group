@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+{{-- Opens with the navigation collapsed to the icon rail. This screen is the
+     densest in the app — five tab groups over eleven tables — so it starts
+     with the full width available and the navigation out of the way. --}}
+@section('collapse-sidebar', 'yes')
+
 @section('breadcrumbs')
     <a href="{{ url('construction/show_site') }}">Construction</a>
     <span data-crumb-sep>/</span>
