@@ -834,6 +834,9 @@
 
 @push('scripts')
 <script>
+    /** Sits at the head of every printed sheet, above the table. */
+    var PRINT_MASTHEAD = 'BASCON GROUP';
+
     /**
      * Heading for a print button.
      *
@@ -877,7 +880,19 @@
      * text rather than markup.
      */
     function printHeadingRow(win, heading) {
-        var thead = $(win.document.body).find('table thead');
+        var body = $(win.document.body);
+
+        // DataTables writes its `title` into the print window twice: once as
+        // the document <title> and again as an <h1> above the table. Only the
+        // first is wanted — the browser draws the document title along the top
+        // of every printed page, so the <h1> was a second BASCON GROUP sitting
+        // directly on the table's own heading.
+        //
+        // Dropped here rather than by blanking `title`, which would take the
+        // document <title> with it and leave the top of the page empty.
+        body.find('h1').remove();
+
+        var thead = body.find('table thead');
         if (!thead.length) return;
 
         var columns = thead.find('tr').first().children().length || 1;
@@ -885,7 +900,8 @@
         thead.prepend(
             '<tr class="print-heading">' +
             '<th colspan="' + columns + '" ' +
-            'style="font-size:20px;font-weight:700;text-align:center;padding:10px 6px;">' +
+            'style="font-size:20px;font-weight:700;text-align:center;padding:10px 6px;' +
+            'text-transform:none;letter-spacing:normal;color:#18181b;">' +
             $('<div/>').text(heading).html() +
             '</th></tr>'
         );
@@ -1031,10 +1047,10 @@
                             // left the screen. Each now names its own table,
                             // the material it is filtered to where there is
                             // one, and the site it belongs to.
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1193,10 +1209,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1459,10 +1475,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1556,10 +1572,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1654,10 +1670,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1757,10 +1773,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1897,10 +1913,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2002,10 +2018,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2080,10 +2096,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2174,10 +2190,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            // The heading is drawn into the table itself by printHeadingRow in
-                            // customize below. Empty rather than absent: left unset, DataTables
-                            // falls back to the document title and prints an <h1> above it.
-                            title: '',
+                            // Masthead only. Which table this is, which material it is
+                            // filtered to and which site it belongs to all go in the
+                            // table's own first row instead — printHeadingRow, below.
+                            title: PRINT_MASTHEAD,
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -3001,10 +3017,10 @@
             dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
-                    // The heading is drawn into the table itself by printHeadingRow in
-                    // customize below. Empty rather than absent: left unset, DataTables
-                    // falls back to the document title and prints an <h1> above it.
-                    title: '',
+                    // Masthead only. Which table this is, which material it is
+                    // filtered to and which site it belongs to all go in the
+                    // table's own first row instead — printHeadingRow, below.
+                    title: PRINT_MASTHEAD,
                     text: 'Print Record',
                     className: 'dt-button',
                     exportOptions: {
