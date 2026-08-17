@@ -965,6 +965,14 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            // Every print button on this page used to head its
+                            // output "BASCON GROUP" — DataTables falls back to
+                            // the document title when none is given, so eleven
+                            // different tables printed under the same heading
+                            // and a printout could not be identified once it
+                            // left the screen. Each now names its own table and
+                            // the site it belongs to.
+                            title: 'Civil Materials — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1128,6 +1136,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Finishing Materials — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1395,6 +1404,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Labour Instalments — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1493,6 +1503,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Civil Total — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1592,6 +1603,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Miscellaneous — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1696,6 +1708,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Returned Payments — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1837,6 +1850,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Finishing Total — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -1943,6 +1957,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'All Entries — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2015,6 +2030,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Miscellaneous Total — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2110,6 +2126,7 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
+                            title: 'Labour Total — ' + @json($name),
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2938,6 +2955,7 @@
             dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
+                    title: 'Grand Total — ' + @json($name),
                     text: 'Print Record',
                     className: 'dt-button',
                     exportOptions: {
