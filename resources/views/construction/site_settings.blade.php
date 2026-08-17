@@ -833,6 +833,64 @@
 @endsection
 
 @push('scripts')
+<script>
+    /**
+     * Heading for a print button.
+     *
+     * Three of the tables on this page show one material at a time, chosen
+     * from a <select> above them, so the table name alone does not say what
+     * was printed — every category prints as "Civil Materials". `selectId`
+     * names the dropdown to fold into the heading.
+     *
+     * DataTables evaluates a `title` function at export time rather than at
+     * init, which is what makes this work: the heading follows whatever is
+     * selected when the button is pressed.
+     *
+     * Those <option>s carry no value attribute, so val() hands back the label
+     * text — including the leading space the option markup opens with, hence
+     * the trim. The first option is a placeholder rather than a material, and
+     * is left out of the heading entirely.
+     */
+    function printHeading(tableName, selectId, placeholder) {
+        var site = @json($name);
+
+        if (!selectId) return tableName + ' — ' + site;
+
+        var picked = ($('#' + selectId).val() || '').trim();
+        var suffix = picked && picked !== placeholder ? ' (' + picked + ')' : '';
+
+        return tableName + suffix + ' — ' + site;
+    }
+
+    /**
+     * Puts that heading in the printed table's own first row instead of in an
+     * <h1> above it, so the sheet reads as one block and the heading travels
+     * with the table if the rows spill onto a second page.
+     *
+     * Every print button used to build this row by hand with a hardcoded
+     * colspan — "5" on one table, "6" on nine others, several with a stray
+     * empty <th> tacked on to cover the miscount. The count is taken from the
+     * header row itself here, before the heading is prepended to it, so it
+     * cannot drift when a column is added or moved.
+     *
+     * The heading carries a site name from the database, so it goes in as
+     * text rather than markup.
+     */
+    function printHeadingRow(win, heading) {
+        var thead = $(win.document.body).find('table thead');
+        if (!thead.length) return;
+
+        var columns = thead.find('tr').first().children().length || 1;
+
+        thead.prepend(
+            '<tr class="print-heading">' +
+            '<th colspan="' + columns + '" ' +
+            'style="font-size:20px;font-weight:700;text-align:center;padding:10px 6px;">' +
+            $('<div/>').text(heading).html() +
+            '</th></tr>'
+        );
+    }
+</script>
 {{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
     $(function() {
@@ -970,9 +1028,13 @@
                             // the document title when none is given, so eleven
                             // different tables printed under the same heading
                             // and a printout could not be identified once it
-                            // left the screen. Each now names its own table and
-                            // the site it belongs to.
-                            title: 'Civil Materials — ' + @json($name),
+                            // left the screen. Each now names its own table,
+                            // the material it is filtered to where there is
+                            // one, and the site it belongs to.
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -982,12 +1044,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert "Civil Material" heading in the table header (centered with colspan="5")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="5" style="text-align: center;">Civil Material</th>' +
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow); // Insert "Civil Material" heading in the table 
+                                printHeadingRow(win, printHeading('Civil Materials', 'category', 'Select Material'));
 
                                 // Append total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
@@ -1136,7 +1193,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Finishing Materials — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1151,12 +1211,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Finishing Materials</th><th></th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Finishing Materials', 'b_category', 'Select Material'));
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
@@ -1404,7 +1459,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Labour Instalments — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1419,12 +1477,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Labour Instalmennts</th><th></th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Labour Instalments', 'labour_value', 'Select'));
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
@@ -1503,7 +1556,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Civil Total — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1518,12 +1574,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Civil Total</th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Civil Total'));
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' + // totalQuantity is your variable for the total quantity
@@ -1603,7 +1654,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Miscellaneous — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1618,12 +1672,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Miscellaneous</th><th></th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Miscellaneous'));
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
@@ -1708,7 +1757,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Returned Payments — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             customize: function(win) {
@@ -1723,12 +1775,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Return</th><th></th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Returned Payments'));
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
@@ -1850,7 +1897,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Finishing Total — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -1868,12 +1918,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Finish Total</th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Finishing Total'));
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="5"></td>' + // totalQuantity is your variable for the total quantity
@@ -1957,13 +2002,18 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'All Entries — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
                                 columns: ':visible'
                             },
                             customize: function(win) {
+                                printHeadingRow(win, printHeading('All Entries'));
+
                                 $(win.document.body).prepend(
                                     '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;">' +
                                     '<img src="{{ asset('assets/images/water_mak.jpeg') }}" style="width:500px;" />' +
@@ -2030,7 +2080,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Miscellaneous Total — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2048,12 +2101,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Miscellaneous Total</th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow);
+                                printHeadingRow(win, printHeading('Miscellaneous Total'));
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="3"></td>' + // totalQuantity is your variable for the total quantity
@@ -2126,7 +2174,10 @@
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
-                            title: 'Labour Total — ' + @json($name),
+                            // The heading is drawn into the table itself by printHeadingRow in
+                            // customize below. Empty rather than absent: left unset, DataTables
+                            // falls back to the document title and prints an <h1> above it.
+                            title: '',
                             text: 'Print Record',
                             className: 'dt-button',
                             exportOptions: {
@@ -2144,12 +2195,7 @@
                                 $(win.document.body).find('.total-row').remove();
 
                                 // Insert the heading row for the table (centered with colspan="6")
-                                const headingRow1 = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                                    '<th colspan="6" style="text-align: center;">Labour Total</th>' + // tableHeader is your variable for the header text
-                                    '</tr>';
-
-                                // Prepend the heading row to the table's thead
-                                $(win.document.body).find('table thead').prepend(headingRow1);
+                                printHeadingRow(win, printHeading('Labour Total'));
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
                                     '<td colspan="4"></td>' + // totalQuantity is your variable for the total quantity
@@ -2955,7 +3001,10 @@
             dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
             buttons: [{
                     extend: 'print',
-                    title: 'Grand Total — ' + @json($name),
+                    // The heading is drawn into the table itself by printHeadingRow in
+                    // customize below. Empty rather than absent: left unset, DataTables
+                    // falls back to the document title and prints an <h1> above it.
+                    title: '',
                     text: 'Print Record',
                     className: 'dt-button',
                     exportOptions: {
@@ -2969,10 +3018,7 @@
                             '</div>'
                         );
                         // Insert the heading row for the table (centered with colspan="6")
-                        const headingRows = '<tr style="font-size: 24px; font-weight: bold; text-align: center;">' +
-                            '<th colspan="6" style="text-align: center;">Grand Total</th>' + // tableHeader is your variable for the header text
-                            '</tr>';
-                        $(win.document.body).find('table thead').prepend(headingRows);
+                        printHeadingRow(win, printHeading('Grand Total'));
 
                     }
                 },
