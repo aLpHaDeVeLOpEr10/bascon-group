@@ -22,6 +22,16 @@ class Site extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
+    /** `site_status` values. Rows written by the legacy app carry neither and
+     *  are treated as running by the screens that read the column. */
+    public const STATUS_RUNNING = 'running';
+    public const STATUS_CLOSED = 'closed';
+
+    public static function statuses(): array
+    {
+        return [self::STATUS_RUNNING, self::STATUS_CLOSED];
+    }
+
     /**
      * The label the legacy app builds for a project, e.g. "307-W - Phase 08".
      * Mirrors Construction.php:443 and Admin_setting.php:638.

@@ -89,7 +89,19 @@
     The handful of places where an inverted ramp is wrong (a tooltip that is
     deliberately dark-on-light, the modal scrim) are corrected explicitly at
     the foot of this file. */
-.dark {
+
+/*  .app-sidebar is in this selector on purpose: the navigation panel is dark
+    in BOTH themes and does not follow the theme toggle. Re-pointing the tokens
+    on the panel itself is the whole implementation — every nav link, hairline,
+    heading, account card and active state inside it is drawn from these
+    variables, so they all resolve dark without a single per-component
+    override. In dark mode the panel simply redeclares what it inherits.
+
+    The one thing tokens cannot carry is the logo, which is two separate PNGs
+    rather than a colour; both sidebar partials pin it to the light-on-dark
+    artwork instead of swapping on the theme. */
+.dark,
+.app-sidebar {
     --color-canvas:   #0a0a0d;
     --color-surface:  #131318;
     --color-elevated: #1b1b21;
@@ -637,20 +649,27 @@
     /* Structural rules for the modal shim in ui.js. The markup keeps the
        Bootstrap class names and the data-dismiss attribute, so the ~15 views
        that call $('#x').modal('show') needed no editing at all. */
-    .modal          { @apply fixed inset-0 z-50 hidden overflow-y-auto overscroll-contain px-4 py-6 sm:py-10; }
-    .modal.is-open  { @apply block; }
+    /* Above .app-sidebar, which is itself z-50 and translucent — at z-40 the
+       scrim slid under it and the sidebar stayed sharp and undimmed while the
+       rest of the page blurred. */
+    .modal          { @apply fixed inset-0 z-[70] hidden overflow-y-auto overscroll-contain px-4 py-6 sm:py-10; }
+    /* items-start rather than items-center, with the auto margins doing the
+       centring on .modal-dialog below: auto margins collapse to 0 once the
+       dialog is taller than the viewport, so a long form stays scrollable to
+       its top instead of having it clipped above the scroll origin. */
+    .modal.is-open  { @apply flex items-start justify-center; }
 
     /* The scrim is a fixed dark wash in both themes — inverting it to a white
        veil would wash the page out rather than recede it. */
     .modal-backdrop {
-        @apply fixed inset-0 z-40 backdrop-blur-[3px] opacity-0
+        @apply fixed inset-0 z-[60] backdrop-blur-[10px] opacity-0
                transition-opacity duration-200;
-        background-color: rgb(9 9 11 / 0.45);
+        background-color: rgb(9 9 11 / 0.38);
     }
     .modal-backdrop.is-open { @apply opacity-100; }
 
     .modal-dialog {
-        @apply relative z-50 mx-auto w-full max-w-lg
+        @apply relative z-50 m-auto w-full max-w-lg
                opacity-0 translate-y-3 scale-[0.98]
                transition-[opacity,transform] duration-200;
         transition-timing-function: var(--ease-smooth);
@@ -664,6 +683,31 @@
     .modal-title   { @apply flex-1 min-w-0 m-0 text-[15px] font-semibold text-neutral-900; }
     .modal-body    { @apply p-5 max-h-[70vh] overflow-y-auto; }
     .modal-footer  { @apply flex items-center justify-end gap-2.5 px-5 py-4 border-t border-neutral-100 bg-neutral-50/60; }
+
+    /* Dialogs — the popups ui.js builds for the Swal replacement. Same shell
+       as the views' own modals, but centred content with an icon instead of a
+       header row, because they carry one message rather than a form. */
+    .ui-dialog .modal-dialog { @apply max-w-md; }
+    .ui-dialog-body   { @apply px-6 py-7 text-center; }
+    .ui-dialog-icon   { @apply inline-flex items-center justify-center size-14 rounded-full mb-4; }
+    .ui-dialog-icon > svg { @apply size-7; }
+    .ui-dialog-icon.is-success  { @apply bg-brand-50 text-brand-600; }
+    .ui-dialog-icon.is-error    { @apply bg-rose-50 text-rose-600; }
+    .ui-dialog-icon.is-warning  { @apply bg-amber-50 text-amber-600; }
+    .ui-dialog-icon.is-info     { @apply bg-sky-50 text-sky-600; }
+    .ui-dialog-icon.is-question { @apply bg-neutral-100 text-neutral-500; }
+    .ui-dialog-title  { @apply m-0 text-[17px] font-semibold text-neutral-900; }
+    .ui-dialog-text   { @apply mt-2 text-[13.5px] leading-relaxed text-neutral-500; }
+    .ui-dialog-title[hidden], .ui-dialog-text[hidden] { @apply hidden; }
+    .ui-dialog-actions { @apply mt-6 flex flex-wrap items-center justify-center gap-2.5; }
+    .ui-dialog-actions[hidden] { @apply hidden; }
+    .ui-dialog-spinner { @apply mt-6 flex items-center justify-center; }
+    .ui-dialog-spinner[hidden] { @apply hidden; }
+    .ui-dialog-spinner::after {
+        content: '';
+        @apply block size-8 rounded-full border-2 border-neutral-200 border-t-brand-600;
+        animation: ui-spin 0.6s linear infinite;
+    }
 
     .modal-close {
         @apply inline-flex items-center justify-center size-8 -mr-1.5 -mt-0.5 shrink-0
@@ -682,12 +726,15 @@
        Only the state-driven bits live here — collapsed rail and mobile drawer.
        Everything static about the shell is utilities in the templates. */
 
-    /* The panel is translucent so the page wash reads behind the navigation
-       rather than stopping at its edge — otherwise the colour only ever shows
-       in the gutters and the sidebar looks pasted on. */
+    /* Opaque, unlike the rest of the shell. The panel used to be a 75%
+       translucent sheet so the page wash carried through it, but it is dark in
+       both themes now (see the token block above) and in light mode a
+       translucent dark panel just lets the pale canvas bleed up through the
+       navigation and greys it out. Nothing shows through a colour this far
+       from its surroundings anyway, so the blur went with it. */
     .app-sidebar {
         @apply fixed inset-y-0 left-0 z-50 flex w-[268px] flex-col
-               bg-surface/75 backdrop-blur-xl border-r border-line
+               bg-surface border-r border-line
                -translate-x-full transition-[transform,width] duration-300
                lg:translate-x-0;
         transition-timing-function: var(--ease-smooth);
@@ -717,28 +764,34 @@
 
     /* Collapsed desktop rail */
     @media (min-width: 1024px) {
-        body.sidebar-collapsed .app-sidebar { @apply w-[76px]; }
-        body.sidebar-collapsed .app-shell   { @apply pl-[76px]; }
-        body.sidebar-collapsed .app-sidebar [data-nav-label],
-        body.sidebar-collapsed .app-sidebar .ui-nav-caret,
-        body.sidebar-collapsed .app-sidebar .ui-nav-sub,
-        body.sidebar-collapsed .app-sidebar [data-sidebar-hide] { @apply hidden; }
-        body.sidebar-collapsed .app-sidebar .ui-nav-link { @apply justify-center px-0; }
-        body.sidebar-collapsed .app-sidebar .ui-user-card { @apply justify-center p-2; }
+        .sidebar-collapsed .app-sidebar { @apply w-[76px]; }
+        .sidebar-collapsed .app-shell   { @apply pl-[76px]; }
+        .sidebar-collapsed .app-sidebar [data-nav-label],
+        .sidebar-collapsed .app-sidebar .ui-nav-caret,
+        .sidebar-collapsed .app-sidebar .ui-nav-sub,
+        .sidebar-collapsed .app-sidebar [data-sidebar-hide] { @apply hidden; }
+        .sidebar-collapsed .app-sidebar .ui-nav-link { @apply justify-center px-0; }
+
+        /* The nav's top spacing comes from the first .ui-nav-heading's pt-4,
+           and headings are [data-sidebar-hide], so on the rail the first icon
+           butts straight up against the logo divider. Put the same 16px back
+           on the scroller itself. */
+        .sidebar-collapsed .app-sidebar > nav { @apply pt-4; }
+        .sidebar-collapsed .app-sidebar .ui-user-card { @apply justify-center p-2; }
 
         /* The wordmark is 3:1, so on a 76px rail it would shrink to an
            unreadable smear. Swap in the roof device cropped out of the same
            artwork. Each pair keeps its own light/dark swap; these rules only
            choose which pair is on show. */
-        body.sidebar-collapsed .app-logo { @apply px-3; }
-        body.sidebar-collapsed .app-logo [data-logo-full] { @apply hidden; }
-        body.sidebar-collapsed .app-logo [data-logo-mark] { @apply block; }
-        body.sidebar-collapsed .app-sidebar .ui-nav-link.is-active::before,
-        body.sidebar-collapsed .app-sidebar .ui-nav-parent.has-active::before { @apply hidden; }
+        .sidebar-collapsed .app-logo { @apply px-3; }
+        .sidebar-collapsed .app-logo [data-logo-full] { @apply hidden; }
+        .sidebar-collapsed .app-logo [data-logo-mark] { @apply block; }
+        .sidebar-collapsed .app-sidebar .ui-nav-link.is-active::before,
+        .sidebar-collapsed .app-sidebar .ui-nav-parent.has-active::before { @apply hidden; }
 
         /* Tooltip for the icon rail. Deliberately inverted against the sheet in
            both themes, so it is exempt from the ramp flip. */
-        body.sidebar-collapsed .app-sidebar .ui-nav-link[data-tip]:hover::after {
+        .sidebar-collapsed .app-sidebar .ui-nav-link[data-tip]:hover::after {
             content: attr(data-tip);
             @apply absolute left-[calc(100%+10px)] top-1/2 z-60 -translate-y-1/2
                    whitespace-nowrap rounded-lg px-2.5 py-1.5
@@ -1144,24 +1197,6 @@
        scrolling on wide tables away with it. */
     .tab-pane .dataTables_wrapper { @apply rounded-xl border border-line; }
 
-    /* -------------------------------------------------------- SweetAlert2 */
-
-    .swal2-container { @apply backdrop-blur-[3px]; background: rgb(9 9 11 / 0.4) !important; }
-    .swal2-popup {
-        @apply rounded-2xl! p-6! font-sans! ring-1 ring-neutral-900/5;
-        box-shadow: var(--shadow-pop) !important;
-    }
-    .swal2-title { @apply text-lg! font-semibold! text-neutral-900! tracking-[-0.015em]; }
-    .swal2-html-container, .swal2-content { @apply text-[13.5px]! text-neutral-500!; }
-    .swal2-actions { @apply gap-2.5 mt-5!; }
-    .swal2-styled {
-        @apply h-10 px-4! rounded-xl! shadow-none! font-sans! text-[13px]! font-semibold!
-               transition-colors duration-150;
-    }
-    .swal2-styled.swal2-confirm { @apply bg-brand-600! text-white! hover:bg-brand-700!; }
-    .swal2-styled.swal2-cancel  { @apply bg-surface! text-neutral-800! ring-1 ring-neutral-200 hover:bg-neutral-50!; }
-    .swal2-icon { @apply mt-1! mb-4! mx-auto!; }
-
     /* -------------------------------------------------- jQuery UI datepicker */
 
     /* Every date field in the app is a jQuery UI datepicker. The widget's own
@@ -1236,8 +1271,8 @@
 
      - fills that are meant to stay dark in both themes (scrims, tooltips);
      - hard-coded hex values that no token reaches (the scrollbar);
-     - third-party CSS that paints its own white and would otherwise punch a
-       hole in the page (SweetAlert2).
+     - a utility on an element that a component rule needs to override, which
+       specificity alone cannot do across cascade layers.
 
    These rules are deliberately unlayered so they outrank the utilities they
    correct, regardless of specificity.
@@ -1254,14 +1289,36 @@
    they mean "this is a sheet". */
 .dark .bg-white { background-color: var(--color-surface); }
 
-/* SweetAlert2 ships its own white popup and light input styling. */
-.dark .swal2-popup { background: var(--color-surface) !important; }
-.dark .swal2-input,
-.dark .swal2-textarea,
-.dark .swal2-select {
-    background: var(--color-elevated) !important;
-    border-color: var(--color-line) !important;
-    color: var(--color-neutral-900) !important;
+/* The collapsed rail shows the avatar alone — 76px has no room for a second
+   control beside it, and the logout link was spilling past the panel edge.
+
+   This cannot live with the other .sidebar-collapsed rules up in the
+   components layer. The link carries the `inline-flex` utility, and utilities
+   are a LATER cascade layer than components, so a later layer wins outright no
+   matter how specific the component selector is. Unlayered here, it wins.
+
+   Logging out is still one click away: the topbar carries its own Logout
+   button on every page, and expanding the rail brings this one back. */
+@media (min-width: 1024px) {
+    .sidebar-collapsed .app-sidebar .ui-user-card [data-sidebar-hide] { display: none; }
+}
+
+/* The rail's hover tooltip sits at left:calc(100% + 10px) — deliberately
+   outside the panel. Its host is the <nav>, which is overflow-y-auto so it can
+   scroll a long menu, and CSS forces the other axis to `auto` whenever one
+   axis is not `visible`. So every hover pushed content past the right edge and
+   a horizontal scrollbar flicked in along the bottom of the sidebar.
+
+   Collapsed, that scroller has nothing to scroll: sub-menus and headings are
+   both hidden, leaving one 40px icon per group. Dropping overflow entirely is
+   safe there, and it is the only way the tooltip can escape — `clip` would
+   stop the scrollbar but take the tooltip with it.
+
+   Unlayered on purpose. overflow-y-auto is a utility, and utilities are a
+   later cascade layer than components, so a component rule cannot win here
+   however specific it is. Same reason as the rail's account card above. */
+@media (min-width: 1024px) {
+    .sidebar-collapsed .app-sidebar > nav { overflow: visible; }
 }
 
 /* Native date/time pickers render a black glyph on a dark field otherwise. */

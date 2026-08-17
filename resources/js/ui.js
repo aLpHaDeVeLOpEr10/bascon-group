@@ -74,7 +74,10 @@ const Modal = {
 
         const backdrop = this.backdrop();
         backdrop.style.display = 'block';
-        el.style.display = 'block';
+        // flex, not block: .modal.is-open centres its dialog with flexbox, and
+        // an inline display would win over the stylesheet and left the popup
+        // pinned to the top of the viewport.
+        el.style.display = 'flex';
         el.removeAttribute('aria-hidden');
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-modal', 'true');
@@ -97,7 +100,12 @@ const Modal = {
         if (!el) return;
 
         const index = this.openStack.indexOf(el);
+        if (index === -1 && !el.classList.contains('is-open')) return;
         if (index !== -1) this.openStack.splice(index, 1);
+
+        // Fired before the closing transition so a listener can settle its
+        // state immediately. Dialog uses it to resolve its promise.
+        el.dispatchEvent(new CustomEvent('ui:modal-hide', { bubbles: false }));
 
         el.classList.remove('is-open');
         el.setAttribute('aria-hidden', 'true');
@@ -205,15 +213,19 @@ function initDelegatedHandlers() {
             return;
         }
 
-        // Clicking the padding around .modal-dialog closes the modal.
+        // Clicking the padding around .modal-dialog closes the modal, unless
+        // it was opened as static (Swal's allowOutsideClick: false).
         const modal = e.target.closest('.modal');
-        if (modal && !e.target.closest('.modal-dialog')) Modal.hide(modal);
+        if (!modal || e.target.closest('.modal-dialog')) return;
+        if (modal.dataset.backdrop === 'static') return;
+        Modal.hide(modal);
     });
 
     on(doc, 'keydown', (e) => {
         if (e.key !== 'Escape') return;
         if (Modal.openStack.length) {
-            Modal.hideTop();
+            const top = Modal.openStack[Modal.openStack.length - 1];
+            if (top.dataset.backdrop !== 'static') Modal.hideTop();
             return;
         }
         closeAllMenus();
@@ -327,11 +339,26 @@ function initTheme() {
 
 const SIDEBAR_KEY = 'bascon:sidebar-collapsed';
 
+/**
+ * The toggle's glyph is swapped by CSS off .sidebar-collapsed; only the text
+ * that describes it has to be set here.
+ */
+function syncRailToggles(collapsed) {
+    const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+
+    $$('[data-sidebar-toggle]').forEach((btn) => {
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+    });
+}
+
 function setCollapsed(collapsed) {
-    doc.body.classList.toggle('sidebar-collapsed', collapsed);
+    // On <html>, not <body>: partials/head restores this before first paint,
+    // when <body> has not been parsed yet. Both have to agree on the host.
+    doc.documentElement.classList.toggle('sidebar-collapsed', collapsed);
     store.set(SIDEBAR_KEY, collapsed ? '1' : '0');
-    $$('[data-sidebar-toggle]').forEach((btn) =>
-        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true'));
+    syncRailToggles(collapsed);
 }
 
 function openDrawer() {
@@ -351,12 +378,22 @@ function closeDrawer() {
 }
 
 function initSidebar() {
-    if (store.get(SIDEBAR_KEY) === '1') doc.body.classList.add('sidebar-collapsed');
+    // partials/head has already done this pre-paint. Repeated here only so
+    // ui.js still behaves on a page that does not include that partial. Add
+    // only, never remove: a page can also start collapsed by rendering the
+    // class itself (@section('collapse-sidebar')), and that must not be undone
+    // by a stored preference of expanded.
+    if (store.get(SIDEBAR_KEY) === '1') doc.documentElement.classList.add('sidebar-collapsed');
+
+    // The toggle's labels are markup, so they do not know how the page actually
+    // started — a page can open collapsed on its own. Sync before anyone reads
+    // them. The glyph needs no help; CSS already has it right.
+    syncRailToggles(doc.documentElement.classList.contains('sidebar-collapsed'));
 
     $$('[data-sidebar-toggle]').forEach((btn) =>
         on(btn, 'click', (e) => {
             e.preventDefault();
-            setCollapsed(!doc.body.classList.contains('sidebar-collapsed'));
+            setCollapsed(!doc.documentElement.classList.contains('sidebar-collapsed'));
         }));
 
     $$('[data-sidebar-drawer]').forEach((btn) =>
@@ -379,7 +416,7 @@ function initSidebar() {
             if (!group) return;
 
             // There is nowhere to expand into on the collapsed desktop rail.
-            if (doc.body.classList.contains('sidebar-collapsed') && !isMobile()) {
+            if (doc.documentElement.classList.contains('sidebar-collapsed') && !isMobile()) {
                 setCollapsed(false);
             }
 
@@ -739,6 +776,203 @@ function toast(title, { text = '', type = 'success', duration = 4000 } = {}) {
     return el;
 }
 
+/* --------------------------------------------------------------- dialogs */
+
+/**
+ * Dialogs — the local replacement for SweetAlert2.
+ *
+ * SweetAlert2 was pulled from a CDN as a render-blocking classic script on
+ * every page, for 177 Swal.fire() calls spread across fourteen views. The
+ * round trip was the slowest thing about opening an edit modal: the popup
+ * could not paint until a third-party host answered.
+ *
+ * Rewriting those 177 call sites was not worth it, so `Swal` below is a
+ * drop-in for the part of the v10 API this app actually uses:
+ *
+ *     Swal.fire(options)            177 x  (30 of them positional)
+ *     Swal.close()                   30 x
+ *     Swal.showLoading()             15 x
+ *
+ * Three call sites in admin/add_civil use the older lowercase `swal({...})`
+ * with `button:` for the confirm label; both are aliased below.
+ *
+ * Options honoured: title, text, icon, confirmButtonText, cancelButtonText,
+ * showCancelButton, allowOutsideClick, width, onBeforeOpen / willOpen /
+ * didOpen. The promise resolves to an object carrying `isConfirmed`, which is
+ * the only field any call site reads.
+ *
+ * Deliberately ignored: confirmButtonColor and cancelButtonColor. They were
+ * raw hex passed to a library that had no design system; here the confirm
+ * button takes its emphasis from the icon instead, so a destructive confirm
+ * reads as destructive. The legacy values had it backwards anyway — every
+ * delete prompt in this app asked for confirmation on a blue button and
+ * offered a red Cancel.
+ *
+ * Popups are built on the same .modal markup as the views' own modals, so
+ * they share the backdrop, the open stack, the focus trap and Esc handling.
+ */
+
+const DIALOG_ICONS = {
+    success: '<path d="M20 6 9 17l-5-5"/>',
+    error: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    warning: '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    question: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9.3a3 3 0 0 1 5.8 1c0 2-2.9 3-2.9 3"/><path d="M12 17h.01"/>',
+};
+
+/** Icons whose confirm button should read as destructive. */
+const DIALOG_DANGER = new Set(['error', 'warning']);
+
+const DISMISSED = { isConfirmed: false, isDenied: false, isDismissed: true };
+
+const Dialog = {
+    /** { el, settle } for the popup on screen, or null. */
+    open: null,
+
+    fire(...params) {
+        // Swal.fire('Deleted!', 'The site is gone.', 'success')
+        const options = typeof params[0] === 'object' && params[0] !== null
+            ? params[0]
+            : { title: params[0], text: params[1], icon: params[2] };
+
+        // One popup at a time, as SweetAlert did.
+        this.close();
+
+        const {
+            title = '',
+            text = '',
+            icon = null,
+            showCancelButton = false,
+            confirmButtonText = options.button || 'OK',
+            cancelButtonText = 'Cancel',
+            allowOutsideClick = true,
+            width = null,
+        } = options;
+
+        const el = doc.createElement('div');
+        el.className = 'modal ui-dialog';
+        el.setAttribute('role', 'alertdialog');
+        el.setAttribute('aria-modal', 'true');
+        if (!allowOutsideClick) el.dataset.backdrop = 'static';
+
+        const iconKey = icon && DIALOG_ICONS[icon] ? icon : null;
+        const danger = DIALOG_DANGER.has(iconKey);
+
+        el.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="ui-dialog-body">
+                        ${iconKey ? `
+                            <span class="ui-dialog-icon is-${iconKey}" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                                     stroke-linecap="round" stroke-linejoin="round">${DIALOG_ICONS[iconKey]}</svg>
+                            </span>` : ''}
+                        <h2 class="ui-dialog-title"></h2>
+                        <p class="ui-dialog-text"></p>
+                        <div class="ui-dialog-spinner" hidden></div>
+                        <div class="ui-dialog-actions">
+                            ${showCancelButton
+                                ? '<button type="button" class="ui-btn ui-btn-secondary" data-dialog="cancel"></button>'
+                                : ''}
+                            <button type="button" class="ui-btn ${danger ? 'ui-btn-danger' : 'ui-btn-primary'}"
+                                    data-dialog="confirm"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        // textContent throughout — titles and messages are the only places a
+        // server string reaches these popups.
+        const titleEl = $1('.ui-dialog-title', el);
+        const textEl = $1('.ui-dialog-text', el);
+        titleEl.textContent = title || '';
+        titleEl.hidden = !title;
+        textEl.textContent = text || '';
+        textEl.hidden = !text;
+
+        $1('[data-dialog="confirm"]', el).textContent = confirmButtonText;
+        const cancelEl = $1('[data-dialog="cancel"]', el);
+        if (cancelEl) cancelEl.textContent = cancelButtonText;
+
+        if (width) {
+            $1('.modal-dialog', el).style.maxWidth =
+                typeof width === 'number' ? `${width}px` : width;
+        }
+
+        doc.body.appendChild(el);
+
+        let settle;
+        const promise = new Promise((resolve) => { settle = resolve; });
+        const entry = { el, settle };
+        this.open = entry;
+
+        const finish = (result) => {
+            if (this.open === entry) this.open = null;
+            entry.settle(result);
+            Modal.hide(el);
+            window.setTimeout(() => el.remove(), 260);
+        };
+
+        on(el, 'click', (e) => {
+            const button = e.target.closest('[data-dialog]');
+            if (!button) return;
+
+            finish(button.dataset.dialog === 'confirm'
+                ? { isConfirmed: true, isDenied: false, isDismissed: false, value: true }
+                : { ...DISMISSED, dismiss: 'cancel' });
+        });
+
+        // Esc and backdrop clicks go through Modal, which knows nothing about
+        // the promise — this is how the result still gets delivered.
+        on(el, 'ui:modal-hide', () => {
+            if (this.open !== entry) return;
+            this.open = null;
+            entry.settle({ ...DISMISSED, dismiss: 'backdrop' });
+            window.setTimeout(() => el.remove(), 260);
+        });
+
+        // v10 fired this with the popup built but not yet shown; the views use
+        // it to call showLoading() and kick off their request.
+        const willOpen = options.onBeforeOpen || options.willOpen;
+        if (typeof willOpen === 'function') willOpen(el);
+
+        Modal.show(el);
+
+        const didOpen = options.didOpen || options.onOpen;
+        if (typeof didOpen === 'function') didOpen(el);
+
+        return promise;
+    },
+
+    /** Swaps the buttons for a spinner on the popup that is up. */
+    showLoading() {
+        if (!this.open) return;
+        $1('.ui-dialog-actions', this.open.el).hidden = true;
+        $1('.ui-dialog-spinner', this.open.el).hidden = false;
+    },
+
+    hideLoading() {
+        if (!this.open) return;
+        $1('.ui-dialog-actions', this.open.el).hidden = false;
+        $1('.ui-dialog-spinner', this.open.el).hidden = true;
+    },
+
+    isVisible() {
+        return Boolean(this.open);
+    },
+
+    /** Dismisses the popup that is up. A no-op when there is none. */
+    close() {
+        if (!this.open) return;
+
+        const { el, settle } = this.open;
+        this.open = null;
+        settle({ ...DISMISSED, dismiss: 'close' });
+        Modal.hide(el);
+        window.setTimeout(() => el.remove(), 260);
+    },
+};
+
 /* -------------------------------------------------------- route progress */
 
 function initRouteProgress() {
@@ -900,9 +1134,10 @@ function init() {
     initDataTableMoney();
 }
 
-// The vendored libraries (jQuery, jQuery UI, DataTables, SweetAlert2) are
-// classic scripts, so they have already executed by the time this module runs.
-// Views bind their own code inside $(document).ready, which fires after this.
+// The vendored libraries (jQuery, jQuery UI, DataTables) are classic scripts,
+// so they have already executed by the time this module runs. Views bind their
+// own code inside $(document).ready, which fires after this — which is also
+// why assigning window.Swal below is early enough for every call site.
 if (doc.readyState === 'loading') on(doc, 'DOMContentLoaded', init);
 else init();
 
@@ -911,9 +1146,24 @@ else init();
 // has to be reachable by global name for them to call it.
 window.money = money;
 
+// Drop-in for the CDN SweetAlert2 the views were written against. Wrapped in
+// arrow functions rather than assigned as the object itself so `this` inside
+// the methods is Dialog no matter how a view calls them.
+window.Swal = {
+    fire: (...args) => Dialog.fire(...args),
+    close: () => Dialog.close(),
+    showLoading: () => Dialog.showLoading(),
+    hideLoading: () => Dialog.hideLoading(),
+    isVisible: () => Dialog.isVisible(),
+};
+
+// The lowercase alias the older call sites use.
+window.swal = (...args) => Dialog.fire(...args);
+
 window.BasconUI = {
     money,
     toast,
+    dialog: Dialog,
     modal: Modal,
     showTab,
     closeDrawer,

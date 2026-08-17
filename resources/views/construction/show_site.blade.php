@@ -20,6 +20,21 @@
     </x-slot:actions>
 </x-page-header>
 
+{{-- Running / Closed filters the one table that is already loaded, so these
+     are buttons rather than tab panes and switching them costs no request. --}}
+<div class="mb-5 flex flex-wrap items-center gap-2.5" id="site-status-tabs" role="tablist">
+    <button type="button" class="ui-btn ui-btn-lg ui-btn-primary" role="tab"
+            aria-selected="true" data-status="running">
+        Running sites
+        <span data-count></span>
+    </button>
+    <button type="button" class="ui-btn ui-btn-lg ui-btn-secondary" role="tab"
+            aria-selected="false" data-status="closed">
+        Closed sites
+        <span data-count></span>
+    </button>
+</div>
+
 <x-card flush>
     {{-- Table id and column order are unchanged; the DataTable below binds to
          them. A stray </th> in the original header row is dropped. --}}
@@ -69,6 +84,14 @@
                                placeholder="Sector" required>
 </div>
 
+                    <div class="mb-4 space-y-1.5">
+    <label for="update-status" class="ui-label">Site status</label>
+                        <select class="ui-select" name="site_status" id="update-status">
+                            <option value="running">Running site</option>
+                            <option value="closed">Closed site</option>
+                        </select>
+</div>
+
                     <div class="ui-form-actions is-end">
                         <button type="button" class="ui-btn ui-btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="ui-btn ui-btn-primary">Update</button>
@@ -83,6 +106,22 @@
 @push('scripts')
 {{-- SweetAlert2 is loaded once in partials/scripts; this duplicate tag is removed. --}}
 <script>
+    // The tab the table is currently showing. Every site is fetched once and
+    // both tabs are drawn from that one set, so switching is instant.
+    var siteStatus = 'running';
+
+    // Rows written by the legacy app have no site_status at all; those are
+    // running. Kept in one place so the filter and the counts agree.
+    function statusOf(row) {
+        return row.site_status === 'closed' ? 'closed' : 'running';
+    }
+
+    // Scoped to this table by id — ext.search is a global stack.
+    $.fn.dataTable.ext.search.push(function (settings, searchData, index, rowData) {
+        if (!settings.nTable || settings.nTable.id !== 'show_site') return true;
+        return statusOf(rowData) === siteStatus;
+    });
+
     $(document).ready(function () {
         var oAllLinksTable = $('#show_site').DataTable({
             "ajax": {
@@ -121,10 +160,50 @@
                 // Clicking anywhere in the row opens the site, except on the
                 // action buttons and the plot-number link, which ui.js skips.
                 $(row).attr("data-row-href", "{{ url('construction/show_details') }}/" + data.id);
+            },
+            // Sr No numbers the rows the tab is showing, not their position in
+            // the full set — otherwise the first Closed site could read "7".
+            // Has to run per draw now that the tabs filter client-side.
+            "drawCallback": function () {
+                this.api()
+                    .column(0, { search: 'applied', order: 'applied' })
+                    .nodes()
+                    .each(function (cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
 
-                // Set the content for the first cell (Sr No)
-                $('td:eq(0)', row).html(dataIndex + 1);
+                // rows() ignores the active filter, so both tabs stay correct
+                // after a delete as well as after a reload.
+                var all = this.api().rows().data().toArray();
+
+                $('#site-status-tabs button[data-status]').each(function () {
+                    var status = $(this).data('status');
+                    var count = all.filter(function (row) {
+                        return statusOf(row) === status;
+                    }).length;
+
+                    $(this).find('[data-count]').text('(' + count + ')');
+                });
             }
+        });
+
+        $('#site-status-tabs').on('click', 'button[data-status]', function () {
+            var status = $(this).data('status');
+            if (status === siteStatus) return;
+
+            siteStatus = status;
+
+            $('#site-status-tabs button[data-status]')
+                .attr('aria-selected', 'false')
+                .removeClass('ui-btn-primary')
+                .addClass('ui-btn-secondary');
+
+            $(this).attr('aria-selected', 'true')
+                .removeClass('ui-btn-secondary')
+                .addClass('ui-btn-primary');
+
+            // No request — the rows are already here, the filter just changed.
+            oAllLinksTable.draw();
         });
     });
 
@@ -143,6 +222,16 @@
         
     }).then((result) => {
         if (result.isConfirmed) {
+            // The confirm popup closes on click, so this stands in for it and
+            // blocks the page until the delete comes back.
+            Swal.fire({
+                title: 'Deleting…',
+                allowOutsideClick: false,
+                onBeforeOpen: function () {
+                    Swal.showLoading();
+                }
+            });
+
             // Send AJAX request
             $.ajax({
                 url: "{{ url('construction/delete_user') }}",
@@ -206,6 +295,8 @@
                             $('#updateForm input[name="phase"]').val(response.data.phase);
                             $('#updateForm input[name="project_name"]').val(response.data.project_name);
                             $('#updateForm input[name="sector"]').val(response.data.sector);
+                            $('#updateForm select[name="site_status"]')
+                                .val(response.data.site_status === 'closed' ? 'closed' : 'running');
 
   
 
@@ -230,13 +321,26 @@
         $('#updateForm').submit(function(event) {
             event.preventDefault();
 
+            var $submit = $(this).find('button[type="submit"]');
+
+            // Double-submit guard: the button is disabled below, but a second
+            // Enter keypress can still reach the form.
+            if ($submit.prop('disabled')) return;
+
             var formData = $(this).serialize();
+
+            // is-loading swaps the label for a spinner; disabled is what
+            // actually stops a second click.
+            $submit.prop('disabled', true).addClass('is-loading');
 
             $.ajax({
                 url: "{{ url('construction/update_site') }}",
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
+                complete: function() {
+                    $submit.prop('disabled', false).removeClass('is-loading');
+                },
                 success: function(response) {
                     if (response.success) {
                         // Close the update modal
