@@ -591,6 +591,18 @@
            Collapse the two that belong to the seam and keep the .mt-4 the
            panes already carry. The strip's top padding is untouched, so the
            totals pinned to its line do not move. */
+        /* Measured by fitTabTotals: the tabs and the figure cannot both fit on
+           one line here, so the pill goes back into flow above the table.
+           Content-width and pushed right, which is also what keeps the
+           measurement stable — a full-width block would measure as the whole
+           row and it would never come back. */
+        .ui-tab-total-host.is-stacked > .tab-content .ui-total {
+            position: static;
+            height: auto;
+            width: fit-content;
+            margin: 0 0 1rem auto;
+        }
+
         .ui-tab-total-host.is-split > .tab-content > .tab-pane { padding-bottom: 0; }
         .ui-tab-total-host.is-split > .tab-content > .tab-pane > .ui-tabs { margin-bottom: 0; }
 
@@ -701,6 +713,14 @@
        plain, the one row a reader looks for first was the flattest thing on
        the sheet. Only ever rendered into a print window; no screen view emits
        this class. */
+    /* A returned payment in the All Entries ledger: money going back out, so
+       it is tinted like an alert rather than sitting among the costs. On the
+       cells, not the row, because the row already carries the hover wash as a
+       background-image and the two would fight. */
+    .ui-table tbody tr.is-return > td {
+        @apply bg-rose-50 text-rose-900;
+    }
+
     .ui-table tbody tr.total-row { background-image: var(--wash-strip); }
     .ui-table tbody tr.total-row td {
         @apply border-t border-neutral-200 font-semibold text-neutral-900 whitespace-nowrap;

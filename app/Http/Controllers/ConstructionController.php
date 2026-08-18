@@ -520,7 +520,9 @@ class ConstructionController extends Controller
 
         foreach (ReturnPayment::where('proj_id', $id)->get() as $r) {
             $rows->push(['date' => $r->date, 'type' => '', 'detail' => $r->detail,
-                'quantity' => '', 'price' => $r->price, 'source' => 'return_payment']);
+                // A label like the other four, not the table's name. It is also
+                // what the row highlight keys off in the view.
+                'quantity' => '', 'price' => $r->price, 'source' => 'Return Payment']);
         }
 
         $sorted = $rows->sortBy(function (array $row) {

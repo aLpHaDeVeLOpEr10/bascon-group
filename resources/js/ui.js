@@ -200,6 +200,40 @@ function initTabIndicators() {
     $$('.ui-tabs').forEach(moveTabIndicator);
 }
 
+/**
+ * Keeps a pinned totals pill off its tab strip.
+ *
+ * The pill is parked on the strip's line, which only works while there is
+ * room to the right of the tabs. A media query cannot tell: whether it fits
+ * depends on how many tabs the strip has and how long the figure is — Sub
+ * Total carries seven tabs, so it collides at a width where a four-tab strip
+ * is still fine.
+ *
+ * So it is measured. Too tight, and the host is marked is-stacked and the
+ * stylesheet drops the pill back into flow above the table.
+ *
+ * The stacked pill is sized to its content (w-fit), so the measurement reads
+ * the same in both states and cannot oscillate.
+ */
+function fitTabTotals() {
+    $$('.ui-tab-total-host').forEach((host) => {
+        const total = $1('.tab-content .ui-total', host);
+        if (!total || total.offsetParent === null) return;
+
+        // The innermost visible strip is the one the pill shares a line with.
+        const strips = $$('.ui-tabs', host).filter((el) => el.offsetParent !== null);
+        const strip = strips[strips.length - 1];
+        if (!strip) return;
+
+        const room = host.clientWidth
+            - strip.getBoundingClientRect().width
+            - total.getBoundingClientRect().width
+            - 48;   // the host's own padding, plus a gap so they never touch
+
+        host.classList.toggle('is-stacked', room < 0);
+    });
+}
+
 function showTab(link) {
     if (!link) return;
 
@@ -235,6 +269,9 @@ function showTab(link) {
     // A strip inside the pane just revealed measured zero while it was
     // display:none, so its own bar has to be placed now that it has a size.
     $$('.ui-tabs', pane).forEach(moveTabIndicator);
+
+    // Switching tabs changes both the strip on show and the figure beside it.
+    fitTabTotals();
 }
 
 function installJqueryShims() {
@@ -1202,12 +1239,20 @@ function init() {
     // measured too. A second pass on load covers web fonts arriving late and
     // changing every label's width.
     initTabIndicators();
-    on(window, 'load', initTabIndicators);
+    fitTabTotals();
+
+    on(window, 'load', () => {
+        initTabIndicators();
+        fitTabTotals();
+    });
 
     let indicatorResize;
     on(window, 'resize', () => {
         window.clearTimeout(indicatorResize);
-        indicatorResize = window.setTimeout(initTabIndicators, 120);
+        indicatorResize = window.setTimeout(() => {
+            initTabIndicators();
+            fitTabTotals();
+        }, 120);
     });
 }
 

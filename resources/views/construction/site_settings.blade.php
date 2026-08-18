@@ -2042,6 +2042,13 @@
                             title: 'Price'
                         },
                     ],
+                    /* A return is money leaving the ledger again, so its row is
+                       tinted like an alert instead of reading as another cost. */
+                    createdRow: function(row, data) {
+                        if (data.source === 'Return Payment') {
+                            $(row).addClass('is-return');
+                        }
+                    },
                     dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
                     buttons: [{
                             extend: 'print',
