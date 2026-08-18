@@ -1727,12 +1727,23 @@
         @apply mx-9 text-center text-[13px] font-semibold text-neutral-900;
         line-height: 2rem;
     }
+    /* Month and year dropdowns, enabled globally in ui.js — jumping a year at
+       a time through the arrows is not navigation. */
     .ui-datepicker .ui-datepicker-title select {
-        @apply h-7 mx-1 px-1.5 rounded-lg bg-surface border border-neutral-200 text-xs text-neutral-900;
+        @apply h-7 mx-0.5 px-1.5 rounded-lg bg-surface border border-neutral-200
+               text-xs font-medium text-neutral-900 cursor-pointer;
     }
+    .ui-datepicker .ui-datepicker-title select:hover { @apply border-neutral-300; }
+    .ui-datepicker .ui-datepicker-title select:focus {
+        @apply border-brand-400 outline-none ring-2 ring-brand-600/15;
+    }
+    /* absolute is on purpose: jQuery UI's own stylesheet is not loaded, and it
+       is what normally positions these. Without it the arrows had nothing to
+       anchor to and never appeared, leaving the header with no way to change
+       month. The spans inside are positioned against them. */
     .ui-datepicker .ui-datepicker-prev,
     .ui-datepicker .ui-datepicker-next {
-        @apply top-0 size-8 rounded-lg cursor-pointer transition-colors hover:bg-neutral-100;
+        @apply absolute top-0 size-8 rounded-lg cursor-pointer transition-colors hover:bg-neutral-100;
         background: transparent !important;
         border: 0 !important;
     }

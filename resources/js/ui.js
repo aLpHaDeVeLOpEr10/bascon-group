@@ -1156,6 +1156,35 @@ function initRouteProgress() {
     });
 }
 
+/* ------------------------------------------------------ datepicker defaults */
+
+/**
+ * One set of options for every date field in the app.
+ *
+ * The month and year dropdowns matter most: without them the header offers
+ * only a one-month step, so reaching a date a year back means twelve clicks.
+ *
+ * dateFormat is set here as well as at the call sites. Every one of them
+ * already passes dd/mm/yy — this is so a field added later cannot silently
+ * fall back to jQuery UI's mm/dd/yy default and write the wrong month into a
+ * table that has been converted. See NormalizeDates for what that cost.
+ */
+function initDatepickerDefaults() {
+    const jq = window.jQuery;
+    if (!jq || !jq.datepicker) return;
+
+    jq.datepicker.setDefaults({
+        dateFormat: 'dd/mm/yy',
+        changeMonth: true,
+        changeYear: true,
+        // Wide enough for a site that started years ago and for a forward-dated
+        // instalment, without a dropdown of a hundred entries.
+        yearRange: 'c-15:c+5',
+        showOtherMonths: true,
+        selectOtherMonths: true,
+    });
+}
+
 /* ------------------------------------------------------ DataTables defaults */
 
 /** Defaults only — every per-table config in the views still wins. */
@@ -1271,6 +1300,7 @@ function init() {
     initSubmitLoading();
     initDropzones();
     initRouteProgress();
+    initDatepickerDefaults();
     initDataTableDefaults();
     initDataTableMoney();
 
