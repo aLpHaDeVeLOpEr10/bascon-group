@@ -142,6 +142,12 @@
                         // Set the ID for each row
                         $(row).attr("id", 'tr_' + data.id);
 
+                        // Clicking anywhere in the row opens the site. ui.js
+                        // (initRowLinks) skips the action buttons and the plot
+                        // link, so those keep their own behaviour, and it
+                        // leaves modifier and middle clicks to the browser.
+                        $(row).attr("data-row-href", "{{ url('admin_setting/show_con_details') }}/" + data.id);
+
                         // Set the content for the first cell (Sr No)
                         $('td:eq(0)', row).html(dataIndex + 1);
                     }

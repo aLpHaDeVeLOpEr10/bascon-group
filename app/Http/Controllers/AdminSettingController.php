@@ -270,6 +270,59 @@ class AdminSettingController extends Controller
         return view('admin.finish_requets');
     }
 
+    /** The approval queue for payments a worker has recorded. */
+    public function paymentRequests()
+    {
+        return view('admin.payment_requets');
+    }
+
+    /**
+     * Pending payments, newest first, with the site each belongs to resolved
+     * so the table does not have to make a second call per row.
+     */
+    public function getPaymentRequests()
+    {
+        $sites = Site::all()->keyBy('id');
+
+        $rows = PaymentReceived::where('status', PaymentReceived::PENDING)
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'site' => $sites[$p->proj_id]->display_name ?? ('Site #'.$p->proj_id),
+                'payment' => $p->payment,
+                'source' => $p->source,
+                'date' => $p->date,
+            ]);
+
+        return response()->json(['data' => $rows]);
+    }
+
+    public function acceptPayment(Request $request)
+    {
+        return $this->decidePayment($request->input('userId'), PaymentReceived::LIVE);
+    }
+
+    public function rejectPayment(Request $request)
+    {
+        return $this->decidePayment($request->input('userId'), PaymentReceived::REJECTED);
+    }
+
+    /**
+     * Not setStatus(): deciding a payment also clears decision_seen, which is
+     * what puts the outcome in the worker's notification bell. The two have to
+     * move together or a decision is made silently.
+     */
+    private function decidePayment($id, int $status)
+    {
+        $payment = PaymentReceived::find($id);
+
+        return $this->ok($payment ? $payment->update([
+            'status' => $status,
+            'decision_seen' => 0,
+        ]) : false);
+    }
+
     /** Admin_setting.php:864-922 — the company money dashboard. */
     public function showExpense()
     {
@@ -548,14 +601,23 @@ class AdminSettingController extends Controller
         $data = $request->validate([
             'civil' => ['required', 'in:0,1'],
             'finish' => ['required', 'in:0,1'],
+            // Optional so an older form post, which knows nothing about
+            // payments, leaves the payment setting as it found it.
+            'payment' => ['nullable', 'in:0,1'],
         ]);
 
         $setting = Setting::current();
 
-        return $this->ok($setting->update([
+        $fields = [
             'civil_status' => $data['civil'],
             'finish_status' => $data['finish'],
-        ]));
+        ];
+
+        if (isset($data['payment'])) {
+            $fields['payment_status'] = $data['payment'];
+        }
+
+        return $this->ok($setting->update($fields));
     }
 
     public function saveSite(Request $request)

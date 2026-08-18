@@ -84,6 +84,170 @@ class ConstructionController extends Controller
         ]);
     }
 
+    // ------------------------------------------------------------ payments
+
+    /*
+     * Client payments, recorded by a worker against a site.
+     *
+     * Previously admin-only (admin_setting/show_con_details). A worker can now
+     * add, list and correct a payment, but NOT delete one — a payment that was
+     * banked and then vanishes from the ledger is the one edit nobody should
+     * be able to make without an admin. There is deliberately no delete route
+     * here, not merely a hidden button.
+     *
+     * Whether a new payment counts immediately or waits for an admin is the
+     * `setting.payment_status` switch, the same mechanism civil and finishing
+     * materials use.
+     */
+
+    /** The site picker: running and closed, with each site's payment total. */
+    public function payments()
+    {
+        $totals = PaymentReceived::query()
+            ->selectRaw('proj_id, sum(cast(payment as decimal(18,2))) total')
+            ->where('status', PaymentReceived::LIVE)
+            ->groupBy('proj_id')
+            ->pluck('total', 'proj_id');
+
+        return view('construction.payments', [
+            'sites' => Site::all()->map(fn ($site) => [
+                'id' => $site->id,
+                'name' => $site->display_name,
+                'closed' => $site->site_status === Site::STATUS_CLOSED,
+                'total' => (float) ($totals[$site->id] ?? 0),
+            ])->values(),
+        ]);
+    }
+
+    /** One site's payment ledger. */
+    public function paymentDetails(string $id)
+    {
+        $site = Site::findOrFail($id);
+
+        return view('construction.payment_details', [
+            'const_id' => $id,
+            'name' => $site->display_name,
+            'total_payments' => $this->sum(
+                PaymentReceived::where('proj_id', $id)->where('status', PaymentReceived::LIVE)->pluck('payment')
+            ),
+            'pending_payments' => $this->sum(
+                PaymentReceived::where('proj_id', $id)->where('status', PaymentReceived::PENDING)->pluck('payment')
+            ),
+            'needsApproval' => Setting::current()->paymentsNeedApproval(),
+        ]);
+    }
+
+    /**
+     * Rows for one site. Rejected payments are dropped; pending ones are kept
+     * so the worker can see their own entry is filed and waiting rather than
+     * assuming it failed and entering it twice.
+     */
+    public function getPayments(string $id)
+    {
+        return response()->json([
+            'data' => PaymentReceived::where('proj_id', $id)
+                ->whereIn('status', [PaymentReceived::LIVE, PaymentReceived::PENDING])
+                ->get(),
+        ]);
+    }
+
+    public function savePayment(Request $request)
+    {
+        $data = $request->validate([
+            'price1' => ['required'],
+            'source1' => ['nullable', 'string', 'max:200'],
+            'selected_date1' => ['nullable', 'string', 'max:200'],
+            'proj_id1' => ['required'],
+        ]);
+
+        $date = $data['selected_date1'] ?? '';
+
+        return $this->ok(PaymentReceived::create([
+            'payment' => $data['price1'],
+            'source' => $data['source1'] ?? '',
+            'date' => $date,
+            'date_n' => $this->normalisePaymentDate($date),
+            'proj_id' => $data['proj_id1'],
+            'status' => Setting::current()->paymentEntryStatus(),
+        ])->exists);
+    }
+
+    /**
+     * Acknowledge every decision currently in the worker's bell.
+     *
+     * Fired when the notification menu is opened, so a decision is announced
+     * once and then stops nagging. Idempotent, so a double-open is harmless.
+     */
+    public function markPaymentsSeen()
+    {
+        PaymentReceived::whereIn('status', [PaymentReceived::LIVE, PaymentReceived::REJECTED])
+            ->where('decision_seen', 0)
+            ->update(['decision_seen' => 1]);
+
+        return $this->ok(true);
+    }
+
+    public function getPaymentDetails(Request $request)
+    {
+        return $this->found(PaymentReceived::find($request->query('userId')));
+    }
+
+    /**
+     * Correcting a payment re-files it for approval when the setting demands
+     * it — otherwise an approved row could be edited to any figure afterwards
+     * and the approval would have meant nothing.
+     */
+    public function updatePayment(Request $request)
+    {
+        $data = $request->validate([
+            'id' => ['required'],
+            'price1' => ['required'],
+            'source1' => ['nullable', 'string', 'max:200'],
+            'selected_date1' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $payment = PaymentReceived::findOrFail($data['id']);
+
+        $date = $data['selected_date1'] ?? '';
+
+        return $this->ok($payment->update([
+            'payment' => $data['price1'],
+            'source' => $data['source1'] ?? '',
+            'date' => $date,
+            'date_n' => $this->normalisePaymentDate($date),
+            'status' => Setting::current()->paymentEntryStatus(),
+        ]));
+    }
+
+    /**
+     * Fills date_n alongside the legacy VARCHAR date.
+     *
+     * date_n is the sortable copy every reporting query reads — the dashboard's
+     * monthly series among them — and it was only ever populated by the
+     * `dates:normalize` backfill. A payment recorded here would have been
+     * invisible to those queries until someone remembered to re-run it.
+     *
+     * m/d/Y because payments_recieved is an `mdy` table; anything that does
+     * not parse cleanly stores null rather than a guess.
+     */
+    private function normalisePaymentDate(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('m/d/Y|', $value);
+        $errors = \DateTimeImmutable::getLastErrors();
+
+        if ($date === false || ! empty($errors['warning_count']) || ! empty($errors['error_count'])) {
+            return null;
+        }
+
+        return $date->format('Y-m-d');
+    }
+
     // ------------------------------------------------- material catalogue
 
     /*

@@ -71,8 +71,10 @@
                 
                 "render": function (data, type, row) {
                     // 'data' parameter contains the row data
-                    return '<button class="ui-btn ui-btn-primary" onclick="accept_request(' + data.id + ')">Accept</button>'+"  "+
-                    '<button class="ui-btn ui-btn-danger" onclick="reject_request(' + data.id + ')">Reject</button>' ;
+                    return '<div class="ui-table-actions">' +
+                        '<button class="ui-btn ui-btn-sm ui-btn-primary" onclick="accept_request(' + data.id + ')">Accept</button>' +
+                        '<button class="ui-btn ui-btn-sm ui-btn-danger-soft" onclick="reject_request(' + data.id + ')">Reject</button>' +
+                        '</div>';
                            
                 }
             }

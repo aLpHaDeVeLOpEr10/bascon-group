@@ -34,6 +34,7 @@
     $categoryActive = $is('construction/add_civil')
         || $is('construction/add_finishing')
         || $is('construction/add_labour');
+    $paymentActive = $is('construction/payments') || $is('construction/payment_details/*');
     $clientActive = $is('client/*');
 
     // Mirrors the admin sidebar's Category group. Same three screens, same
@@ -149,6 +150,17 @@
                     </div>
                 </div>
             </div>
+            <a href="{{ url('construction/payments') }}"
+               data-tip="Payment"
+               class="ui-nav-link {{ $paymentActive ? 'is-active' : '' }}"
+               @if ($paymentActive) aria-current="page" @endif>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5" />
+                    <path d="M17 12h.01" />
+                </svg>
+                <span class="flex-1 truncate text-left" data-nav-label>Payment</span>
+            </a>
         @endif
 
         @if ($user && $user->isClient())

@@ -64,6 +64,16 @@ Route::prefix('construction')->group(function () {
         // account. The endpoint names carry the legacy swaps (save_amaterial
         // writes a CIVIL row, get_agategory reads FINISHING ones) because the
         // shared views in partials/category hardcode them for both sides.
+        // Client payments. No delete route by design — a worker may correct a
+        // payment but never remove one; see ConstructionController::payments.
+        Route::get('payments', [ConstructionController::class, 'payments']);
+        Route::get('payment_details/{id}', [ConstructionController::class, 'paymentDetails']);
+        Route::get('get_payments/{id}', [ConstructionController::class, 'getPayments']);
+        Route::get('get_payment_details', [ConstructionController::class, 'getPaymentDetails']);
+        Route::post('save_payment', [ConstructionController::class, 'savePayment']);
+        Route::post('update_payment', [ConstructionController::class, 'updatePayment']);
+        Route::post('payments_seen', [ConstructionController::class, 'markPaymentsSeen']);
+
         Route::get('add_civil', [ConstructionController::class, 'addCivil']);
         Route::get('add_finishing', [ConstructionController::class, 'addFinishing']);
         Route::get('add_labour', [ConstructionController::class, 'addLabour']);
@@ -171,6 +181,7 @@ Route::prefix('admin_setting')->group(function () {
         Route::get('show_expense', [AdminSettingController::class, 'showExpense']);
         Route::get('civil_requets', [AdminSettingController::class, 'civilRequests']);
         Route::get('finish_requets', [AdminSettingController::class, 'finishRequests']);
+        Route::get('payment_requets', [AdminSettingController::class, 'paymentRequests']);
         Route::get('show_details/{id}', [AdminSettingController::class, 'showDetails']);
         Route::get('show_details_company/{id}', [AdminSettingController::class, 'showDetailsCompany']);
         Route::get('show_con_details/{id}', [AdminSettingController::class, 'showConDetails']);
@@ -182,6 +193,7 @@ Route::prefix('admin_setting')->group(function () {
         Route::get('get_agategory', [AdminSettingController::class, 'getAGategory']);
         Route::get('get_bgategory', [AdminSettingController::class, 'getBGategory']);
         Route::get('get_labourcat', [AdminSettingController::class, 'getLabourCat']);
+        Route::get('get_payment_requests', [AdminSettingController::class, 'getPaymentRequests']);
         Route::get('get_site', [AdminSettingController::class, 'getSite']);
         Route::get('get_site_comapny', [AdminSettingController::class, 'getSiteCompany']);
         Route::get('get_con_site', [AdminSettingController::class, 'getConSite']);
@@ -224,6 +236,8 @@ Route::prefix('admin_setting')->group(function () {
         Route::post('reject_civil', [AdminSettingController::class, 'rejectCivil']);
         Route::post('accept_finish', [AdminSettingController::class, 'acceptFinish']);
         Route::post('reject_finish', [AdminSettingController::class, 'rejectFinish']);
+        Route::post('accept_payment', [AdminSettingController::class, 'acceptPayment']);
+        Route::post('reject_payment', [AdminSettingController::class, 'rejectPayment']);
 
         // updates
         Route::post('update_user', [AdminSettingController::class, 'updateUser']);

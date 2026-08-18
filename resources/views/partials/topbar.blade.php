@@ -19,6 +19,44 @@
         @endsection
 --}}
 @php
+    /* Notifications. Both roles get the same bell, reading opposite ends of
+       the same workflow:
+
+         admin  — payments a worker has filed that are waiting on a decision
+         worker — payments an admin has decided that the worker has not seen
+
+       Queried here rather than passed in by every controller: the topbar is
+       included by both layouts and there is no shared base controller to hang
+       it on. It is one indexed COUNT plus at most five rows. */
+    $notifications = collect();
+    $notificationCount = 0;
+    $notificationSites = collect();
+    $notificationEmpty = 'Requests and approvals will show up here.';
+    $notificationSeenUrl = null;
+
+    if (auth('admin')->check()) {
+        $notificationQuery = \App\Models\PaymentReceived::where('status', \App\Models\PaymentReceived::PENDING);
+        $notificationHref = url('admin_setting/payment_requets');
+    } elseif (auth('web')->check() && ! auth('web')->user()->isClient()) {
+        $notificationQuery = \App\Models\PaymentReceived::whereIn('status', [
+            \App\Models\PaymentReceived::LIVE,
+            \App\Models\PaymentReceived::REJECTED,
+        ])->where('decision_seen', 0);
+
+        $notificationHref = url('construction/payments');
+
+        // Opening the menu acknowledges them, so a decision is announced once.
+        $notificationSeenUrl = url('construction/payments_seen');
+    }
+
+    if (isset($notificationQuery)) {
+        $notificationCount = (clone $notificationQuery)->count();
+        $notifications = $notificationQuery->orderByDesc('id')->limit(5)->get();
+        $notificationSites = \App\Models\Site::whereIn('id', $notifications->pluck('proj_id'))
+            ->get()->keyBy('id');
+    }
+
+
     $logoutUrl = $logoutUrl ?? url('Login/logout');
     $displayName = $displayName ?? (auth('web')->user()->name ?? auth('admin')->user()->name ?? '');
     $displayName = trim((string) $displayName) !== '' ? trim((string) $displayName) : 'Account';
@@ -164,32 +202,86 @@
                 aria-controls="topbar-notifications"
                 aria-expanded="false"
                 aria-haspopup="true"
-                aria-label="Notifications"
-                class="ui-icon-btn">
+                aria-label="{{ $notificationCount ? $notificationCount . ' notifications' : 'Notifications' }}"
+                class="ui-icon-btn relative">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
+
+            @if ($notificationCount)
+                <span class="ui-badge-count">{{ $notificationCount > 9 ? '9+' : $notificationCount }}</span>
+            @endif
         </button>
 
-        <div class="ui-menu right-0 left-auto w-80" id="topbar-notifications" role="menu">
+        <div class="ui-menu right-0 left-auto w-80" id="topbar-notifications" role="menu"
+             @if ($notificationSeenUrl && $notificationCount) data-notifications-seen="{{ $notificationSeenUrl }}" @endif>
             <div class="border-b border-line-soft px-2.5 pb-2.5 pt-2">
                 <p class="text-[13px] font-semibold text-neutral-900">Notifications</p>
-                <p class="text-xs text-neutral-500">You're all caught up</p>
+                <p class="text-xs text-neutral-500">
+                    @if (! $notificationCount)
+                        You're all caught up
+                    @elseif (auth('admin')->check())
+                        {{ $notificationCount }} payment{{ $notificationCount === 1 ? '' : 's' }} waiting for approval
+                    @else
+                        {{ $notificationCount }} payment{{ $notificationCount === 1 ? '' : 's' }} reviewed
+                    @endif
+                </p>
             </div>
 
-            <div class="ui-empty py-8">
-                <span class="ui-empty-art size-11">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                </span>
-                <p class="ui-empty-title">Nothing new</p>
-                <p class="ui-empty-text">Requests and approvals will show up here.</p>
-            </div>
+            @forelse ($notifications as $note)
+                @php
+                    // An admin sees a request; a worker sees the verdict on one.
+                    $decided = ! auth('admin')->check();
+                    $rejected = (int) $note->status === \App\Models\PaymentReceived::REJECTED;
+
+                    /* A worker's notice is about one payment on one site, so it
+                       opens that site's ledger rather than the site picker —
+                       landing on the list left them to find the site again.
+                       An admin's opens the queue, which is where the decision
+                       is actually made. */
+                    $noteHref = $decided
+                        ? url('construction/payment_details/'.$note->proj_id)
+                        : $notificationHref;
+                @endphp
+
+                <a href="{{ $noteHref }}" class="ui-menu-item" role="menuitem">
+                    <span class="ui-note-dot {{ $decided && $rejected ? 'is-rejected' : ($decided ? 'is-approved' : '') }}"
+                          aria-hidden="true"></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate text-[13px] font-medium text-neutral-900">
+                            @if ($decided)
+                                Payment {{ $rejected ? 'rejected' : 'approved' }} · @money($note->payment)
+                            @else
+                                @money($note->payment) · {{ $note->source ?: 'Payment' }}
+                            @endif
+                        </span>
+                        <span class="block truncate text-[11.5px] text-neutral-500">
+                            {{ $notificationSites[$note->proj_id]->display_name ?? 'Site #'.$note->proj_id }}
+                        </span>
+                    </span>
+                </a>
+            @empty
+                <div class="ui-empty py-8">
+                    <span class="ui-empty-art size-11">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                    </span>
+                    <p class="ui-empty-title">Nothing new</p>
+                    <p class="ui-empty-text">Requests and approvals will show up here.</p>
+                </div>
+            @endforelse
+
+            @if ($notificationCount > $notifications->count())
+                <a href="{{ $notificationHref }}"
+                   class="block border-t border-line-soft px-3 py-2.5 text-center text-[12.5px] font-medium text-brand-700">
+                    View all {{ $notificationCount }}
+                </a>
+            @endif
         </div>
     </div>
 
@@ -243,3 +335,25 @@
         Logout
     </a>
 </header>
+
+@push('scripts')
+<script>
+    /* Opening the bell acknowledges whatever is in it, so a decision is
+       announced once rather than every page load. Fires at most once per page
+       and only when there is something to clear — the attribute is absent
+       otherwise. The badge is cleared straight away rather than waiting for
+       the response, because the request cannot meaningfully fail from here and
+       the count is rebuilt from the database on the next load anyway. */
+    $(document).ready(function () {
+        var menu = $('#topbar-notifications');
+        var url = menu.data('notifications-seen');
+        if (!url) return;
+
+        $('[aria-controls="topbar-notifications"]').one('click', function () {
+            $.post(url).always(function () {
+                $('.ui-badge-count').remove();
+            });
+        });
+    });
+</script>
+@endpush

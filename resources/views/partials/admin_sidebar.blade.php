@@ -37,6 +37,7 @@
         ['label' => 'Request', 'icon' => 'inbox', 'items' => [
             ['admin_setting/civil_requets',  'Civil Request'],
             ['admin_setting/finish_requets', 'Finish Request'],
+            ['admin_setting/payment_requets', 'Payment Request'],
         ]],
         ['label' => 'Settings', 'icon' => 'settings', 'items' => [
             ['admin_setting/set_role', 'Manage'],

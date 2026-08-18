@@ -1157,8 +1157,17 @@ window.Swal = {
     isVisible: () => Dialog.isVisible(),
 };
 
-// The lowercase alias the older call sites use.
-window.swal = (...args) => Dialog.fire(...args);
+/*
+ * The lowercase alias, which SweetAlert2 shipped as BOTH a callable and an
+ * object: `swal({...})` and `swal.fire({...})` are each used in these views —
+ * 66 of the latter across twelve of them. Exposing only the function meant
+ * every `swal.fire` threw on an undefined property and the handler died
+ * silently, so saves appeared to do nothing at all.
+ */
+window.swal = Object.assign(
+    (...args) => Dialog.fire(...args),
+    window.Swal,
+);
 
 window.BasconUI = {
     money,

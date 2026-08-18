@@ -83,7 +83,10 @@
        painted in currentColor instead of a baked-in fill. */
     --crumb-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 19-7-7 7-7'/%3E%3Cpath d='M19 12H5'/%3E%3C/svg%3E");
 
-    /* Height of a nested tab strip, and of anything aligned to its line. */
+    /* Height of a tab strip, and of anything aligned to its line. The top
+       level is the full-width underlined strip; -subtab- is the nested
+       segmented group. */
+    --ui-tab-row: 3rem;
     --ui-subtab-row: 2.5rem;
 
     /* Padding a tab pane carries in place of the card body's. Shared, because
@@ -558,6 +561,15 @@
             right: var(--ui-pane-pad);
         }
 
+        /* A card whose tabs are the top-level strip instead of a nested pill
+           group: the strip starts at the card's own edge, so the pill lines up
+           with that and insets only by the strip's own px-3. */
+        .ui-tab-total-host.is-strip > .tab-content .ui-total {
+            top: 0;
+            right: 0.75rem;
+            height: var(--ui-tab-row);
+        }
+
         /* .tab-pane's entry animation holds a translate, and a transformed
            element becomes the containing block for anything absolute inside
            it — so the pill anchors to the pane it sits in rather than to the
@@ -707,6 +719,10 @@
         @apply flex items-stretch gap-1 px-3 overflow-x-auto whitespace-nowrap
                border-b border-line bg-elevated;
         scrollbar-width: none;
+        /* Fixed so anything aligned to this strip's line can match it. Stays
+           items-stretch: the active underline hangs off the bottom of a link,
+           so a link has to fill the strip's height. */
+        height: var(--ui-tab-row);
     }
     .ui-tabs::-webkit-scrollbar { display: none; }
     .ui-tabs > li { @apply list-none; }
@@ -1217,6 +1233,29 @@
                text-[11.5px] font-semibold whitespace-nowrap;
     }
     .ui-pill.is-live  { @apply bg-brand-50 text-brand-700; }
+    /* Amber, not rose: waiting on someone is not an error. */
+    .ui-pill.is-pending { @apply bg-amber-50 text-amber-700; }
+
+
+    /* Count on the notification bell. */
+    .ui-badge-count {
+        @apply absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center
+               rounded-full px-1 text-[10px] font-bold leading-4 text-white;
+        background-color: var(--color-rose-500);
+    }
+    /* Amber pending by default; a decision the worker is being told about
+       carries its own outcome. Paired with the wording in the row, never
+       colour alone. */
+    .ui-note-dot {
+        @apply mt-1.5 size-1.5 shrink-0 rounded-full;
+        background-color: var(--color-amber-500);
+    }
+    .ui-note-dot.is-approved { background-color: var(--color-brand-500); }
+    .ui-note-dot.is-rejected { background-color: var(--color-rose-500); }
+    .ui-total h3.is-pending {
+        @apply border-amber-100 bg-amber-50 text-amber-800!;
+        background-image: none;
+    }
     .ui-pill.is-muted { @apply bg-neutral-100 text-neutral-500; }
 
     .ui-queue-row {
@@ -1299,6 +1338,13 @@
     .ui-row-actions > a > svg,
     .ui-row-actions > button > svg { @apply size-4; }
     .ui-row-actions .is-danger:hover { @apply bg-rose-50 text-rose-600; }
+
+    /* The same cell, but holding LABELLED buttons rather than bare icons —
+       Approve / Reject on the request screens. Deliberately not .ui-row-actions:
+       that one squares every child to 32px, which crushes a text button.
+       inline-flex + nowrap keeps the pair on one line in a column sized to its
+       own content, which is what made them stack. */
+    .ui-table-actions { @apply inline-flex items-center justify-end gap-2 whitespace-nowrap; }
 
     /* Rows that open a record on click (see initRowLinks in ui.js). The cursor
        is the only affordance a table row can carry, so it matters. The action

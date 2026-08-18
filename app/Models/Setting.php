@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Legacy table `setting` — a single row driving the approval workflow.
  *
- * civil_status / finish_status:
+ * civil_status / finish_status / payment_status:
  *   0 = instant   — new entries are written with status 1 (immediately live)
  *   1 = approval  — new entries are written with status 0 (pending admin)
  *
@@ -25,12 +25,17 @@ class Setting extends Model
     protected $casts = [
         'civil_status' => 'integer',
         'finish_status' => 'integer',
+        'payment_status' => 'integer',
     ];
 
     public static function current(): self
     {
         return static::query()->orderBy('id')->firstOr(function () {
-            return static::create(['civil_status' => 0, 'finish_status' => 0]);
+            return static::create([
+                'civil_status' => 0,
+                'finish_status' => 0,
+                'payment_status' => 0,
+            ]);
         });
     }
 
@@ -44,5 +49,17 @@ class Setting extends Model
     public function finishEntryStatus(): int
     {
         return $this->finish_status == 0 ? 1 : 0;
+    }
+
+    /** Status a new client payment should be created with. */
+    public function paymentEntryStatus(): int
+    {
+        return $this->payment_status == 0 ? 1 : 0;
+    }
+
+    /** Whether a worker's payment has to be approved before it counts. */
+    public function paymentsNeedApproval(): bool
+    {
+        return $this->payment_status == 1;
     }
 }
