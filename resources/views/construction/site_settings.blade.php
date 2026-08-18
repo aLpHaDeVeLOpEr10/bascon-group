@@ -301,6 +301,7 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="total_price_labour"></div>
                                             <table id="labour_table" width="100%" class="ui-table">
 
                                                 <thead>
@@ -316,9 +317,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-5" id="total_price_labour">
-
-                                            </div>
                                         </div>
 
                                     </div>
@@ -418,6 +416,7 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="civil_total324"></div>
                                             <table id="civil_account" width="100%" class="ui-table">
 
                                                 <thead>
@@ -431,7 +430,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total mb-4" id="civil_total324"></div>
                                         </div>
                                     </div>
                                     <div role="tabpanel" class="tab-pane" id="finish_total">
@@ -440,6 +438,7 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="finish_total324"></div>
                                             <table id="finish_account" width="100%" class="ui-table">
 
                                                 <thead>
@@ -454,7 +453,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-4" id="finish_total324"></div>
                                         </div>
 
                                     </div>
@@ -480,7 +478,11 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-4" id="finish_total324"></div>
+                                            {{-- No total card here: this pane used to carry a second
+                                                 <div id="finish_total324">, the same id as the one in
+                                                 the Finishing Total pane above. Only the first of a
+                                                 duplicated id is ever written to, so it sat empty
+                                                 (and hidden by .ui-total:empty) on every visit. --}}
                                         </div>
 
                                     </div>
@@ -491,6 +493,7 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="miscle_account123"></div>
                                             <table id="miscle_account" width="100%" class="ui-table">
 
                                                 <thead>
@@ -503,7 +506,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-4" id="miscle_account123"></div>
                                         </div>
 
                                     </div>
@@ -514,6 +516,7 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="Labour_account123"></div>
                                             <table id="Labour_account" width="100%" class="ui-table">
 
                                                 <thead>
@@ -527,7 +530,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-4" id="Labour_account123"></div>
                                         </div>
 
                                     </div>
@@ -595,6 +597,12 @@
                                         <div class="mt-4">
 
 
+                                            <div class="ui-total mb-4" id="total_price_managments">
+                                                {{-- Two figures, so two pills — the run of &nbsp; that used to
+                                                     separate them stretched the row off the side of the card. --}}
+                                                <h3>Payments Recieved: @money($payment_recieved)</h3>
+                                                <h3>Remaining Balace: @money($Remainung_Balace)</h3>
+                                            </div>
                                             <table id="grand_account" width="100%" class="ui-table">
 
                                                 <thead>
@@ -607,12 +615,6 @@
                                                     </tr>
                                                 </thead>
                                             </table>
-                                            <div class="ui-total my-5" id="total_price_managments">
-                                                {{-- Two figures, so two pills — the run of &nbsp; that used to
-                                                     separate them stretched the row off the side of the card. --}}
-                                                <h3>Payments Recieved: @money($payment_recieved)</h3>
-                                                <h3>Remaining Balace: @money($Remainung_Balace)</h3>
-                                            </div>
 
                                         </div>
                                     </div>
@@ -900,7 +902,7 @@
         thead.prepend(
             '<tr class="print-heading">' +
             '<th colspan="' + columns + '" ' +
-            'style="font-size:20px;font-weight:700;text-align:center;padding:10px 6px;' +
+            'style="font-size:14px;font-weight:700;text-align:center;padding:8px 6px;' +
             'text-transform:none;letter-spacing:normal;color:#18181b;">' +
             $('<div/>').text(heading).html() +
             '</th></tr>'
@@ -1231,7 +1233,10 @@
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
-                                $(win.document.body).find('table thead th:last-child').css('display', 'none');
+                                // :not(.print-heading) — the heading row's single cell is also a
+                                // last child, so a bare th:last-child hid the heading along with
+                                // the Action column.
+                                $(win.document.body).find('table thead tr:not(.print-heading) th:last-child').css('display', 'none');
 
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
@@ -1497,7 +1502,10 @@
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
-                                $(win.document.body).find('table thead th:last-child').css('display', 'none');
+                                // :not(.print-heading) — the heading row's single cell is also a
+                                // last child, so a bare th:last-child hid the heading along with
+                                // the Action column.
+                                $(win.document.body).find('table thead tr:not(.print-heading) th:last-child').css('display', 'none');
 
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
@@ -1692,7 +1700,10 @@
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
-                                $(win.document.body).find('table thead th:last-child').css('display', 'none');
+                                // :not(.print-heading) — the heading row's single cell is also a
+                                // last child, so a bare th:last-child hid the heading along with
+                                // the Action column.
+                                $(win.document.body).find('table thead tr:not(.print-heading) th:last-child').css('display', 'none');
 
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +
@@ -1795,7 +1806,10 @@
 
                                 // Hide the last column (Action column) during printing
                                 $(win.document.body).find('table tbody tr td:last-child').css('display', 'none');
-                                $(win.document.body).find('table thead th:last-child').css('display', 'none');
+                                // :not(.print-heading) — the heading row's single cell is also a
+                                // last child, so a bare th:last-child hid the heading along with
+                                // the Action column.
+                                $(win.document.body).find('table thead tr:not(.print-heading) th:last-child').css('display', 'none');
 
                                 // Append the total row to the end of the table body
                                 const totalRow = '<tr class="total-row" style="font-weight: bold;">' +

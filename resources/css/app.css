@@ -494,8 +494,8 @@
     .ui-total h3,
     .ui-total h4 {
         @apply inline-flex! items-center gap-2 m-0! rounded-full
-               border border-brand-100 bg-brand-50 px-4 py-2
-               text-[13.5px]! font-semibold text-brand-800! tabular-nums;
+               border border-brand-100 bg-brand-50 px-5 py-2.5
+               text-[15px]! font-semibold text-brand-800! tabular-nums;
         background-image: var(--wash-total);
     }
 
@@ -566,7 +566,7 @@
        this class. */
     .ui-table tbody tr.total-row { background-image: var(--wash-strip); }
     .ui-table tbody tr.total-row td {
-        @apply border-t border-neutral-200 font-semibold text-neutral-900;
+        @apply border-t border-neutral-200 font-semibold text-neutral-900 whitespace-nowrap;
     }
 
     .ui-table tfoot tr { background-image: var(--wash-strip); }
