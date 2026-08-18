@@ -583,6 +583,22 @@
             height: var(--ui-subtab-row);
         }
 
+        /* ...and the same split doubles the space under the strip: the strip's
+           own margin, then the padding at the foot of the pane holding it, then
+           the padding at the head of the pane holding the table. Three gaps for
+           one join, which is what pushed the table so far from its tabs.
+
+           Collapse the two that belong to the seam and keep the .mt-4 the
+           panes already carry. The strip's top padding is untouched, so the
+           totals pinned to its line do not move. */
+        .ui-tab-total-host.is-split > .tab-content > .tab-pane { padding-bottom: 0; }
+        .ui-tab-total-host.is-split > .tab-content > .tab-pane > .ui-tabs { margin-bottom: 0; }
+
+        .ui-tab-total-host.is-split > .tab-content + .tab-content > .tab-pane {
+            padding-top: 0;
+            padding-bottom: var(--ui-pane-pad);
+        }
+
         /* .tab-pane's entry animation holds a translate, and a transformed
            element becomes the containing block for anything absolute inside
            it — so the pill anchors to the pane it sits in rather than to the
