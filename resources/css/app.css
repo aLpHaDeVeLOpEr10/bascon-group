@@ -194,6 +194,19 @@
     --wash-total: linear-gradient(100deg,
         rgb(124 77 255 / 0.16) 0%,
         rgb(34 211 238 / 0.13) 100%);
+
+    /* The same surface when the figure is money still owed. Same angle as
+       --wash-total so the two read as one component in two states, but carried
+       heavier: rose sits far closer to white than violet does, and matching the
+       violet's 0.16 left the card looking unpainted. */
+    --wash-danger: linear-gradient(100deg,
+        rgb(244 63 94 / 0.28) 0%,
+        rgb(251 146 60 / 0.18) 100%);
+
+    /* And when it is waiting on an approval. */
+    --wash-pending: linear-gradient(100deg,
+        rgb(245 158 11 / 0.26) 0%,
+        rgb(251 191 36 / 0.16) 100%);
 }
 
 .dark {
@@ -209,6 +222,14 @@
     --wash-total: linear-gradient(100deg,
         rgb(124 77 255 / 0.30) 0%,
         rgb(34 211 238 / 0.20) 100%);
+
+    --wash-danger: linear-gradient(100deg,
+        rgb(244 63 94 / 0.42) 0%,
+        rgb(251 146 60 / 0.26) 100%);
+
+    --wash-pending: linear-gradient(100deg,
+        rgb(245 158 11 / 0.38) 0%,
+        rgb(251 191 36 / 0.24) 100%);
 }
 
 /* ------------------------------------------------------------------- base */
@@ -645,7 +666,7 @@
     .ui-total h3.is-negative,
     .ui-total h4.is-negative {
         @apply border-rose-200 bg-rose-50 text-rose-800!;
-        background-image: none;
+        background-image: var(--wash-danger);
     }
 
     /* -------------------------------------------------------------- cards */
@@ -1325,6 +1346,27 @@
     .ui-pill.is-pending { @apply bg-amber-50 text-amber-700; }
 
 
+    /* A stat card painted in its tone's gradient — the same washes the totals
+       pills use, so a figure reads the same whichever component carries it.
+       The border follows the tone too; left on --color-line it looked like a
+       white card with something spilled on it. */
+    .ui-stat-wash[data-tone='success'],
+    .ui-stat-wash[data-tone='brand'],
+    .ui-stat-wash[data-tone='info'] {
+        background-image: var(--wash-total);
+        @apply border-brand-100;
+    }
+
+    .ui-stat-wash[data-tone='danger'] {
+        background-image: var(--wash-danger);
+        @apply border-rose-200;
+    }
+
+    .ui-stat-wash[data-tone='warning'] {
+        background-image: var(--wash-pending);
+        @apply border-amber-200;
+    }
+
     /* Count on the notification bell. */
     .ui-badge-count {
         @apply absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center
@@ -1342,7 +1384,7 @@
     .ui-note-dot.is-rejected { background-color: var(--color-rose-500); }
     .ui-total h3.is-pending {
         @apply border-amber-100 bg-amber-50 text-amber-800!;
-        background-image: none;
+        background-image: var(--wash-pending);
     }
     .ui-pill.is-muted { @apply bg-neutral-100 text-neutral-500; }
 

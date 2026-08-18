@@ -15,6 +15,7 @@
     'trend' => null,   // up | down | flat
     'change' => null,
     'note' => null,
+    'wash' => false,   // paint the card in its tone's gradient
 ])
 
 @php
@@ -50,10 +51,17 @@
     };
 @endphp
 
+{{-- `wash` paints the card in the same gradient the totals pills use, keyed
+     to its tone — violet/cyan normally, rose/amber when the figure is money
+     owed. Opt-in rather than automatic: the dashboard's KPI row wants four
+     calm white tiles, while a single figure that is the whole point of a tab
+     wants the colour. --}}
 <div {{ $attributes->merge([
     'class' => 'group rounded-2xl border border-line bg-surface p-5 transition-all duration-200
-                hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-panel',
-]) }}>
+                hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-panel'
+               . ($wash ? ' ui-stat-wash' : ''),
+]) }}
+     @if ($wash) data-tone="{{ $tone }}" @endif>
     <div class="mb-4 flex items-start justify-between gap-3">
         <span class="text-[12.5px] font-medium text-neutral-500">{{ $label }}</span>
 

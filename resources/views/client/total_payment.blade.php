@@ -11,10 +11,10 @@
                subtitle="Everything charged to your project, and what is still outstanding." />
 
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <x-stat-card label="Payments received" :value="money($payment_recieved)" icon="check" tone="success" />
+    <x-stat-card label="Payments received" :value="money($payment_recieved)" wash icon="check" tone="success" />
     {{-- Danger below zero: the same balance, overdrawn. --}}
     <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)" icon="clock"
-                 :tone="$Remainung_Balace < 0 ? 'danger' : 'warning'" />
+                 :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
 </div>
 
 <x-card flush>

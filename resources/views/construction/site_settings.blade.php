@@ -605,11 +605,11 @@
                                                  so it is presented the same way, with the same labels, icons
                                                  and the danger tone when the balance is overdrawn. --}}
                                             <div class="mb-4 grid gap-4 sm:grid-cols-2">
-                                                <x-stat-card label="Payments received" :value="money($payment_recieved)"
+                                                <x-stat-card label="Payments received" :value="money($payment_recieved)" wash
                                                              icon="check" tone="success" />
                                                 <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)"
                                                              icon="clock"
-                                                             :tone="$Remainung_Balace < 0 ? 'danger' : 'warning'" />
+                                                             :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
                                             </div>
                                             <table id="grand_account" width="100%" class="ui-table">
 
