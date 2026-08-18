@@ -598,11 +598,18 @@
                                         <div class="mt-4">
 
 
-                                            <div class="ui-total mb-4" id="total_price_managments">
-                                                {{-- Two figures, so two pills — the run of &nbsp; that used to
-                                                     separate them stretched the row off the side of the card. --}}
-                                                <h3>Payments Recieved: @money($payment_recieved)</h3>
-                                                <h3 @class(['is-negative' => $Remainung_Balace < 0])>Remaining Balace: @money($Remainung_Balace)</h3>
+                                            {{-- Stat cards in flow rather than the pinned pills the other
+                                                 Sub Total tabs use. Two long money figures side by side ran
+                                                 past the card's right edge once pinned to the tab line, and
+                                                 this is the same pair the client sees on their Grand Total —
+                                                 so it is presented the same way, with the same labels, icons
+                                                 and the danger tone when the balance is overdrawn. --}}
+                                            <div class="mb-4 grid gap-4 sm:grid-cols-2">
+                                                <x-stat-card label="Payments received" :value="money($payment_recieved)"
+                                                             icon="check" tone="success" />
+                                                <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)"
+                                                             icon="clock"
+                                                             :tone="$Remainung_Balace < 0 ? 'danger' : 'warning'" />
                                             </div>
                                             <table id="grand_account" width="100%" class="ui-table">
 
