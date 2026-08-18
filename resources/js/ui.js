@@ -825,8 +825,41 @@ function initDropzones() {
 
         ['dragenter', 'dragover'].forEach((evt) =>
             on(zone, evt, (e) => { e.preventDefault(); zone.classList.add('is-dragging'); }));
-        ['dragleave', 'drop'].forEach((evt) =>
-            on(zone, evt, (e) => { e.preventDefault(); zone.classList.remove('is-dragging'); }));
+
+        on(zone, 'dragleave', () => zone.classList.remove('is-dragging'));
+
+        /*
+         * The drop has to be handled, not just styled.
+         *
+         * preventDefault() on a bubbling drop cancels the default action for
+         * the whole event — and the default action here is the file input
+         * accepting the file. Styling the zone on drop therefore stopped the
+         * drop from ever landing, and only click-to-browse worked.
+         *
+         * It cannot simply be dropped either: without preventDefault the
+         * browser navigates away to the file. So the files are moved across
+         * explicitly, and `change` is dispatched so everything listening for a
+         * chosen file — the filename label here, the preview on the profile
+         * page — reacts exactly as it would to a click.
+         */
+        on(zone, 'drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('is-dragging');
+
+            const dropped = e.dataTransfer && e.dataTransfer.files;
+            if (!dropped || !dropped.length) return;
+
+            // Honour the input's own limits rather than second-guessing them.
+            if (!input.multiple && dropped.length > 1) {
+                const one = new DataTransfer();
+                one.items.add(dropped[0]);
+                input.files = one.files;
+            } else {
+                input.files = dropped;
+            }
+
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
 
         on(input, 'change', () => {
             if (!name) return;

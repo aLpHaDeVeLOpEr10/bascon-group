@@ -1084,6 +1084,41 @@
         background-image: linear-gradient(140deg, var(--color-brand-400), var(--color-brand-600));
     }
 
+    /* A photo fills the circle and hides the gradient behind it; without the
+       overflow clip a square image would sit over a round background. */
+    .ui-avatar { @apply overflow-hidden; }
+    .ui-avatar > img { @apply size-full object-cover; }
+
+    /* The large version, on the profile pages and the review queue. */
+    .ui-avatar-lg {
+        @apply inline-flex size-24 shrink-0 items-center justify-center overflow-hidden
+               rounded-2xl text-[22px] font-bold uppercase tracking-wide text-white
+               ring-1 ring-neutral-900/5;
+        background-image: linear-gradient(140deg, var(--color-brand-400), var(--color-brand-600));
+    }
+    .ui-avatar-lg > img { @apply size-full object-cover; }
+    /* Ringed amber while a decision is outstanding, matching the pending pill. */
+    .ui-avatar-lg.is-pending { @apply ring-2 ring-amber-300; }
+
+    /* Clickable in the review queue: a magnifier fades in over the picture so
+       it is obvious there is more to see than the thumbnail. */
+    .ui-avatar-lg.is-zoomable { @apply relative cursor-zoom-in p-0; }
+    .ui-avatar-zoom {
+        @apply absolute inset-0 flex items-center justify-center rounded-2xl
+               text-white opacity-0 transition-opacity duration-150;
+        background-color: rgb(9 9 11 / 0.45);
+    }
+    .ui-avatar-zoom > svg { @apply size-6; }
+    .ui-avatar-lg.is-zoomable:hover .ui-avatar-zoom,
+    .ui-avatar-lg.is-zoomable:focus-visible .ui-avatar-zoom { @apply opacity-100; }
+
+    /* The full-size picture in the viewer. Capped by the viewport rather than a
+       fixed size, so a tall portrait is not cropped and a huge upload does not
+       push the dialog off screen. */
+    .ui-photo-full {
+        @apply mx-auto block max-h-[70vh] w-auto max-w-full rounded-xl object-contain;
+    }
+
     /* --------------------------------------------------------- navigation */
 
     /* The zoom grows from the left edge, so a link expands into the panel's

@@ -21,9 +21,15 @@ class Admin extends Authenticatable
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['Name', 'username', 'email', 'password'];
+    protected $fillable = ['Name', 'username', 'email', 'password', 'avatar'];
 
     protected $hidden = ['password'];
+
+    /** Admins publish their picture directly — no pending column. */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? asset($this->avatar) : null;
+    }
 
     /** The legacy column is `Name`; expose it under the usual lowercase name. */
     public function getNameAttribute(): ?string

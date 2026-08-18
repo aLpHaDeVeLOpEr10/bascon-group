@@ -42,6 +42,32 @@ class User extends Authenticatable
 
     protected $hidden = ['password'];
 
+    /**
+     * Where the profile picture is in the approval cycle. Mirrors
+     * material.status; see AvatarService for the workflow.
+     */
+    public const AVATAR_PENDING = 0;
+    public const AVATAR_SETTLED = 1;
+    public const AVATAR_REJECTED = 2;
+
+    /** The picture to draw, or null to fall back to initials. */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? asset($this->avatar) : null;
+    }
+
+    /** The one awaiting a decision, for the admin's review queue. */
+    public function getPendingAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_pending ? asset($this->avatar_pending) : null;
+    }
+
+    public function scopeAwaitingAvatar($query)
+    {
+        return $query->whereNotNull('avatar_pending')
+            ->where('avatar_status', self::AVATAR_PENDING);
+    }
+
     public function isClient(): bool
     {
         return $this->role === 'Client';

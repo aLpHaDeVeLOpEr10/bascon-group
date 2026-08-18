@@ -202,7 +202,7 @@
     {{-- Account card. Collapsed to just the avatar on the icon rail. --}}
     <div class="shrink-0 border-t border-line p-3">
         <div class="ui-user-card">
-            <span aria-hidden="true" class="ui-avatar size-9">{{ $navInitials }}</span>
+            <span aria-hidden="true" class="ui-avatar size-9">@if ($user?->avatar_url)<img src="{{ $user?->avatar_url }}" alt="">@else{{ $navInitials }}@endif</span>
 
             <div class="min-w-0 flex-1" data-sidebar-hide>
                 <p class="truncate text-[13px] font-semibold text-neutral-900">{{ $navName }}</p>

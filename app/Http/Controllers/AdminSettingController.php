@@ -19,7 +19,9 @@ use App\Models\PaymentReceived;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
+use App\Services\AvatarService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -268,6 +270,51 @@ class AdminSettingController extends Controller
     public function finishRequests()
     {
         return view('admin.finish_requets');
+    }
+
+    // ------------------------------------------------------------- profile
+
+    public function profile()
+    {
+        return view('admin.profile', ['admin' => Auth::guard('admin')->user()]);
+    }
+
+    /** Admins publish directly. */
+    public function saveProfilePhoto(Request $request, AvatarService $avatars)
+    {
+        $request->validate(['photo' => AvatarService::RULES]);
+
+        $admin = Auth::guard('admin')->user();
+        $avatars->forget($admin->avatar);
+
+        $admin->forceFill(['avatar' => $avatars->put($request->file('photo'))])->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your profile picture has been updated.',
+        ]);
+    }
+
+    /** The review queue for workers' profile pictures. */
+    public function photoRequests()
+    {
+        return view('admin.photo_requets', [
+            'pending' => User::awaitingAvatar()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function acceptPhoto(Request $request, AvatarService $avatars)
+    {
+        $user = User::find($request->input('userId'));
+
+        return $this->ok($user ? $avatars->approve($user) : false);
+    }
+
+    public function rejectPhoto(Request $request, AvatarService $avatars)
+    {
+        $user = User::find($request->input('userId'));
+
+        return $this->ok($user ? $avatars->reject($user) : false);
     }
 
     /** The approval queue for payments a worker has recorded. */

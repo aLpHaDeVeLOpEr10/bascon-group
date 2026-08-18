@@ -13,6 +13,7 @@ use App\Models\PaymentReceived;
 use App\Models\ReturnPayment;
 use App\Models\Setting;
 use App\Models\Site;
+use App\Services\AvatarService;
 use App\Services\RollupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -253,6 +254,45 @@ class ConstructionController extends Controller
         }
 
         return $date->format('Y-m-d');
+    }
+
+    // ------------------------------------------------------------- profile
+
+    public function profile()
+    {
+        return view('construction.profile', ['user' => Auth::guard('web')->user()]);
+    }
+
+    /**
+     * A worker's picture is reviewed before it goes live, the same as their
+     * material and payment entries. AvatarService decides that, not this
+     * method — clients post to the client controller and get the direct path.
+     */
+    public function saveProfilePhoto(Request $request, AvatarService $avatars)
+    {
+        $request->validate(['photo' => AvatarService::RULES]);
+
+        $live = $avatars->storeForUser(Auth::guard('web')->user(), $request->file('photo'));
+
+        return response()->json([
+            'success' => true,
+            'live' => $live,
+            'message' => $live
+                ? 'Your profile picture has been updated.'
+                : 'Your picture has been sent for approval.',
+        ]);
+    }
+
+    /** Acknowledge an approval or rejection shown in the bell. */
+    public function markAvatarSeen()
+    {
+        $user = Auth::guard('web')->user();
+
+        if ($user && (int) $user->avatar_seen === 0) {
+            $user->forceFill(['avatar_seen' => 1])->save();
+        }
+
+        return $this->ok(true);
     }
 
     // ------------------------------------------------- material catalogue

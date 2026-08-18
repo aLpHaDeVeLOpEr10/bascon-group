@@ -28,11 +28,34 @@
        Queried here rather than passed in by every controller: the topbar is
        included by both layouts and there is no shared base controller to hang
        it on. It is one indexed COUNT plus at most five rows. */
+    // Whichever guard is signed in, this is their picture (null = initials).
+    $profileAvatar = auth('admin')->user()?->avatar_url
+        ?? auth('web')->user()?->avatar_url;
+
     $notifications = collect();
     $notificationCount = 0;
     $notificationSites = collect();
+    $avatarSeenUrl = null;
     $notificationEmpty = 'Requests and approvals will show up here.';
     $notificationSeenUrl = null;
+
+    /* Profile pictures ride the same bell. Counted separately from payments
+       because each links to its own screen, but folded into one badge — two
+       bells would be worse than one. */
+    $photoCount = 0;
+    $photoDecision = null;
+
+    if (auth('admin')->check()) {
+        $photoCount = \App\Models\User::awaitingAvatar()->count();
+    } elseif (auth('web')->check() && ! auth('web')->user()->isClient()) {
+        $me = auth('web')->user();
+
+        if ((int) $me->avatar_seen === 0) {
+            $photoDecision = (int) $me->avatar_status === \App\Models\User::AVATAR_REJECTED
+                ? 'rejected'
+                : 'approved';
+        }
+    }
 
     if (auth('admin')->check()) {
         $notificationQuery = \App\Models\PaymentReceived::where('status', \App\Models\PaymentReceived::PENDING);
@@ -47,6 +70,7 @@
 
         // Opening the menu acknowledges them, so a decision is announced once.
         $notificationSeenUrl = url('construction/payments_seen');
+        $avatarSeenUrl = url('construction/avatar_seen');
     }
 
     if (isset($notificationQuery)) {
@@ -55,6 +79,8 @@
         $notificationSites = \App\Models\Site::whereIn('id', $notifications->pluck('proj_id'))
             ->get()->keyBy('id');
     }
+
+    $notificationCount += $photoCount + ($photoDecision ? 1 : 0);
 
 
     $logoutUrl = $logoutUrl ?? url('Login/logout');
@@ -216,7 +242,8 @@
         </button>
 
         <div class="ui-menu right-0 left-auto w-80" id="topbar-notifications" role="menu"
-             @if ($notificationSeenUrl && $notificationCount) data-notifications-seen="{{ $notificationSeenUrl }}" @endif>
+             @if ($notificationSeenUrl && $notificationCount) data-notifications-seen="{{ $notificationSeenUrl }}" @endif
+             @if ($avatarSeenUrl && $photoDecision) data-avatar-seen="{{ $avatarSeenUrl }}" @endif>
             <div class="border-b border-line-soft px-2.5 pb-2.5 pt-2">
                 <p class="text-[13px] font-semibold text-neutral-900">Notifications</p>
                 <p class="text-xs text-neutral-500">
@@ -229,6 +256,33 @@
                     @endif
                 </p>
             </div>
+
+            @if ($photoCount)
+                <a href="{{ url('admin_setting/photo_requets') }}" class="ui-menu-item" role="menuitem">
+                    <span class="ui-note-dot" aria-hidden="true"></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate text-[13px] font-medium text-neutral-900">
+                            {{ $photoCount }} profile picture{{ $photoCount === 1 ? '' : 's' }} to review
+                        </span>
+                        <span class="block truncate text-[11.5px] text-neutral-500">Waiting for approval</span>
+                    </span>
+                </a>
+            @endif
+
+            @if ($photoDecision)
+                <a href="{{ url('construction/profile') }}" class="ui-menu-item" role="menuitem">
+                    <span class="ui-note-dot {{ $photoDecision === 'rejected' ? 'is-rejected' : 'is-approved' }}"
+                          aria-hidden="true"></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate text-[13px] font-medium text-neutral-900">
+                            Profile picture {{ $photoDecision }}
+                        </span>
+                        <span class="block truncate text-[11.5px] text-neutral-500">
+                            {{ $photoDecision === 'approved' ? 'It is now shown on your profile.' : 'You can upload a different one.' }}
+                        </span>
+                    </span>
+                </a>
+            @endif
 
             @forelse ($notifications as $note)
                 @php
@@ -263,6 +317,7 @@
                     </span>
                 </a>
             @empty
+                @if (! $photoCount && ! $photoDecision)
                 <div class="ui-empty py-8">
                     <span class="ui-empty-art size-11">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
@@ -274,6 +329,7 @@
                     <p class="ui-empty-title">Nothing new</p>
                     <p class="ui-empty-text">Requests and approvals will show up here.</p>
                 </div>
+                @endif
             @endforelse
 
             @if ($notificationCount > $notifications->count())
@@ -294,7 +350,7 @@
                 aria-expanded="false"
                 aria-haspopup="true"
                 class="flex h-9 items-center gap-2 rounded-xl pl-1 pr-2 transition-colors hover:bg-neutral-100">
-            <span aria-hidden="true" class="ui-avatar size-7">{{ $initials }}</span>
+            <span aria-hidden="true" class="ui-avatar size-7">@if ($profileAvatar)<img src="{{ $profileAvatar }}" alt="">@else{{ $initials }}@endif</span>
             <span class="hidden max-w-32 truncate text-[13px] font-semibold text-neutral-800 sm:block">
                 {{ $displayName }}
             </span>
@@ -306,7 +362,7 @@
 
         <div class="ui-menu right-0 left-auto" id="topbar-user-menu" role="menu">
             <div class="flex items-center gap-3 border-b border-line-soft px-2.5 pb-2.5 pt-2">
-                <span aria-hidden="true" class="ui-avatar size-9 text-[13px]">{{ $initials }}</span>
+                <span aria-hidden="true" class="ui-avatar size-9 text-[13px]">@if ($profileAvatar)<img src="{{ $profileAvatar }}" alt="">@else{{ $initials }}@endif</span>
                 <div class="min-w-0">
                     <p class="truncate text-[13px] font-semibold text-neutral-900">{{ $displayName }}</p>
                     @if ($displayEmail)
@@ -314,6 +370,26 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Profile lives per guard, so the link is chosen the same way the
+                 avatar above it is. --}}
+            @php
+                $profileUrl = auth('admin')->check()
+                    ? url('admin_setting/profile')
+                    : (auth('web')->check()
+                        ? (auth('web')->user()->isClient() ? url('client/profile') : url('construction/profile'))
+                        : null);
+            @endphp
+
+            @if ($profileUrl)
+                <a href="{{ $profileUrl }}" class="ui-menu-item mt-1.5" role="menuitem">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Profile
+                </a>
+            @endif
 
             <a href="{{ $logoutUrl }}" class="ui-menu-item is-danger mt-1.5" role="menuitem">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
@@ -346,13 +422,19 @@
        the count is rebuilt from the database on the next load anyway. */
     $(document).ready(function () {
         var menu = $('#topbar-notifications');
+        if (!menu.length) return;
+
+        // Either or both may be present — payments and the picture decision
+        // are acknowledged by different endpoints.
         var url = menu.data('notifications-seen');
-        if (!url) return;
+        var avatarUrl = menu.data('avatar-seen');
+        if (!url && !avatarUrl) return;
 
         $('[aria-controls="topbar-notifications"]').one('click', function () {
-            $.post(url).always(function () {
-                $('.ui-badge-count').remove();
-            });
+            if (url) $.post(url);
+            if (avatarUrl) $.post(avatarUrl);
+
+            $('.ui-badge-count').remove();
         });
     });
 </script>

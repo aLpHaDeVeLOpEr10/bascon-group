@@ -66,6 +66,11 @@ Route::prefix('construction')->group(function () {
         // shared views in partials/category hardcode them for both sides.
         // Client payments. No delete route by design — a worker may correct a
         // payment but never remove one; see ConstructionController::payments.
+        // Profile picture. A worker's upload is reviewed; see AvatarService.
+        Route::get('profile', [ConstructionController::class, 'profile']);
+        Route::post('profile_photo', [ConstructionController::class, 'saveProfilePhoto']);
+        Route::post('avatar_seen', [ConstructionController::class, 'markAvatarSeen']);
+
         Route::get('payments', [ConstructionController::class, 'payments']);
         Route::get('payment_details/{id}', [ConstructionController::class, 'paymentDetails']);
         Route::get('get_payments/{id}', [ConstructionController::class, 'getPayments']);
@@ -140,6 +145,10 @@ Route::prefix('construction')->group(function () {
 Route::prefix('client')->group(function () {
     Route::middleware('client')->group(function () {
         // pages
+        // Clients publish their picture directly.
+        Route::get('profile', [ClientController::class, 'profile']);
+        Route::post('profile_photo', [ClientController::class, 'saveProfilePhoto']);
+
         Route::get('show_payments', [ClientController::class, 'showPayments']);
         Route::get('finish_payments', [ClientController::class, 'finishPayments']);
         Route::get('labour_payment', [ClientController::class, 'labourPayment']);
@@ -182,6 +191,9 @@ Route::prefix('admin_setting')->group(function () {
         Route::get('civil_requets', [AdminSettingController::class, 'civilRequests']);
         Route::get('finish_requets', [AdminSettingController::class, 'finishRequests']);
         Route::get('payment_requets', [AdminSettingController::class, 'paymentRequests']);
+        Route::get('photo_requets', [AdminSettingController::class, 'photoRequests']);
+        Route::get('profile', [AdminSettingController::class, 'profile']);
+        Route::post('profile_photo', [AdminSettingController::class, 'saveProfilePhoto']);
         Route::get('show_details/{id}', [AdminSettingController::class, 'showDetails']);
         Route::get('show_details_company/{id}', [AdminSettingController::class, 'showDetailsCompany']);
         Route::get('show_con_details/{id}', [AdminSettingController::class, 'showConDetails']);
@@ -238,6 +250,8 @@ Route::prefix('admin_setting')->group(function () {
         Route::post('reject_finish', [AdminSettingController::class, 'rejectFinish']);
         Route::post('accept_payment', [AdminSettingController::class, 'acceptPayment']);
         Route::post('reject_payment', [AdminSettingController::class, 'rejectPayment']);
+        Route::post('accept_photo', [AdminSettingController::class, 'acceptPhoto']);
+        Route::post('reject_photo', [AdminSettingController::class, 'rejectPhoto']);
 
         // updates
         Route::post('update_user', [AdminSettingController::class, 'updateUser']);

@@ -14,6 +14,8 @@ use App\Models\PaymentReceived;
 use App\Models\ReturnPayment;
 use App\Models\Site;
 use App\Models\TotalPayement;
+use App\Services\AvatarService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -220,5 +222,26 @@ class ClientController extends Controller
         }
 
         return $total == (int) $total ? (int) $total : $total;
+    }
+
+    // ------------------------------------------------------------- profile
+
+    public function profile()
+    {
+        return view('client.profile', ['user' => Auth::guard('web')->user()]);
+    }
+
+    /** Clients publish directly — nothing to approve. */
+    public function saveProfilePhoto(Request $request, AvatarService $avatars)
+    {
+        $request->validate(['photo' => AvatarService::RULES]);
+
+        $avatars->storeForUser(Auth::guard('web')->user(), $request->file('photo'));
+
+        return response()->json([
+            'success' => true,
+            'live' => true,
+            'message' => 'Your profile picture has been updated.',
+        ]);
     }
 }
