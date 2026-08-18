@@ -40,7 +40,7 @@
 
 
                             <!--Start A_category -->
-                            <div role="tabpanel" class="tab-pane" id="A_category">
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="A_category">
                                 <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#add_material" aria-controls="home" role="tab" data-toggle="tab">Add Meterial</a>
                                     </li>
@@ -135,7 +135,7 @@
                             <!-- End A_category -->
 
                             <!-- Start B_category -->
-                            <div role="tabpanel" class="tab-pane" id="B_category">
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="B_category">
 
                                 <ul class="ui-tabs" role="tablist">
                                     <li role="presentation"><a href="#tab_3" aria-controls="home" role="tab" data-toggle="tab">Add Detail</a></li>
@@ -234,7 +234,7 @@
 
                             <!-- Start labour -->
 
-                            <div role="tabpanel" class="tab-pane" id="labour">
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="labour">
 
                                 <ul class="ui-tabs" role="tablist">
 
@@ -326,7 +326,7 @@
                             <!-- End labour -->
 
                             <!-- Start Miscellaneous -->
-                            <div role="tabpanel" class="tab-pane" id="Misc">
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="Misc">
 
                                 <ul class="ui-tabs" role="tablist">
 
@@ -393,7 +393,7 @@
 
                             <!-- Start Payment -->
 
-                            <div role="tabpanel" class="tab-pane" id="payment">
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="payment">
 
                                 <ul class="ui-tabs" role="tablist">
 
@@ -601,7 +601,7 @@
                                                 {{-- Two figures, so two pills — the run of &nbsp; that used to
                                                      separate them stretched the row off the side of the card. --}}
                                                 <h3>Payments Recieved: @money($payment_recieved)</h3>
-                                                <h3>Remaining Balace: @money($Remainung_Balace)</h3>
+                                                <h3 @class(['is-negative' => $Remainung_Balace < 0])>Remaining Balace: @money($Remainung_Balace)</h3>
                                             </div>
                                             <table id="grand_account" width="100%" class="ui-table">
 

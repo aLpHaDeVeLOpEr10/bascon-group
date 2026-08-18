@@ -71,6 +71,14 @@
     --shadow-pop:   0 8px 32px -8px rgb(9 9 11 / 0.16), 0 2px 8px -2px rgb(9 9 11 / 0.06);
 
     --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* Height of a nested tab strip, and of anything aligned to its line. */
+    --ui-subtab-row: 2.5rem;
+
+    /* Padding a tab pane carries in place of the card body's. Shared, because
+       anything positioned against the pane has to inset by exactly this to sit
+       on the content edge — see .ui-tab-total-host. */
+    --ui-pane-pad: 1.25rem;
 }
 
 /* ------------------------------------------------------------- dark theme */
@@ -490,13 +498,70 @@
        a bare <h3>/<h4> carrying inline styles (`display:inline; margin-left:60px`),
        which is why these overrides are marked important. */
     .ui-total { @apply flex flex-wrap items-center gap-2.5; }
+
+    /* A pane whose child tabs are a segmented strip has empty space to the
+       right of that strip, because the strip is w-fit. The active child pane's
+       total belongs there — on the same line as the tabs, hard right — rather
+       than stacked above the table where it pushed the data down.
+
+       Absolute against the HOST pane, not the child pane, which is what puts
+       it on the strip's line. Only one child pane is ever displayed, so only
+       one pill can be on screen at a time.
+
+       Below lg the strip can run the full width and the two would collide, so
+       the pill stays in normal flow there. */
+    .ui-tab-total-host { @apply relative; }
+
+    @media (min-width: 1024px) {
+        .ui-tab-total-host > .tab-content .ui-total {
+            @apply absolute z-10 m-0 items-center justify-end;
+            height: var(--ui-subtab-row);
+
+            /* Offsets resolve against the host's PADDING box, not its content
+               box, so top/right of 0 land outside the pane's own padding — the
+               pill floated above the tab strip and past the table's right
+               edge. Insetting by that padding puts its top on the strip's top
+               (the strip is the pane's first child) and its right edge on the
+               table's. */
+            top: var(--ui-pane-pad);
+            right: var(--ui-pane-pad);
+        }
+
+        /* .tab-pane's entry animation holds a translate, and a transformed
+           element becomes the containing block for anything absolute inside
+           it — so the pill anchors to the pane it sits in rather than to the
+           host, and lands on top of the table.
+
+           Every descendant pane, not just the immediate children: Return
+           nests a second strip (Return Add / Return Show), so its total is two
+           panes deep and only the inner one was trapping it. Same fade in, no
+           transform, nothing between the pill and the host. */
+        .ui-tab-total-host .tab-pane.active {
+            animation-name: ui-fade;
+        }
+
+        @keyframes ui-fade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+    }
     .ui-total:empty { @apply hidden; }
     .ui-total h3,
     .ui-total h4 {
         @apply inline-flex! items-center gap-2 m-0! rounded-full
-               border border-brand-100 bg-brand-50 px-5 py-2.5
+               border border-brand-100 bg-brand-50 px-5 py-2 leading-tight
                text-[15px]! font-semibold text-brand-800! tabular-nums;
         background-image: var(--wash-total);
+    }
+
+    /* A balance below zero is money owed, not a running total, so it drops the
+       brand wash for the same rose the alerts use. Colour is the only thing
+       that changes — same pill, same place, so it reads as the same figure in
+       a different state rather than a different figure. */
+    .ui-total h3.is-negative,
+    .ui-total h4.is-negative {
+        @apply border-rose-200 bg-rose-50 text-rose-800!;
+        background-image: none;
     }
 
     /* -------------------------------------------------------------- cards */
@@ -627,10 +692,17 @@
     .ui-tabs > li.active > a { @apply text-brand-700 font-semibold; }
     .ui-tabs > li.active > a::after { @apply scale-x-100; }
 
-    /* Nested level: a segmented control that sizes to its own content. */
+    /* Nested level: a segmented control that sizes to its own content.
+
+       The height is fixed rather than left to the labels so that anything
+       parked on this strip's line — the totals pill, see .ui-tab-total-host —
+       can match it exactly and the two centre on each other. items-center
+       rather than the strip default of items-stretch, so pinning the height
+       does not stretch the tab links and push their labels off centre. */
     .tab-pane > .ui-tabs {
-        @apply mb-5 w-fit max-w-full gap-1 rounded-xl border border-line bg-elevated p-1;
+        @apply mb-5 w-fit max-w-full items-center gap-1 rounded-xl border border-line bg-elevated p-1;
         border-bottom-width: 1px;
+        height: var(--ui-subtab-row);
     }
     .tab-pane > .ui-tabs > li > a {
         @apply rounded-lg px-3.5 py-1.5 text-[12.5px];
@@ -646,7 +718,7 @@
     /* A card whose whole body is tabs — the strip meets the card edge, and the
        panes carry the padding the card body would have had. Third-level panes
        inherit their parent's padding rather than adding more. */
-    .ui-card > .tab-content > .tab-pane { @apply p-5; }
+    .ui-card > .tab-content > .tab-pane { padding: var(--ui-pane-pad); }
     .ui-card > .tab-content > .tab-pane .tab-pane { @apply p-0; }
 
     @keyframes ui-fade-up {

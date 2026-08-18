@@ -28,8 +28,21 @@
     // pattern is just the path portion of each one.
     $is = fn (string $path) => request()->is($path);
 
-    $constructionActive = $is('construction/*');
+    $constructionActive = $is('construction/show_site')
+        || $is('construction/show_details/*')
+        || $is('construction/add_site');
+    $categoryActive = $is('construction/add_civil')
+        || $is('construction/add_finishing')
+        || $is('construction/add_labour');
     $clientActive = $is('client/*');
+
+    // Mirrors the admin sidebar's Category group. Same three screens, same
+    // order — see partials/admin_sidebar.
+    $categoryLinks = [
+        ['construction/add_civil',     'Civil Materials'],
+        ['construction/add_finishing', 'Finishing Materials'],
+        ['construction/add_labour',    'Labour'],
+    ];
 
     $clientLinks = [
         ['client/show_payments',        'Civil Material Payments'],
@@ -100,6 +113,38 @@
                                @if ($is('construction/show_site')) aria-current="page" @endif>
                                 Show Site
                             </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-nav-group {{ $categoryActive ? 'is-open' : '' }}">
+                <button type="button"
+                        data-nav-toggle
+                        data-tip="Category"
+                        aria-expanded="{{ $categoryActive ? 'true' : 'false' }}"
+                        class="ui-nav-link ui-nav-parent w-full {{ $categoryActive ? 'has-active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m12 2 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" />
+                    </svg>
+                    <span class="flex-1 truncate text-left" data-nav-label>Category</span>
+                    <svg class="ui-nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </button>
+
+                <div class="ui-nav-sub">
+                    <div>
+                        <div class="ml-[1.375rem] mt-1 space-y-0.5 border-l border-neutral-200 pl-2">
+                            @foreach ($categoryLinks as [$path, $label])
+                                <a href="{{ url($path) }}"
+                                   class="ui-nav-sublink {{ $is($path) ? 'is-active' : '' }}"
+                                   @if ($is($path)) aria-current="page" @endif>
+                                    {{ $label }}
+                                </a>
+                            @endforeach
                         </div>
                     </div>
                 </div>

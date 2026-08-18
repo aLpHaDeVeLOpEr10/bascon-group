@@ -59,6 +59,23 @@ Route::prefix('construction')->group(function () {
         Route::get('show_site', [ConstructionController::class, 'showSite']);
         Route::get('show_details/{id}', [ConstructionController::class, 'showDetails']);
 
+        // Category catalogue. Mirrors the admin_setting routes of the same
+        // names — same screens, same tables, reachable without an admin
+        // account. The endpoint names carry the legacy swaps (save_amaterial
+        // writes a CIVIL row, get_agategory reads FINISHING ones) because the
+        // shared views in partials/category hardcode them for both sides.
+        Route::get('add_civil', [ConstructionController::class, 'addCivil']);
+        Route::get('add_finishing', [ConstructionController::class, 'addFinishing']);
+        Route::get('add_labour', [ConstructionController::class, 'addLabour']);
+        Route::get('get_agategory', [ConstructionController::class, 'getAGategory']);
+        Route::get('get_bgategory', [ConstructionController::class, 'getBGategory']);
+        Route::get('get_labourcat', [ConstructionController::class, 'getLabourCat']);
+        Route::post('save_amaterial', [ConstructionController::class, 'saveAMaterial']);
+        Route::post('save_bmaterial', [ConstructionController::class, 'saveBMaterial']);
+        Route::post('save_labour', [ConstructionController::class, 'saveLabourType']);
+        Route::post('delete_category', [ConstructionController::class, 'deleteCategory']);
+        Route::post('delete_bcategory', [ConstructionController::class, 'deleteBCategory']);
+
         // reads
         Route::get('get_site', [ConstructionController::class, 'getSite']);
         Route::get('get_bricks', [ConstructionController::class, 'getBricks']);

@@ -84,6 +84,99 @@ class ConstructionController extends Controller
         ]);
     }
 
+    // ------------------------------------------------- material catalogue
+
+    /*
+     * The Category screens, previously admin-only. Workers now reach the same
+     * three pages under /construction, so a site can be set up without an
+     * administrator.
+     *
+     * The pages themselves are one copy — partials/category/* rendered with a
+     * different prefix — and these methods mirror AdminSettingController's,
+     * writing the same three tables. The legacy name swaps are preserved
+     * because the shared views hardcode the endpoint names: save_Amaterial
+     * writes a CIVIL category and get_Agategory reads FINISHING ones.
+     */
+
+    public function addCivil()
+    {
+        return view('construction.add_civil');
+    }
+
+    public function addFinishing()
+    {
+        return view('construction.add_finishing');
+    }
+
+    public function addLabour()
+    {
+        return view('construction.add_labour', ['sites' => Site::all()]);
+    }
+
+    /** Swapped by legacy naming: returns FINISHING categories. */
+    public function getAGategory()
+    {
+        return response()->json(['data' => BCategory::all()]);
+    }
+
+    /** Swapped by legacy naming: returns CIVIL categories. */
+    public function getBGategory()
+    {
+        return response()->json(['data' => Category::all()]);
+    }
+
+    public function getLabourCat()
+    {
+        return response()->json(['data' => Labour::all()]);
+    }
+
+    public function saveAMaterial(Request $request)
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:200']]);
+
+        return $this->ok(Category::create(['material_name' => $data['name']])->exists);
+    }
+
+    /** Swapped by legacy naming: save_Bmaterial writes a FINISHING category. */
+    public function saveBMaterial(Request $request)
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:200']]);
+
+        return $this->ok(BCategory::create(['material_name' => $data['name']])->exists);
+    }
+
+    /**
+     * Named saveLabourType, not saveLabour: ConstructionController already has
+     * a labour route family for instalments, and `Labour` here is the type
+     * catalogue a site's instalments are recorded against.
+     */
+    public function saveLabourType(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:200'],
+            'price' => ['nullable'],
+            'project_id' => ['required'],
+        ]);
+
+        return $this->ok(Labour::create([
+            'type' => $data['name'],
+            'total' => $data['price'] ?? 0,
+            'project_id' => $data['project_id'],
+        ])->exists);
+    }
+
+    /** Swapped by legacy naming: delete_category removes a FINISHING one. */
+    public function deleteCategory(Request $request)
+    {
+        return $this->ok((bool) BCategory::destroy($request->input('userId')));
+    }
+
+    /** Swapped by legacy naming: delete_Bcategory removes a CIVIL one. */
+    public function deleteBCategory(Request $request)
+    {
+        return $this->ok((bool) Category::destroy($request->input('userId')));
+    }
+
     // ---------------------------------------------------------------- reads
 
     /**
