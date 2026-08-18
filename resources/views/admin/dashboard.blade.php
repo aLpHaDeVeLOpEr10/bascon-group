@@ -65,8 +65,6 @@
         if ($v >= 1000) return round($v / 1000).'k';
         return (string) round($v);
     };
-
-    $pendingTotal = array_sum($pending);
 @endphp
 
 @section('content')
@@ -179,33 +177,10 @@
 
 </div>
 
-{{-- ------------------------------------------------------- queue + sites --}}
-<div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
+{{-- ------------------------------------------------------------- sites --}}
+<div class="mt-4">
 
-    <x-card title="Waiting on you" subtitle="Entries a worker has filed that are not yet approved.">
-        @if ($pendingTotal === 0)
-            <x-empty-state title="Nothing pending"
-                           message="Every civil, finishing and labour entry has been reviewed." />
-        @else
-            <ul class="space-y-2">
-                <li><a href="{{ url('admin_setting/civil_requets') }}" class="ui-queue-row">
-                    <span>Civil materials</span><span class="ui-queue-count">{{ $pending['civil'] }}</span></a></li>
-                <li><a href="{{ url('admin_setting/finish_requets') }}" class="ui-queue-row">
-                    <span>Finishing materials</span><span class="ui-queue-count">{{ $pending['finishing'] }}</span></a></li>
-                <li><a href="{{ url('admin_setting/civil_requets') }}" class="ui-queue-row">
-                    <span>Labour instalments</span><span class="ui-queue-count">{{ $pending['labour'] }}</span></a></li>
-            </ul>
-        @endif
-
-        <div class="mt-5 border-t border-line pt-4">
-            <p class="text-[12.5px] text-neutral-500">Company expenses recorded</p>
-            <p class="mt-1 text-[19px] font-semibold tabular-nums text-neutral-900">@money($expenses)</p>
-            <a href="{{ url('admin_setting/show_expense') }}"
-               class="mt-2 inline-block text-[12.5px] font-medium text-brand-700">View expenses →</a>
-        </div>
-    </x-card>
-
-    <x-card class="xl:col-span-2" flush title="Sites by recorded value"
+    <x-card flush title="Sites by recorded value"
             subtitle="Balance is what the client has paid, less what has been recorded against the site.">
         <div class="ui-table-wrap">
             <table class="ui-table">

@@ -65,8 +65,10 @@ class AdminSettingController extends Controller
      * against that. Keeping the definition identical matters — a dashboard that
      * totals differently from the page it links to is worse than no dashboard.
      *
-     * The portfolio-wide totals and the cost breakdown were dropped with the
-     * cards that showed them, and their whole-table sums went with them.
+     * The portfolio-wide totals, the cost breakdown and the approval queue were
+     * dropped with the cards that showed them, and the whole-table sums and
+     * pending counts that fed them went too. What is left is the monthly series
+     * and the per-site table.
      *
      * Money columns are VARCHAR in the legacy schema (real rows hold '20% of
      * profit' alongside plain amounts), so every sum casts. Non-numeric text
@@ -113,32 +115,10 @@ class AdminSettingController extends Controller
             ];
         })->sortByDesc('cost')->values();
 
-        // Anything still waiting on an admin decision. These are the two
-        // Request screens' queues, surfaced so they are not missed.
-        $pending = [
-            'civil' => Material::where('status', 0)->count(),
-            'finishing' => BMaterial::where('status', 0)->count(),
-            'labour' => LabourInstalment::where('status', 0)->count(),
-        ];
-
         return view('admin.dashboard', [
             'sites' => $sites,
-            'pending' => $pending,
             'months' => $this->monthlySeries(),
-            'expenses' => (float) $this->sumOf('expense', 'ammount', false),
         ]);
-    }
-
-    /** Sum of one money column across a whole table. */
-    private function sumOf(string $table, string $column, bool $gated)
-    {
-        $q = DB::table($table);
-
-        if ($gated) {
-            $q->where('status', 1);
-        }
-
-        return $q->sum(DB::raw("cast({$column} as decimal(18,2))")) ?: 0;
     }
 
     /** The same sum, keyed by the project it belongs to. */
