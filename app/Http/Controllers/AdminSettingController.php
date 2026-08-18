@@ -470,7 +470,13 @@ class AdminSettingController extends Controller
 
     public function showConDetail1(string $id)
     {
-        return response()->json(['data' => PaymentReceived::where('proj_id', $id)->get()]);
+        // Newest first, on the sortable date_n rather than the legacy VARCHAR.
+        return response()->json([
+            'data' => PaymentReceived::where('proj_id', $id)
+                ->orderByDesc('date_n')
+                ->orderByDesc('id')
+                ->get(),
+        ]);
     }
 
     // ------------------------------------------------------- modal prefills

@@ -214,13 +214,15 @@
 @push('scripts')
 <script>
     $(function() {
-        $("#datepicker").datepicker();
+        $("#datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
     });
     $(function() {
-        $("#datepicker1").datepicker();
+        // dd/mm/yy so this form and the worker's payment form write one
+        // convention; see NormalizeDates for the id the switch happened at.
+        $("#datepicker1").datepicker({ dateFormat: 'dd/mm/yy' });
     });
     $(function() {
-        $("#datepicker2").datepicker();
+        $("#datepicker2").datepicker({ dateFormat: 'dd/mm/yy' });
     });
 </script>
 <script>

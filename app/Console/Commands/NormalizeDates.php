@@ -26,6 +26,23 @@ use Illuminate\Support\Facades\DB;
  *     material           mm/dd for id <= 226, dd/mm from id 237
  *     labour_instalment  mm/dd for id <= 66,  dd/mm from id 73
  *     misc               mm/dd for id <= 35,  dd/mm from id 39
+ *     payments_recieved  mm/dd for id <= 293, dd/mm from id 294
+ *
+ *     expense            mm/dd for id <= 143, dd/mm from id 144
+ *     misc_admin         mm/dd for id <= 18,  dd/mm from id 19
+ *     architect_detail   mm/dd for id <= 46,  dd/mm from id 47
+ *     architect_detail_company  mm/dd for id <= 24, dd/mm from id 25
+ *     construction_detail       mm/dd for id <= 37, dd/mm from id 38
+ *
+ * The payments boundary is 293 because the rows above it were already entered
+ * as dd/mm by hand — '22/04/2026' cannot be a month — before either payment
+ * form had a picker.
+ *
+ * The rest are deliberate: every date picker on the admin side was switched to
+ * dd/mm/yy in one change, so everything written from those ids on is dd/mm.
+ * Recording the boundary is what keeps a re-run correct on both sides of it —
+ * without it the backfill would read every new date as mm/dd and either fail
+ * or, worse, silently produce the wrong month for a day under 13.
  *
  * Dry run by default. Pass --apply to write.
  */
@@ -42,14 +59,15 @@ class NormalizeDates extends Command
         'b_material' => 'dmy',
         'return_payment' => 'dmy',
 
-        'expense' => 'mdy',
-        'payments_recieved' => 'mdy',
-        'architect_detail' => 'mdy',
-        'architect_detail_company' => 'mdy',
-        'construction_detail' => 'mdy',
-        'misc_admin' => 'mdy',
+
 
         // switched format mid-life; boundary verified against the data
+        'payments_recieved' => ['mdy_max_id' => 293],
+        'expense' => ['mdy_max_id' => 143],
+        'misc_admin' => ['mdy_max_id' => 18],
+        'architect_detail' => ['mdy_max_id' => 46],
+        'architect_detail_company' => ['mdy_max_id' => 24],
+        'construction_detail' => ['mdy_max_id' => 37],
         'material' => ['mdy_max_id' => 226],
         'labour_instalment' => ['mdy_max_id' => 66],
         'misc' => ['mdy_max_id' => 35],

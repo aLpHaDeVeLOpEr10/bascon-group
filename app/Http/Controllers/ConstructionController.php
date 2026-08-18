@@ -147,6 +147,11 @@ class ConstructionController extends Controller
         return response()->json([
             'data' => PaymentReceived::where('proj_id', $id)
                 ->whereIn('status', [PaymentReceived::LIVE, PaymentReceived::PENDING])
+                // Newest first. On date_n, the sortable DATE copy — the legacy
+                // `date` is a VARCHAR and would sort as text. id breaks ties
+                // and carries rows whose date never parsed.
+                ->orderByDesc('date_n')
+                ->orderByDesc('id')
                 ->get(),
         ]);
     }
@@ -227,8 +232,10 @@ class ConstructionController extends Controller
      * `dates:normalize` backfill. A payment recorded here would have been
      * invisible to those queries until someone remembered to re-run it.
      *
-     * m/d/Y because payments_recieved is an `mdy` table; anything that does
-     * not parse cleanly stores null rather than a guess.
+     * d/m/Y: payments are written dd/mm from id 302 on, by this form and by
+     * the admin's. Rows before that are mm/dd and NormalizeDates holds the
+     * boundary. Anything that does not parse cleanly stores null rather than
+     * a guess.
      */
     private function normalisePaymentDate(?string $value): ?string
     {
@@ -238,7 +245,7 @@ class ConstructionController extends Controller
             return null;
         }
 
-        $date = \DateTimeImmutable::createFromFormat('m/d/Y|', $value);
+        $date = \DateTimeImmutable::createFromFormat('d/m/Y|', $value);
         $errors = \DateTimeImmutable::getLastErrors();
 
         if ($date === false || ! empty($errors['warning_count']) || ! empty($errors['error_count'])) {

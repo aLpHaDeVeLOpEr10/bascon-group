@@ -139,12 +139,14 @@
 <script>
     $(document).ready(function () {
         /* Both date fields — the add form and the edit modal.
-           No dateFormat override on purpose: jQuery UI's default is mm/dd/yy,
-           and payments_recieved is an `mdy` table (see NormalizeDates), which
-           is also what the admin's own payment form writes. Passing the
-           dd/mm/yy used elsewhere in this app would file 03/04 as 4 March
-           against an admin's 3 April. */
-        $('.datepicker').datepicker();
+
+           dd/mm/yy, matching the rest of the app. payments_recieved was
+           written mm/dd up to id 301 and dd/mm from here on; the admin's
+           payment form was switched to match in the same change, so both
+           forms now write one convention. NormalizeDates carries the
+           boundary, exactly as it already does for material,
+           labour_instalment and misc, which each made this same switch. */
+        $('.datepicker').datepicker({ dateFormat: 'dd/mm/yy' });
 
         var table = $('#payment_table').DataTable({
             "ajax": {
@@ -153,9 +155,22 @@
                 "dataType": "json",
                 "dataSrc": "data"
             },
+            // The server already returns newest first; without this
+            // DataTables would re-sort on column 0 and undo it.
+            "order": [],
             "columns": [
                 { "data": "id" },
-                { "data": "date" },
+                {
+                    "data": "date",
+                    /* date is a VARCHAR of dd/mm/yyyy, which sorts
+                       alphabetically — every 01/xx lands above every 02/xx
+                       regardless of month. date_n is the DATE copy beside it,
+                       so it is handed to DataTables for sorting while the
+                       readable string is what gets drawn. */
+                    "render": function (data, type, row) {
+                        return type === 'display' ? data : (row.date_n || '');
+                    }
+                },
                 { "data": "source" },
                 { "data": "payment", "className": "text-right" },
                 {

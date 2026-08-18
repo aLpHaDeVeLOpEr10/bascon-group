@@ -180,11 +180,11 @@
 @push('scripts')
 <script>
         $(function() {
-            $("#datepicker").datepicker();
+            $("#datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
         });
 
         $(function() {
-            $("#datepicker1").datepicker();
+            $("#datepicker1").datepicker({ dateFormat: 'dd/mm/yy' });
         });
         $(document).ready(function() {
 
