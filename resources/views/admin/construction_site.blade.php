@@ -11,7 +11,12 @@
                subtitle="Construction project detail, instalments and payments." />
 
 
-            <div class="ui-card" style="padding-bottom: 30px;">
+            {{-- is-split: this screen puts its nested tab strips in one
+                 .tab-content and the panes those strips control in a second,
+                 sibling one. The card is the only element containing both, so
+                 it is the card that positions the totals onto the strip's
+                 line. --}}
+            <div class="ui-card ui-tab-total-host is-split" style="padding-bottom: 30px;">
                         <div>
 
                             <!-- Nav tabs -->
@@ -83,6 +88,12 @@
                                 <div class="mt-4">
 
 
+                                    {{-- Above the table, right-aligned: the figure a
+                                         reader wants first should not be below a
+                                         paginated list. --}}
+                                    <div class="ui-total mb-4 justify-end" id="total_instalments_card">
+                                        <h4>Total Fee: @money($total_fee)</h4><h4>Total Instalments: @money($total_instalments)</h4>
+                                    </div>
                                     <table id="b_categoer_table" width="100%" class="ui-table">
 
                                         <thead>
@@ -96,9 +107,6 @@
                                             </tr>
                                         </thead>
                                     </table>
-                                    <div class="ui-total my-5" id="total_price_managments">
-                                        <h4>Total Fee:@money($total_fee)</h4><h4>Total Instalments:@money($total_instalments)</h4>
-                                    </div>
                                 </div>
 
                             </div>
@@ -139,6 +147,9 @@
                                 <div class="mt-4">
 
 
+                                    <div class="ui-total mb-4 justify-end" id="total_payments_card">
+                                        <h4>Total Payments: @money($total_payments)</h4>
+                                    </div>
                                     <table id="b_categoer_table1" width="100%" class="ui-table">
 
                                         <thead>
@@ -154,9 +165,6 @@
                                             </tr>
                                         </thead>
                                     </table>
-                                    <div class="ui-total my-5" id="total_price_managments">
-                                        <h4>Total Payments:@money($total_payments)</h4>
-                                    </div>
                                 </div>
 
                             </div>

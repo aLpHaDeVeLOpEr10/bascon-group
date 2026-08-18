@@ -11,10 +11,7 @@
 @section('content')
 <x-page-header :title="$name" subtitle="Payments received against this site." />
 
-{{-- is-strip: this card's tabs are the full-width underlined strip that meets
-     the card edge, not the nested segmented pill group, so the total aligns to
-     that strip rather than to a pane's padding box. --}}
-<div class="ui-card overflow-hidden ui-tab-total-host is-strip">
+<div class="ui-card overflow-hidden">
     {{-- Payments received is marked active in the markup: opening the ledger
          should show the ledger. ui.js only auto-opens the first tab of a strip
          where nothing is selected, so this wins without any script. --}}
@@ -63,7 +60,9 @@
 
         <div role="tabpanel" class="tab-pane active" id="show_payment">
             <div class="mt-4">
-                <div class="ui-total mb-4">
+                {{-- In flow, below the tab strip's rule and directly above the
+                     table it totals, rather than pinned up onto the strip. --}}
+                <div class="ui-total mb-4 justify-end">
                     <h3>Total received: @money($total_payments)</h3>
                     @if ($pending_payments > 0)
                         <h3 class="is-pending">Awaiting approval: @money($pending_payments)</h3>

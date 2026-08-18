@@ -570,6 +570,19 @@
             height: var(--ui-tab-row);
         }
 
+        /* A card holding TWO tab levels in sibling containers: the top-level
+           strip, then a .tab-content of nested strips, then a second
+           .tab-content of the panes those control. Nothing wraps a strip
+           together with its own panes, so the card is the positioning
+           context and the offset is composed from the tokens rather than
+           measured: down past the top strip and the pane's padding, then the
+           nested strip's own height. */
+        .ui-tab-total-host.is-split > .tab-content .ui-total {
+            top: calc(var(--ui-tab-row) + var(--ui-pane-pad));
+            right: var(--ui-pane-pad);
+            height: var(--ui-subtab-row);
+        }
+
         /* .tab-pane's entry animation holds a translate, and a transformed
            element becomes the containing block for anything absolute inside
            it — so the pill anchors to the pane it sits in rather than to the
