@@ -141,6 +141,65 @@ const Modal = {
  * href pointing at a pane id, `.active` on the owning <li> and on the pane.
  * $(link).tab('show') is also supported.
  */
+/**
+ * The sliding underline on a tab strip.
+ *
+ * The stylesheet's fallback is a per-link ::after that scales up in place, so
+ * the strip still marks its active tab with no JavaScript at all. Where this
+ * runs it takes over: one bar, moved and resized to the active tab, which is
+ * the only way the mark can travel BETWEEN tabs rather than fading out in one
+ * place and in at another.
+ *
+ * Both strip shapes use it. On a top-level strip the bar is the 2px underline;
+ * on a nested segmented group the stylesheet restyles the very same element
+ * into the filled pill that sits behind the active tab. One mechanism, two
+ * skins — a second implementation would be two things to keep in step.
+ */
+function moveTabIndicator(strip) {
+    if (!strip) return;
+
+    let bar = $1(':scope > .ui-tabs-indicator', strip);
+
+    if (!bar) {
+        bar = doc.createElement('span');
+        bar.className = 'ui-tabs-indicator';
+        bar.setAttribute('aria-hidden', 'true');
+        strip.appendChild(bar);
+        // Retires the per-link ::after, so the two cannot both be drawn.
+        strip.classList.add('has-indicator');
+    }
+
+    const item = $1(':scope > li.active', strip);
+    if (!item) {
+        bar.style.width = '0';
+        return;
+    }
+
+    const link = $1('a', item) || item;
+
+    /* Measured from the rectangles rather than offsetLeft.
+     *
+     * offsetLeft reports against the nearest POSITIONED ancestor, and the
+     * items carry position:relative so the segmented pill can sit behind
+     * them — which made every link report 0 and parked the bar under the
+     * first tab. Rect deltas do not care what is positioned.
+     *
+     * scrollLeft converts the on-screen delta back into the strip's content
+     * coordinates, which is what an absolutely positioned child inside a
+     * horizontally scrolling strip is laid out in. */
+    const stripBox = strip.getBoundingClientRect();
+    const linkBox = link.getBoundingClientRect();
+
+    if (!linkBox.width) return;   // strip is hidden; measured again when shown
+
+    bar.style.width = linkBox.width + 'px';
+    bar.style.transform = 'translateX(' + (linkBox.left - stripBox.left + strip.scrollLeft) + 'px)';
+}
+
+function initTabIndicators() {
+    $$('.ui-tabs').forEach(moveTabIndicator);
+}
+
 function showTab(link) {
     if (!link) return;
 
@@ -170,6 +229,12 @@ function showTab(link) {
         });
     }
     pane.classList.add('active');
+
+    if (strip) moveTabIndicator(strip);
+
+    // A strip inside the pane just revealed measured zero while it was
+    // display:none, so its own bar has to be placed now that it has a size.
+    $$('.ui-tabs', pane).forEach(moveTabIndicator);
 }
 
 function installJqueryShims() {
@@ -1132,6 +1197,18 @@ function init() {
     initRouteProgress();
     initDataTableDefaults();
     initDataTableMoney();
+
+    // After initDefaultTab, so a strip that opened its own first tab is
+    // measured too. A second pass on load covers web fonts arriving late and
+    // changing every label's width.
+    initTabIndicators();
+    on(window, 'load', initTabIndicators);
+
+    let indicatorResize;
+    on(window, 'resize', () => {
+        window.clearTimeout(indicatorResize);
+        indicatorResize = window.setTimeout(initTabIndicators, 120);
+    });
 }
 
 // The vendored libraries (jQuery, jQuery UI, DataTables) are classic scripts,
