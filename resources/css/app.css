@@ -837,10 +837,16 @@
     .ui-crumbs { @apply items-center gap-1.5 text-[12.5px] text-neutral-400; }
     .ui-crumbs a { @apply inline-flex items-center gap-1 text-neutral-500 transition-colors hover:text-neutral-900; }
 
-    /* Arrow on the first link only — deeper trails keep a plain parent. Drawn
-       as a mask rather than a background image so it takes currentColor and
-       follows both the hover state and the theme. */
-    .ui-crumbs a:first-of-type::before {
+    /* The arrow marks a real back link, so it is keyed on the first crumb
+       being an <a>. Twelve trails name a sidebar GROUP as their parent
+       (Category, Request, Settings, Money Management…); those groups have no
+       page of their own and render as plain <span>s, so they get the label
+       without the arrow — an arrow on something that cannot be clicked would
+       be a promise the trail does not keep.
+
+       Drawn as a mask rather than a background image so the glyph takes
+       currentColor and follows both the hover state and the theme. */
+    .ui-crumbs > a:first-child::before {
         content: '';
         @apply inline-block size-3.5 shrink-0;
         background-color: currentColor;
