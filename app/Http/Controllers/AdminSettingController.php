@@ -59,11 +59,14 @@ class AdminSettingController extends Controller
     /**
      * Admin home.
      *
-     * Every figure here is the same arithmetic showDetails() does for a single
+     * The per-site figures are the same arithmetic showDetails() does for one
      * site, run across all of them at once: cost is civil + finishing + labour
      * + miscellaneous, less returns; the balance is what a client has paid
      * against that. Keeping the definition identical matters — a dashboard that
      * totals differently from the page it links to is worse than no dashboard.
+     *
+     * The portfolio-wide totals and the cost breakdown were dropped with the
+     * cards that showed them, and their whole-table sums went with them.
      *
      * Money columns are VARCHAR in the legacy schema (real rows hold '20% of
      * profit' alongside plain amounts), so every sum casts. Non-numeric text
@@ -82,15 +85,6 @@ class AdminSettingController extends Controller
             'labour_instalment' => ['instalmet', 'project_id', true],
             'misc' => ['price', 'proj_id', false],
         ];
-
-        $mix = [];
-        foreach ($costs as $table => [$col, $fk, $gated]) {
-            $mix[$table] = (float) $this->sumOf($table, $col, $gated);
-        }
-
-        $returns = (float) $this->sumOf('return_payment', 'price', false);
-        $received = (float) $this->sumOf('payments_recieved', 'payment', false);
-        $value = array_sum($mix) - $returns;
 
         // Per-site cost, so the table can rank sites and show each balance.
         $perSite = [];
@@ -128,13 +122,7 @@ class AdminSettingController extends Controller
         ];
 
         return view('admin.dashboard', [
-            'value' => $value,
-            'received' => $received,
-            'outstanding' => $value - $received,
-            'returns' => $returns,
-            'mix' => $mix,
             'sites' => $sites,
-            'runningSites' => $sites->where('closed', false)->count(),
             'pending' => $pending,
             'months' => $this->monthlySeries(),
             'expenses' => (float) $this->sumOf('expense', 'ammount', false),

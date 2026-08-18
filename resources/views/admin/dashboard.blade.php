@@ -66,14 +66,6 @@
         return (string) round($v);
     };
 
-    $mixLabels = [
-        'material' => 'Civil materials',
-        'b_material' => 'Finishing materials',
-        'labour_instalment' => 'Labour',
-        'misc' => 'Miscellaneous',
-    ];
-    $mixPeak = max(1, max($mix));
-
     $pendingTotal = array_sum($pending);
 @endphp
 
@@ -81,28 +73,12 @@
 <x-page-header title="Dashboard"
                subtitle="Every site's position at a glance — cost recorded, money received, and what is still owed." />
 
-{{-- ---------------------------------------------------------------- KPIs --}}
-{{-- Four headline figures, each a single number: a stat tile rather than a
-     chart, because there is no comparison or trend inside any one of them. --}}
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <x-stat-card label="Recorded project value" :value="money($value)" icon="layers" tone="brand"
-                 :note="'Net of ' . money($returns) . ' returned'" />
-
-    <x-stat-card label="Payments received" :value="money($received)" icon="wallet" tone="success" />
-
-    <x-stat-card label="Outstanding from clients" :value="money($outstanding)" icon="clock"
-                 :tone="$outstanding > 0 ? 'warning' : 'success'"
-                 :note="$outstanding > 0 ? 'Billed but not yet paid' : 'Fully settled'" />
-
-    <x-stat-card label="Active sites" :value="$runningSites . ' of ' . $sites->count()" icon="building"
-                 tone="info" note="Running, not yet closed" />
-</div>
 
 {{-- --------------------------------------------------------------- charts --}}
-<div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-
-    {{-- Change over time, two measures, one unit, one axis. --}}
-    <x-card class="xl:col-span-2">
+{{-- Change over time, two measures, one unit, one axis. Full width now that
+     nothing sits beside it. --}}
+<div>
+    <x-card>
         <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="ui-card-title">Cost and receipts by month</h2>
@@ -201,30 +177,6 @@
         </details>
     </x-card>
 
-    {{-- Four magnitudes compared. One series, so one hue and no legend — the
-         categories are named on the rows themselves. --}}
-    <x-card title="Where the cost sits" subtitle="Across all sites, approved entries only.">
-        <div class="space-y-4">
-            @foreach ($mixLabels as $key => $label)
-                <div>
-                    <div class="flex items-baseline justify-between gap-3">
-                        <span class="text-[13px] font-medium text-neutral-700">{{ $label }}</span>
-                        <span class="text-[13px] font-semibold tabular-nums text-neutral-900">@money($mix[$key])</span>
-                    </div>
-
-                    <div class="viz-track">
-                        <span class="viz-fill"
-                              style="--viz-w: {{ max(1, round($mix[$key] / $mixPeak * 100, 2)) }}%;
-                                     animation-delay: {{ $loop->index * 90 }}ms"></span>
-                    </div>
-
-                    <span class="text-[11.5px] text-neutral-400">
-                        {{ array_sum($mix) > 0 ? round($mix[$key] / array_sum($mix) * 100, 1) : 0 }}% of recorded cost
-                    </span>
-                </div>
-            @endforeach
-        </div>
-    </x-card>
 </div>
 
 {{-- ------------------------------------------------------- queue + sites --}}

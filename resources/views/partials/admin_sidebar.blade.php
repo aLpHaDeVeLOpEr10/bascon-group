@@ -21,11 +21,11 @@
             ['admin_setting/add_user',  'Add user'],
             ['admin_setting/show_user', 'Show User'],
         ]],
-        ['label' => 'Category', 'icon' => 'layers', 'items' => [
-            ['admin_setting/add_civil',     'Civil Materials'],
-            ['admin_setting/add_finishing', 'Finishing Materials'],
-            ['admin_setting/add_labour',    'Labour'],
-        ]],
+        /* Category is deliberately absent. The same three screens are on the
+           worker side now (construction/add_civil and friends), which is where
+           the catalogue is maintained. The admin routes and pages are still
+           registered and reachable by URL — only the menu entry is hidden — so
+           nothing breaks for a bookmarked link. */
         ['label' => 'Project Management', 'icon' => 'building', 'items' => [
             ['admin_setting/add_con_site',  'Add site'],
             ['admin_setting/show_con_site', 'Show site'],
