@@ -217,8 +217,14 @@ function initTabIndicators() {
  */
 function fitTabTotals() {
     $$('.ui-tab-total-host').forEach((host) => {
-        const total = $1('.tab-content .ui-total', host);
-        if (!total || total.offsetParent === null) return;
+        /* The FIRST .ui-total in the host belongs to whichever pane comes
+         * first in the markup, which is usually a hidden one — reading that
+         * and bailing on its missing offsetParent meant this never measured
+         * anything. Take the one actually on screen. */
+        const total = $$('.tab-content .ui-total', host)
+            .find((el) => el.offsetParent !== null);
+
+        if (!total) return;
 
         // The innermost visible strip is the one the pill shares a line with.
         const strips = $$('.ui-tabs', host).filter((el) => el.offsetParent !== null);
