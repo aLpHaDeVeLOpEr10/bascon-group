@@ -11,7 +11,12 @@
     $navInitials = collect(preg_split('/\s+/', $navName))
         ->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('');
 
+    /* A section is either a link (a `url`) or an expandable group (`items`).
+       Dashboard is the landing page and has nothing under it, so a group with
+       one child would have meant an extra click to reach the only thing in
+       it. */
     $sections = [
+        ['label' => 'Dashboard', 'icon' => 'activity', 'url' => 'admin_setting/dashboard'],
         ['label' => 'Registration', 'icon' => 'users', 'items' => [
             ['admin_setting/add_user',  'Add user'],
             ['admin_setting/show_user', 'Show User'],
@@ -44,6 +49,7 @@
 
     $icons = [
         'users'    => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'activity' => '<path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/>',
         'layers'   => '<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
         'building' => '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>',
         'compass'  => '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/>',
@@ -57,7 +63,7 @@
 
     {{-- The light-on-dark colourway only; the panel is dark in both themes. --}}
     <div class="app-logo shrink-0 border-b border-line p-4">
-        <a href="{{ url('admin_setting/add_user') }}" class="block rounded-lg"
+        <a href="{{ url('admin_setting/dashboard') }}" class="block rounded-lg"
            aria-label="BASCON Group — admin home">
             <span data-logo-full class="block">
                 <img src="{{ asset('assets/images/logo-dark.png') }}" alt="BASCON Group"
@@ -75,6 +81,21 @@
         <p class="ui-nav-heading" data-sidebar-hide>Administration</p>
 
         @foreach ($sections as $section)
+            @if (isset($section['url']))
+                <a href="{{ url($section['url']) }}"
+                   data-tip="{{ $section['label'] }}"
+                   class="ui-nav-link {{ $is($section['url']) ? 'is-active' : '' }}"
+                   @if ($is($section['url'])) aria-current="page" @endif>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        {!! $icons[$section['icon']] !!}
+                    </svg>
+                    <span class="flex-1 truncate text-left" data-nav-label>{{ $section['label'] }}</span>
+                </a>
+
+                @continue
+            @endif
+
             @php
                 $groupActive = collect($section['items'])->contains(fn ($item) => $is($item[0]));
             @endphp

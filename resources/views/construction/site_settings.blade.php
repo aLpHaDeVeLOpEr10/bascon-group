@@ -7,7 +7,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('construction/show_site') }}">Construction</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Site details</span>
 @endsection
 

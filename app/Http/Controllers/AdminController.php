@@ -15,7 +15,7 @@ class AdminController extends Controller
     public function index()
     {
         if (Auth::guard('admin')->check()) {
-            return redirect(url('admin_setting/Add_user'));
+            return redirect(url('admin_setting/dashboard'));
         }
 
         return view('admin.admin_login');
@@ -47,7 +47,7 @@ class AdminController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect(url('admin_setting/Add_user'));
+        return redirect(url('admin_setting/dashboard'));
     }
 
     public function logout(Request $request)

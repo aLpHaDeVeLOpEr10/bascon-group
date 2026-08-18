@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <span>Category</span>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Civil Materials</span>
 @endsection
 

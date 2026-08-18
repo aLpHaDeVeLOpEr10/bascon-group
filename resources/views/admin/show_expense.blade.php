@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <span>Money Management</span>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Show Expense</span>
 @endsection
 

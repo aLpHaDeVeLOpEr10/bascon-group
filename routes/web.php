@@ -156,6 +156,7 @@ Route::prefix('client')->group(function () {
 Route::prefix('admin_setting')->group(function () {
     Route::middleware('admin')->group(function () {
         // pages
+        Route::get('dashboard', [AdminSettingController::class, 'dashboard']);
         Route::get('add_user', [AdminSettingController::class, 'addUser']);
         Route::get('show_user', [AdminSettingController::class, 'showUser']);
         Route::get('add_civil', [AdminSettingController::class, 'addCivil']);

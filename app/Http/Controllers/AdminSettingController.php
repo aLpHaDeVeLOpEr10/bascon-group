@@ -12,6 +12,7 @@ use App\Models\CompanyArchitectSite;
 use App\Models\ConstructionDetail;
 use App\Models\Expense;
 use App\Models\Labour;
+use App\Models\LabourInstalment;
 use App\Models\Material;
 use App\Models\MiscAdmin;
 use App\Models\PaymentReceived;
@@ -19,6 +20,7 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -50,6 +52,165 @@ class AdminSettingController extends Controller
     public function showUser()
     {
         return view('admin.show_user');
+    }
+
+    /**
+     * Admin home.
+     *
+     * Every figure here is the same arithmetic showDetails() does for a single
+     * site, run across all of them at once: cost is civil + finishing + labour
+     * + miscellaneous, less returns; the balance is what a client has paid
+     * against that. Keeping the definition identical matters — a dashboard that
+     * totals differently from the page it links to is worse than no dashboard.
+     *
+     * Money columns are VARCHAR in the legacy schema (real rows hold '20% of
+     * profit' alongside plain amounts), so every sum casts. Non-numeric text
+     * casts to 0 rather than breaking the query, which is the behaviour the
+     * per-site screens already rely on.
+     *
+     * Only status 1 counts for the three approval-gated tables, matching
+     * showDetails(); 0 is awaiting an admin and 2 was rejected.
+     */
+    public function dashboard()
+    {
+        // table => [amount column, project fk, status-gated?]
+        $costs = [
+            'material' => ['price', 'project_id', true],
+            'b_material' => ['price', 'project_id', true],
+            'labour_instalment' => ['instalmet', 'project_id', true],
+            'misc' => ['price', 'proj_id', false],
+        ];
+
+        $mix = [];
+        foreach ($costs as $table => [$col, $fk, $gated]) {
+            $mix[$table] = (float) $this->sumOf($table, $col, $gated);
+        }
+
+        $returns = (float) $this->sumOf('return_payment', 'price', false);
+        $received = (float) $this->sumOf('payments_recieved', 'payment', false);
+        $value = array_sum($mix) - $returns;
+
+        // Per-site cost, so the table can rank sites and show each balance.
+        $perSite = [];
+        foreach ($costs as $table => [$col, $fk, $gated]) {
+            foreach ($this->sumByProject($table, $col, $fk, $gated) as $id => $amount) {
+                $perSite[$id] = ($perSite[$id] ?? 0) + $amount;
+            }
+        }
+        foreach ($this->sumByProject('return_payment', 'price', 'proj_id', false) as $id => $amount) {
+            $perSite[$id] = ($perSite[$id] ?? 0) - $amount;
+        }
+
+        $receivedBySite = $this->sumByProject('payments_recieved', 'payment', 'proj_id', false);
+
+        $sites = Site::all()->map(function ($site) use ($perSite, $receivedBySite) {
+            $cost = (float) ($perSite[$site->id] ?? 0);
+            $paid = (float) ($receivedBySite[$site->id] ?? 0);
+
+            return [
+                'id' => $site->id,
+                'name' => $site->display_name,
+                'closed' => $site->site_status === Site::STATUS_CLOSED,
+                'cost' => $cost,
+                'received' => $paid,
+                'balance' => $paid - $cost,
+            ];
+        })->sortByDesc('cost')->values();
+
+        // Anything still waiting on an admin decision. These are the two
+        // Request screens' queues, surfaced so they are not missed.
+        $pending = [
+            'civil' => Material::where('status', 0)->count(),
+            'finishing' => BMaterial::where('status', 0)->count(),
+            'labour' => LabourInstalment::where('status', 0)->count(),
+        ];
+
+        return view('admin.dashboard', [
+            'value' => $value,
+            'received' => $received,
+            'outstanding' => $value - $received,
+            'returns' => $returns,
+            'mix' => $mix,
+            'sites' => $sites,
+            'runningSites' => $sites->where('closed', false)->count(),
+            'pending' => $pending,
+            'months' => $this->monthlySeries(),
+            'expenses' => (float) $this->sumOf('expense', 'ammount', false),
+        ]);
+    }
+
+    /** Sum of one money column across a whole table. */
+    private function sumOf(string $table, string $column, bool $gated)
+    {
+        $q = DB::table($table);
+
+        if ($gated) {
+            $q->where('status', 1);
+        }
+
+        return $q->sum(DB::raw("cast({$column} as decimal(18,2))")) ?: 0;
+    }
+
+    /** The same sum, keyed by the project it belongs to. */
+    private function sumByProject(string $table, string $column, string $fk, bool $gated)
+    {
+        $q = DB::table($table)->select($fk, DB::raw("sum(cast({$column} as decimal(18,2))) total"));
+
+        if ($gated) {
+            $q->where('status', 1);
+        }
+
+        return $q->groupBy($fk)->pluck('total', $fk)->map(fn ($v) => (float) $v)->all();
+    }
+
+    /**
+     * Cost and receipts per calendar month, last 12 including this one.
+     *
+     * Reads date_n, the normalised DATE column added beside every legacy
+     * VARCHAR `date` — the original holds free text and cannot be grouped on.
+     * Months with no activity are still emitted, so the axis has no gaps.
+     */
+    private function monthlySeries(): array
+    {
+        $buckets = [];
+        $cursor = now()->startOfMonth()->subMonths(11);
+
+        for ($i = 0; $i < 12; $i++) {
+            $buckets[$cursor->format('Y-m')] = [
+                'label' => $cursor->format('M'),
+                'year' => $cursor->format('Y'),
+                'cost' => 0.0,
+                'received' => 0.0,
+            ];
+            $cursor = $cursor->addMonth();
+        }
+
+        $from = array_key_first($buckets).'-01';
+
+        $add = function (string $table, string $column, bool $gated, string $key) use (&$buckets, $from) {
+            $q = DB::table($table)
+                ->selectRaw("date_format(date_n, '%Y-%m') ym, sum(cast({$column} as decimal(18,2))) total")
+                ->whereNotNull('date_n')
+                ->where('date_n', '>=', $from);
+
+            if ($gated) {
+                $q->where('status', 1);
+            }
+
+            foreach ($q->groupBy('ym')->get() as $row) {
+                if (isset($buckets[$row->ym])) {
+                    $buckets[$row->ym][$key] += (float) $row->total;
+                }
+            }
+        };
+
+        $add('material', 'price', true, 'cost');
+        $add('b_material', 'price', true, 'cost');
+        $add('labour_instalment', 'instalmet', true, 'cost');
+        $add('misc', 'price', false, 'cost');
+        $add('payments_recieved', 'payment', false, 'received');
+
+        return array_values($buckets);
     }
 
     public function addCivil()

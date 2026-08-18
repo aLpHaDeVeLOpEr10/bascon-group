@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('admin_setting/show_expense') }}">Money Management</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Add Expense</span>
 @endsection
 

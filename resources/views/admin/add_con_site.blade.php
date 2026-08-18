@@ -4,7 +4,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('admin_setting/show_con_site') }}">Project Management</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Add site</span>
 @endsection
 

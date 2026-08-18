@@ -72,6 +72,17 @@
 
     --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
 
+    /* Chart series. Two hues, fixed order, validated against the light surface
+       for lightness band, chroma, colour-vision separation and contrast; the
+       dark steps are chosen for the dark surface rather than flipped. Never
+       reuse these for status — rose/amber stay reserved for that. */
+    --viz-cost: #7c4dff;
+    --viz-received: #0891b2;
+
+    /* Back arrow for the breadcrumb trail. A mask source, so the glyph is
+       painted in currentColor instead of a baked-in fill. */
+    --crumb-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 19-7-7 7-7'/%3E%3Cpath d='M19 12H5'/%3E%3C/svg%3E");
+
     /* Height of a nested tab strip, and of anything aligned to its line. */
     --ui-subtab-row: 2.5rem;
 
@@ -136,6 +147,9 @@
        highlight — so left alone they would paint dark violet on dark violet.
        Nothing in the app uses them as a fill; that was checked, and it is what
        makes this safe. */
+    --viz-cost: #9678ff;
+    --viz-received: #0891b2;
+
     --color-brand-50:  #1c1533;
     --color-brand-100: #241a45;
     --color-brand-600: #7c4dff;
@@ -197,6 +211,23 @@
 /* ------------------------------------------------------------------- base */
 
 @layer base {
+
+    /* type="search" draws a clear button of its own in WebKit, which sat right
+       beside the one the topbar renders — two crosses in one field. The app's
+       is the one kept: it carries an aria-label, matches the design system,
+       and its handler also closes the suggestion list, which the native
+       control knows nothing about.
+
+       Element-level rather than scoped to the topbar because DataTables emits
+       type="search" for every table filter too. */
+    input[type='search']::-webkit-search-cancel-button,
+    input[type='search']::-webkit-search-decoration,
+    input[type='search']::-webkit-search-results-button,
+    input[type='search']::-webkit-search-results-decoration {
+        -webkit-appearance: none;
+        appearance: none;
+        display: none;
+    }
     html { -webkit-text-size-adjust: 100%; }
 
     body {
@@ -798,6 +829,33 @@
     }
     .modal-close > svg { @apply size-4; }
 
+    /* -------------------------------------------------------- breadcrumbs */
+
+    /* "← Parent | This page". The parent doubles as the back link, which is
+       what people reach for anyway, so it is given the affordance rather than
+       leaving a bare separated trail nobody clicks. */
+    .ui-crumbs { @apply items-center gap-1.5 text-[12.5px] text-neutral-400; }
+    .ui-crumbs a { @apply inline-flex items-center gap-1 text-neutral-500 transition-colors hover:text-neutral-900; }
+
+    /* Arrow on the first link only — deeper trails keep a plain parent. Drawn
+       as a mask rather than a background image so it takes currentColor and
+       follows both the hover state and the theme. */
+    .ui-crumbs a:first-of-type::before {
+        content: '';
+        @apply inline-block size-3.5 shrink-0;
+        background-color: currentColor;
+        -webkit-mask: var(--crumb-back) center / contain no-repeat;
+        mask: var(--crumb-back) center / contain no-repeat;
+    }
+
+    .ui-crumbs [data-crumb-sep] { @apply select-none text-neutral-300; }
+
+    /* The last crumb IS the page title now, so it carries the weight the old
+       <h1> did rather than sitting muted at the end of a trail. */
+    .ui-crumbs [data-crumb-current] {
+        @apply truncate text-[15px] font-semibold tracking-[-0.02em] text-neutral-900;
+    }
+
     /* --------------------------------------------------------------- shell */
 
     /* The layout is a "console": a full-height navigation panel pinned to the
@@ -1015,6 +1073,155 @@
     .ui-theme-toggle [data-icon='moon'] { @apply -rotate-90 opacity-0; }
     .dark .ui-theme-toggle [data-icon='sun']  { @apply rotate-90 opacity-0; }
     .dark .ui-theme-toggle [data-icon='moon'] { @apply rotate-0 opacity-100; }
+
+    /* ------------------------------------------------------------- charts */
+
+    /* Bars are drawn in CSS rather than pulled from a charting library: two
+       series over twelve months does not justify a dependency, and the marks
+       inherit the theme tokens for free. */
+
+    .viz-legend { @apply flex flex-wrap items-center gap-4 text-[12px] text-neutral-500; }
+    .viz-legend > li { @apply flex items-center gap-1.5 list-none; }
+    .viz-swatch { @apply inline-block size-2.5 shrink-0 rounded-[3px]; }
+    .viz-swatch[data-series='cost']     { background-color: var(--viz-cost); }
+    .viz-swatch[data-series='received'] { background-color: var(--viz-received); }
+
+    /* No fixed height: the SVG scales uniformly from the card's width and the
+       box takes its height from the viewBox's own 3:1 ratio, so nothing is
+       distorted and nothing is letterboxed. The hover layer sits on the same
+       box. */
+    .viz-chart { @apply relative w-full; }
+    .viz-svg   { @apply block w-full overflow-visible; height: auto; }
+
+    /* Axis furniture recedes: the data is the only thing meant to be read at
+       a glance. */
+    .viz-grid { stroke: var(--color-line); stroke-width: 1; }
+    .viz-axis {
+        fill: var(--color-neutral-400);
+        font-size: 9px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .viz-line {
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .viz-line[data-series='cost']     { stroke: var(--viz-cost); }
+    .viz-line[data-series='received'] { stroke: var(--viz-received); }
+
+    /* The fill is a wash under its own line, not a second encoding — it stops
+       well short of opaque so the series behind it stays readable where the
+       two overlap. */
+    .viz-stop-a[data-series='cost']     { stop-color: var(--viz-cost); stop-opacity: 0.26; }
+    .viz-stop-b[data-series='cost']     { stop-color: var(--viz-cost); stop-opacity: 0; }
+    .viz-stop-a[data-series='received'] { stop-color: var(--viz-received); stop-opacity: 0.24; }
+    .viz-stop-b[data-series='received'] { stop-color: var(--viz-received); stop-opacity: 0; }
+
+    /* A 2px ring in the surface colour, so a dot sitting on the other series'
+       line still reads as a separate mark. */
+    .viz-dot {
+        stroke: var(--color-surface);
+        stroke-width: 2;
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+    .viz-dot[data-series='cost']     { fill: var(--viz-cost); }
+    .viz-dot[data-series='received'] { fill: var(--viz-received); }
+
+    /* ------------------------------------------------------------ entrance
+
+       Each line draws itself left to right, its fill rises in behind it, and
+       the dots land after the stroke has passed them. dasharray is a length
+       comfortably longer than any path this viewBox can hold, which avoids
+       measuring getTotalLength() in JavaScript for a purely decorative
+       reveal. */
+    @keyframes viz-draw { to { stroke-dashoffset: 0; } }
+    @keyframes viz-wash { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes viz-land { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
+    @keyframes viz-grow { from { width: 0; } to { width: var(--viz-w); } }
+
+    .viz-line {
+        stroke-dasharray: 2400;
+        stroke-dashoffset: 2400;
+        animation: viz-draw 1.4s var(--ease-smooth) forwards;
+    }
+    .viz-line[data-series='received'] { animation-delay: 0.12s; }
+
+    .viz-area {
+        opacity: 0;
+        animation: viz-wash 0.9s var(--ease-smooth) 0.25s forwards;
+    }
+
+    .viz-dot {
+        opacity: 0;
+        animation: viz-land 0.45s var(--ease-smooth) forwards;
+    }
+
+    /* --------------------------------------------------------------- hover
+
+       One full-height column per month laid over the plot, so the readout is
+       picked up anywhere in that month rather than only on the marks. */
+    .viz-hits { @apply absolute inset-0 flex; }
+    .viz-hit  { @apply relative flex-1 cursor-default; }
+
+    .viz-hit::before {
+        content: '';
+        @apply absolute inset-y-0 left-1/2 w-px -translate-x-1/2 opacity-0 transition-opacity duration-150;
+        background-color: var(--color-neutral-300);
+    }
+    .viz-hit:hover::before { @apply opacity-100; }
+
+    .viz-hit::after {
+        content: attr(data-tip);
+        @apply pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 -translate-x-1/2
+               whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white
+               opacity-0 shadow-pop transition-opacity duration-150;
+        background-color: #18181b;
+    }
+    .viz-hit:hover::after { @apply opacity-100; }
+
+    /* The readout would otherwise be clipped off the ends of the card. */
+    .viz-hit:first-child::after  { @apply left-0 translate-x-0; }
+    .viz-hit:last-child::after   { @apply left-auto right-0 translate-x-0; }
+
+    .viz-ticks { @apply mt-2 flex; }
+    .viz-tick  { @apply flex-1 text-center text-[10.5px] tabular-nums text-neutral-400; }
+
+    .viz-table { @apply mt-5 border-t border-line pt-3; }
+    .viz-table > summary {
+        @apply cursor-pointer text-[12.5px] font-medium text-neutral-500
+               transition-colors hover:text-neutral-900;
+    }
+
+    /* Single-series magnitude bars — one hue, because the rows are already
+       named and colour would be encoding nothing. */
+    .viz-track { @apply mt-1.5 mb-1 h-2 w-full overflow-hidden rounded-full bg-neutral-100; }
+    .viz-fill  {
+        @apply block h-full rounded-full;
+        background-image: linear-gradient(90deg, var(--viz-cost), var(--viz-received));
+        width: 0;
+        animation: viz-grow 0.9s var(--ease-smooth) forwards;
+    }
+
+    /* --------------------------------------------------------- misc bits */
+
+    .ui-pill {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+               text-[11.5px] font-semibold whitespace-nowrap;
+    }
+    .ui-pill.is-live  { @apply bg-brand-50 text-brand-700; }
+    .ui-pill.is-muted { @apply bg-neutral-100 text-neutral-500; }
+
+    .ui-queue-row {
+        @apply flex items-center justify-between gap-3 rounded-xl border border-line
+               bg-elevated px-3.5 py-2.5 text-[13px] font-medium text-neutral-700
+               transition-colors duration-150 hover:border-brand-200 hover:text-neutral-900;
+    }
+    .ui-queue-count {
+        @apply inline-flex min-w-6 items-center justify-center rounded-full
+               bg-amber-50 px-2 py-0.5 text-[12px] font-bold tabular-nums text-amber-700;
+    }
 
     /* ---------------------------------------------------------- segmented */
 
@@ -1414,10 +1621,15 @@
 }
 
 /* Someone who has asked for less motion still gets the hover colour, just not
-   the movement. */
+   the movement — and the charts arrive already drawn rather than not at all.
+   Unlayered so these land on top of the animations declared in components. */
 @media (prefers-reduced-motion: reduce) {
     .ui-nav-link:hover,
     .ui-nav-sublink:hover { scale: 1; }
+
+    .viz-line { stroke-dashoffset: 0; animation: none; }
+    .viz-area, .viz-dot { opacity: 1; animation: none; }
+    .viz-fill { width: var(--viz-w); animation: none; }
 }
 
 /* Native date/time pickers render a black glyph on a dark field otherwise. */

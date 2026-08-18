@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <span>Request</span>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Finish Request</span>
 @endsection
 

@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('admin_setting/add_user') }}">Registration</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Show user</span>
 @endsection
 

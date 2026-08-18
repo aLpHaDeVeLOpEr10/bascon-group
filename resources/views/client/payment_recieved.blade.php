@@ -4,7 +4,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('client/total_payment') }}">Payments</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Construction Payments</span>
 @endsection
 

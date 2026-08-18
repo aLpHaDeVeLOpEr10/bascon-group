@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <span>Project Management</span>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Show site</span>
 @endsection
 

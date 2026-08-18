@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <span>Settings</span>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Manage</span>
 @endsection
 

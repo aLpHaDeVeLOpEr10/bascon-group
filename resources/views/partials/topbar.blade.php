@@ -14,7 +14,7 @@
 
         @section('breadcrumbs')
             <a href="...">Section</a>
-            <span data-crumb-sep>/</span>
+            <span data-crumb-sep>|</span>
             <span data-crumb-current>Current page</span>
         @endsection
 --}}
@@ -77,21 +77,27 @@
         </svg>
     </button>
 
-    <h1 class="min-w-0 shrink truncate text-[17px] font-semibold tracking-[-0.02em] text-neutral-900">
-        {{ $pageTitle }}
-    </h1>
+    {{-- The visible page name is the last crumb, styled as the title — a
+         separate <h1> beside the trail printed it twice. This keeps the
+         heading in the document for screen readers and the outline without
+         repeating it on screen.
+
+         The trail reads "← Parent | This page". The arrow is drawn by CSS on
+         the first link rather than written into each of the thirty-odd
+         @section('breadcrumbs') blocks, so every page gets it and no view has
+         to remember. --}}
+    <h1 class="sr-only">{{ $pageTitle }}</h1>
 
     @if ($crumbs !== '')
-        <div class="hidden h-5 w-px shrink-0 bg-neutral-200 xl:block" aria-hidden="true"></div>
-
-        <nav aria-label="Breadcrumb"
-             class="hidden min-w-0 items-center gap-1.5 text-[12.5px] text-neutral-400 xl:flex
-                    [&_a]:text-neutral-500 [&_a:hover]:text-neutral-900 [&_a]:transition-colors
-                    [&_[data-crumb-current]]:truncate [&_[data-crumb-current]]:font-medium
-                    [&_[data-crumb-current]]:text-neutral-600
-                    [&_[data-crumb-sep]]:text-neutral-300">
+        {{-- Always visible, unlike the old xl-only trail: it now carries the
+             page name, which every width needs. --}}
+        <nav aria-label="Breadcrumb" class="ui-crumbs flex min-w-0">
             {!! $crumbs !!}
         </nav>
+    @else
+        <span class="min-w-0 shrink truncate text-[15px] font-semibold tracking-[-0.02em] text-neutral-900">
+            {{ $pageTitle }}
+        </span>
     @endif
 
     <div class="flex-1"></div>

@@ -2,7 +2,7 @@
 
 @section('breadcrumbs')
     <a href="{{ url('admin_setting/show_site') }}">Architecture</a>
-    <span data-crumb-sep>/</span>
+    <span data-crumb-sep>|</span>
     <span data-crumb-current>Add site</span>
 @endsection
 
