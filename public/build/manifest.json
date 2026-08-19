@@ -13,5 +13,11 @@
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/site-settings.js": {
+    "file": "assets/site-settings-Dhv_y0UX.js",
+    "name": "site-settings",
+    "src": "resources/js/site-settings.js",
+    "isEntry": true
   }
 }
