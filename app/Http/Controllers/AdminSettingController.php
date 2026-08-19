@@ -115,8 +115,20 @@ class AdminSettingController extends Controller
             ];
         })->sortByDesc('cost')->values();
 
+        // Closed sites are settled and only pad the table, so the dashboard
+        // shows the work in progress. Their balances are excluded from the
+        // shortfall below for the same reason: money owed on a site nobody is
+        // building any more is a different question from what is owed now.
+        $running = $sites->reject(fn ($site) => $site['closed'])->values();
+
+        // Only the sites in deficit. Netting the positives off would hide the
+        // shortfall behind sites that happen to be paid ahead.
+        $behind = $running->filter(fn ($site) => $site['balance'] < 0);
+
         return view('admin.dashboard', [
-            'sites' => $sites,
+            'sites' => $running,
+            'shortfall' => (float) $behind->sum('balance'),
+            'behindCount' => $behind->count(),
             'months' => $this->monthlySeries(),
         ]);
     }

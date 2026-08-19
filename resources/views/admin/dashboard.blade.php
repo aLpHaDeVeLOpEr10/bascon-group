@@ -178,16 +178,30 @@
 </div>
 
 {{-- ------------------------------------------------------------- sites --}}
+{{-- The one figure worth pulling out of the table: what the running sites are
+     short in total. Only the sites in deficit are counted — netting the sites
+     that are paid ahead against them would report a smaller hole than the one
+     that actually has to be collected. --}}
+<div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <x-stat-card label="Owed across running sites"
+                 :value="money($shortfall)"
+                 icon="wallet"
+                 wash
+                 :tone="$shortfall < 0 ? 'danger' : 'brand'"
+                 :note="$behindCount
+                     ? $behindCount . ' of ' . $sites->count() . ' ' . \Illuminate\Support\Str::plural('site', $sites->count()) . ' below zero'
+                     : 'No running site is below zero.'" />
+</div>
+
 <div class="mt-4">
 
-    <x-card flush title="Sites by recorded value"
-            subtitle="Balance is what the client has paid, less what has been recorded against the site.">
+    <x-card flush title="Running sites by recorded value"
+            subtitle="Closed sites are left out. Balance is what the client has paid, less what has been recorded against the site.">
         <div class="ui-table-wrap">
             <table class="ui-table">
                 <thead>
                     <tr>
                         <th>Site</th>
-                        <th>Status</th>
                         <th class="text-right">Cost</th>
                         <th class="text-right">Received</th>
                         <th class="text-right">Balance</th>
@@ -197,11 +211,7 @@
                     @foreach ($sites as $site)
                         <tr data-row-href="{{ url('admin_setting/show_con_details/' . $site['id']) }}">
                             <td class="font-medium text-neutral-900">{{ $site['name'] }}</td>
-                            <td>
-                                <span class="ui-pill {{ $site['closed'] ? 'is-muted' : 'is-live' }}">
-                                    {{ $site['closed'] ? 'Closed' : 'Running' }}
-                                </span>
-                            </td>
+                            {{-- No Status column: every row here is Running. --}}
                             <td class="text-right tabular-nums">@money($site['cost'])</td>
                             <td class="text-right tabular-nums">@money($site['received'])</td>
                             {{-- Same rule as the site page: below zero is money owed. --}}

@@ -66,7 +66,7 @@
                                              role="status" aria-live="polite" hidden></div>
 
                                         <x-field label="Category"
-                                                 hint="Which ledger this entry belongs to.">
+                                                 hint="Select the category this entry is for.">
     <select class="ui-select" id="entry_kind" name="entry_kind">
                                                 <option value="civil">Civil Materials</option>
                                                 <option value="finishing">Finishing Materials</option>
