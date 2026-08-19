@@ -1740,9 +1740,15 @@
     /* -------------------------------------------------- jQuery UI datepicker */
 
     /* Every date field in the app is a jQuery UI datepicker. The widget's own
-       stylesheet is no longer loaded, so it is rebuilt from scratch here. */
+       stylesheet is no longer loaded, so it is rebuilt from scratch here.
+
+       Including the rule that hides it. jQuery UI appends a single
+       #ui-datepicker-div to the end of <body> and relies on its stylesheet for
+       `display: none` until a field is focused — without it the panel sat open
+       and empty in the bottom-left corner of every page. It is safe to hide it
+       here because jQuery's own show() writes an inline display, which wins. */
     .ui-datepicker {
-        @apply w-72 p-3 rounded-2xl bg-surface font-sans text-[13px] shadow-pop ring-1 ring-neutral-900/5;
+        @apply hidden w-72 p-3 rounded-2xl bg-surface font-sans text-[13px] shadow-pop ring-1 ring-neutral-900/5;
         border: 0 !important;
         z-index: 1200 !important;
     }
