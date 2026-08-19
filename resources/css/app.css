@@ -537,10 +537,12 @@
        legacy rows that hold more than one control (a select plus an inline
        "Add" button, for example) and so do not fit the component's slot. */
     .ui-row {
-        @apply flex flex-wrap items-start gap-x-6 gap-y-1.5
+        @apply flex flex-wrap items-start gap-x-4 gap-y-1.5 lg:gap-x-6
                border-b border-neutral-100 py-4 last:border-b-0;
     }
-    .ui-row > label { @apply mb-0 w-full shrink-0 sm:w-[190px] sm:pt-2.5; }
+    /* Steps at the same widths as <x-field>, so a form holding both kinds of
+       row still lines its labels up. See the note in that component. */
+    .ui-row > label { @apply mb-0 w-full shrink-0 sm:w-[140px] lg:w-[190px] sm:pt-2.5; }
     .ui-row > div   { @apply min-w-0 flex-1 sm:max-w-md; }
 
     /* Action bar at the foot of a form. */

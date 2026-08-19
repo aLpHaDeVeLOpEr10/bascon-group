@@ -26,9 +26,9 @@
                             <!-- Nav tabs -->
                             <ul class="ui-tabs" role="tablist">
                                 <li role="presentation"><a href="#add_entry" aria-controls="add_entry" role="tab" data-toggle="tab">Add Entry</a></li>
-                                <li role="presentation"><a href="#A_category" aria-controls="home" role="tab" data-toggle="tab">Civil Materials</a></li>
-                                <li role="presentation"><a href="#B_category" aria-controls="profile" role="tab" data-toggle="tab">Finshing Materials</a></li>
-                                <li role="presentation"><a href="#labour" aria-controls="profile" role="tab" data-toggle="tab">Labour</a></li>
+                                <li role="presentation"><a href="#A_category" id="total_civil" aria-controls="home" role="tab" data-toggle="tab">Civil Materials</a></li>
+                                <li role="presentation"><a href="#B_category" id="total_finish" aria-controls="profile" role="tab" data-toggle="tab">Finshing Materials</a></li>
+                                <li role="presentation"><a href="#labour" id="total_labour" aria-controls="profile" role="tab" data-toggle="tab">Labour</a></li>
                                 <li role="presentation"><a href="#Misc" id="total_misc" aria-controls="profile" role="tab" data-toggle="tab">Miscellaneous</a></li>
 
                                 <li role="presentation"><a href="#payment" aria-controls="profile" id="total_pay" role="tab" data-toggle="tab">Sub Total</a></li>
@@ -114,50 +114,12 @@
                             <!--Start A_category -->
                             <div role="tabpanel" class="tab-pane ui-tab-total-host" id="A_category">
                                 <ul class="ui-tabs" role="tablist">
-                                    <li role="presentation"><a href="#add_material" aria-controls="home" role="tab" data-toggle="tab">Add Meterial</a>
-                                    </li>
                                     <li role="presentation"><a href="#show_material" aria-controls="profile" role="tab" data-toggle="tab">Show Meterial</a></li>
+                                    <li role="presentation"><a href="#civil_total" aria-controls="civil_total" role="tab" data-toggle="tab">Civil Total</a></li>
                                 </ul>
 
 
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="add_material">
-
-
-                                        <form role="form" id="brick_addition_form" action="{{ url('construction/Add_brick') }}">
-
-                                            <x-field label="Select List">
-    <select class="ui-select" name="catgory" id="catgory">
-                                                        <option> Select Material</option>
-                                                        @foreach ($civilCategories as $row)
-
-                                                            <option> {{ $row->material_name }}</option>
-                                                        @endforeach
-                                                    </select>
-</x-field>
-
-                                            <x-field label="Quantity">
-    <input type="number" class="ui-input" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
-</x-field>
-
-                                            <x-field label="Price">
-    <input type="number" class="ui-input" name="brick_price" id="field-1" placeholder="Add Price" required>
-</x-field>
-                                            <x-field label="Date">
-    <input type="text" class="ui-input" name="selected_date1" id="datepicker1" placeholder="Select a date" required>
-</x-field>
-                                            <div class="ui-row">
-
-                                                
-                                                <div class="min-w-0 flex-1">
-                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
-</div>
-                                        </form>
-                                    </div>
 
 
                                     <div role="tabpanel" class="tab-pane" id="show_material">
@@ -217,6 +179,27 @@
 
                                     </div>
 
+                                    <div role="tabpanel" class="tab-pane" id="civil_total">
+
+                                        <div class="mt-4">
+
+
+                                            <div class="ui-total mb-4" id="civil_total324"></div>
+                                            <table id="civil_account" width="100%" class="ui-table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <!-- Add your table headers here -->
+                                                        <th>Sr No</th>
+                                                        <th>Date</th>
+                                                        <th>Type</th>
+                                                        <th>Quantity</th>
+                                                        <th>Price</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
 
 
@@ -227,53 +210,12 @@
                             <div role="tabpanel" class="tab-pane ui-tab-total-host" id="B_category">
 
                                 <ul class="ui-tabs" role="tablist">
-                                    <li role="presentation"><a href="#tab_3" aria-controls="home" role="tab" data-toggle="tab">Add Detail</a></li>
-                                    <li role="presentation"><a href="#tab_4" aria-controls="profile" role="tab" data-toggle="tab">Show details</a></li>
 
+                                    <li role="presentation"><a href="#tab_4" aria-controls="profile" role="tab" data-toggle="tab">Show details</a></li>
+                                    <li role="presentation"><a href="#finish_total" aria-controls="finish_total" role="tab" data-toggle="tab">Finishing Total</a></li>
                                 </ul>
 
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="tab_3">
-                                        <form role="form" id="Bcategory_form" action="{{ url('construction/Add_b_category') }}">
-
-
-                                            <x-field label="Select List">
-    <select class="ui-select" name="catgory" id="b_catecory">
-                                                        <option> Select Material</option>
-                                                        @foreach ($finishCategories as $row)
-
-                                                            <option> {{ $row->material_name }}</option>
-                                                        @endforeach
-                                                    </select>
-</x-field>
-                                            <x-field label="Detail">
-    <input type="text" class="ui-input" name="Detail" id="field-1" placeholder="Add Detail" required>
-</x-field>
-
-                                            <x-field label="Quantity">
-    <input type="number" class="ui-input" name="brick_quantity" id="field-1" placeholder="Add Quantity" required>
-</x-field>
-
-                                            <x-field label="Price">
-    <input type="number" class="ui-input" name="brick_price" id="field-1" placeholder="Add Price" required>
-</x-field>
-                                            <x-field label="Date">
-    <input type="text" class="ui-input" name="selected_date2" id="datepicker2" placeholder="Select a date" required>
-</x-field>
-                                            <div class="ui-row">
-
-                                                
-                                                <div class="min-w-0 flex-1">
-                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
-</div>
-                                        </form>
-
-
-                                    </div>
                                     <div role="tabpanel" class="tab-pane" id="tab_4">
                                         <div class="ui-row">
                                             <label class="ui-label" >Select List</label>
@@ -330,6 +272,30 @@
                                         </div>
 
                                     </div>
+                                    <div role="tabpanel" class="tab-pane" id="finish_total">
+
+
+                                        <div class="mt-4">
+
+
+                                            <div class="ui-total mb-4" id="finish_total324"></div>
+                                            <table id="finish_account" width="100%" class="ui-table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <!-- Add your table headers here -->
+                                                        <th>Sr No</th>
+                                                        <th>Date</th>
+                                                        <th>Type</th>
+                                                        <th>Detail</th>
+                                                        <th>Quantity</th>
+                                                        <th>Price</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -343,50 +309,12 @@
 
                                 <ul class="ui-tabs" role="tablist">
 
-                                    <li role="presentation"><a href="#instalment" aria-controls="home" role="tab" data-toggle="tab">Add Instalment</a></li>
-                                    <li role="presentation"><a href="#show_instalment" aria-controls="profile" role="tab" data-toggle="tab">Show Instalment</a></li>
 
+                                    <li role="presentation"><a href="#show_instalment" aria-controls="profile" role="tab" data-toggle="tab">Show Instalment</a></li>
+                                    <li role="presentation"><a href="#Labour_total" aria-controls="Labour_total" role="tab" data-toggle="tab">Labour Total</a></li>
                                 </ul>
 
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="instalment">
-                                        <form role="form" id="labour_form" action="{{ url('construction/labour_instalment') }}">
-
-                                            
-                                            <x-field label="Select List">
-    <select class="ui-select" name="labour_type" id="c_category">
-                                                        <option> Select </option>
-                                                        @foreach ($labourTypes as $row)
-
-                                                            <option> {{ $row->type }}</option>
-                                                        @endforeach
-                                                    </select>
-</x-field>
-                                            <x-field label="Detail">
-    <input type="text" class="ui-input" name="Detail" id="field-1" placeholder="Add Detail" required>
-</x-field>
-
-                                            <x-field label="Paid">
-    <input type="number" class="ui-input" name="bill_labour" id="field-1" placeholder="Add ammount" required>
-</x-field>
-
-                                            <x-field label="Date">
-    <input type="text" class="ui-input" name="selected_date" id="datepicker" placeholder="Select a date" required>
-</x-field>
-                                            <div class="ui-row">
-
-
-                                                <div class="min-w-0 flex-1">
-                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
-</div>
-                                        </form>
-
-
-                                    </div>
                                     <div role="tabpanel" class="tab-pane" id="show_instalment">
                                         <div class="ui-row">
                                             <label class="ui-label" >Select List</label>
@@ -441,6 +369,29 @@
                                         </div>
 
                                     </div>
+                                    <div role="tabpanel" class="tab-pane" id="Labour_total">
+
+
+                                        <div class="mt-4">
+
+
+                                            <div class="ui-total mb-4" id="Labour_account123"></div>
+                                            <table id="Labour_account" width="100%" class="ui-table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <!-- Add your table headers here -->
+                                                        <th>Sr No</th>
+                                                        <th>Date</th>
+                                                        <th>Labour</th>
+                                                        <th>Detail</th>
+                                                        <th>Installment</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -451,40 +402,12 @@
 
                                 <ul class="ui-tabs" role="tablist">
 
-                                    <li role="presentation"><a href="#micsc_detail" aria-controls="home" role="tab" data-toggle="tab">Add Detail</a></li>
-                                    <li role="presentation"><a href="#show_misc" aria-controls="profile" role="tab" data-toggle="tab">Show Miscellaneous</a></li>
 
+                                    <li role="presentation"><a href="#show_misc" aria-controls="profile" role="tab" data-toggle="tab">Show Miscellaneous</a></li>
+                                    <li role="presentation"><a href="#Miscellaneous_total" aria-controls="Miscellaneous_total" role="tab" data-toggle="tab">Miscellaneous Total</a></li>
                                 </ul>
 
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="micsc_detail">
-                                        <form role="form" id="misc_form" action="{{ url('construction/misc_add') }}">
-
-                                            <x-field label="Detail">
-    <input type="text" class="ui-input" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
-</x-field>
-
-                                            <x-field label="Ammount">
-    <input type="number" class="ui-input" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
-</x-field>
-
-                                            <x-field label="Date">
-    <input type="text" class="ui-input" name="selected_date3" id="datepicke6" placeholder="Select a date" required>
-</x-field>
-                                            <div class="ui-row">
-
-
-                                                <div class="min-w-0 flex-1">
-                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
-</div>
-                                        </form>
-
-
-                                    </div>
                                     <div role="tabpanel" class="tab-pane" id="show_misc">
                                         <div class="mt-4">
                                             <div class="ui-total mb-4" id="misclanious_total"></div>
@@ -506,6 +429,28 @@
                                         </div>
 
                                     </div>
+                                    <div role="tabpanel" class="tab-pane" id="Miscellaneous_total">
+
+
+                                        <div class="mt-4">
+
+
+                                            <div class="ui-total mb-4" id="miscle_account123"></div>
+                                            <table id="miscle_account" width="100%" class="ui-table">
+
+                                                <thead>
+                                                    <tr>
+                                                        <!-- Add your table headers here -->
+                                                        <th>Sr No</th>
+                                                        <th>Date</th>
+                                                        <th>Detail</th>
+                                                        <th>Price</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -518,65 +463,15 @@
 
                                 <ul class="ui-tabs" role="tablist">
 
-                                    <li role="presentation"><a href="#civil_total" aria-controls="home" role="tab" data-toggle="tab">Civil Total</a></li>
-                                    <li role="presentation"><a href="#finish_total" aria-controls="profile" role="tab" data-toggle="tab">Finishing Total</a></li>
 
-                                    <li role="presentation"><a href="#Miscellaneous_total" aria-controls="profile" role="tab" data-toggle="tab"> Miscellaneous Total</a></li>
 
-                                    <li role="presentation"><a href="#Labour_total" aria-controls="profile" role="tab" data-toggle="tab"> Labour Total</a></li>
                                     <li role="presentation"><a href="#Total_entries" aria-controls="profile" role="tab" data-toggle="tab">All Entries</a></li>
-
                                     <li role="presentation"><a href="#return" aria-controls="profile" role="tab" data-toggle="tab"> Return </a></li>
                                     <li role="presentation"><a href="#grand_total" aria-controls="profile" role="tab" data-toggle="tab"> Grand Total</a></li>
 
                                 </ul>
 
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="civil_total">
-
-                                        <div class="mt-4">
-
-
-                                            <div class="ui-total mb-4" id="civil_total324"></div>
-                                            <table id="civil_account" width="100%" class="ui-table">
-
-                                                <thead>
-                                                    <tr>
-                                                        <!-- Add your table headers here -->
-                                                        <th>Sr No</th>
-                                                        <th>Date</th>
-                                                        <th>Type</th>
-                                                        <th>Quantity</th>
-                                                        <th>Price</th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div role="tabpanel" class="tab-pane" id="finish_total">
-
-
-                                        <div class="mt-4">
-
-
-                                            <div class="ui-total mb-4" id="finish_total324"></div>
-                                            <table id="finish_account" width="100%" class="ui-table">
-
-                                                <thead>
-                                                    <tr>
-                                                        <!-- Add your table headers here -->
-                                                        <th>Sr No</th>
-                                                        <th>Date</th>
-                                                        <th>Type</th>
-                                                        <th>Detail</th>
-                                                        <th>Quantity</th>
-                                                        <th>Price</th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                        </div>
-
-                                    </div>
                                     <div role="tabpanel" class="tab-pane" id="Total_entries">
 
 
@@ -608,52 +503,7 @@
 
                                     </div>
 
-                                    <div role="tabpanel" class="tab-pane" id="Miscellaneous_total">
 
-
-                                        <div class="mt-4">
-
-
-                                            <div class="ui-total mb-4" id="miscle_account123"></div>
-                                            <table id="miscle_account" width="100%" class="ui-table">
-
-                                                <thead>
-                                                    <tr>
-                                                        <!-- Add your table headers here -->
-                                                        <th>Sr No</th>
-                                                        <th>Date</th>
-                                                        <th>Detail</th>
-                                                        <th>Price</th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                        </div>
-
-                                    </div>
-
-                                    <div role="tabpanel" class="tab-pane" id="Labour_total">
-
-
-                                        <div class="mt-4">
-
-
-                                            <div class="ui-total mb-4" id="Labour_account123"></div>
-                                            <table id="Labour_account" width="100%" class="ui-table">
-
-                                                <thead>
-                                                    <tr>
-                                                        <!-- Add your table headers here -->
-                                                        <th>Sr No</th>
-                                                        <th>Date</th>
-                                                        <th>Labour</th>
-                                                        <th>Detail</th>
-                                                        <th>Installment</th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                        </div>
-
-                                    </div>
                                     <div role="tabpanel" class="tab-pane" id="return">
 
                                         <ul class="ui-tabs" role="tablist">

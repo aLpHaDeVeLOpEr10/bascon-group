@@ -293,57 +293,18 @@ if (!window.SITE_SETTINGS) {
     });
 
 
-    $(document).ready(function() {
-        // Handle form submission
-        $('#brick_addition_form').submit(function(event) {
-            event.preventDefault(); // Prevent the default form submission
 
-            // Your form data
-            var formData = $(this).serialize();
 
-            // Ajax request
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        swal.fire({
-                            title: 'Success',
-                            text: 'Data added successfully',
-                            icon: 'success',
-                            button: 'Ok',
-                        });
-                        $('input[name="brick_quantity"]').val('');
-                        $('input[name="brick_price"]').val('');
-                        $('#catgory').val('');
-                        $('#datepicker1').val('');
-
-                        // Additional success handling if needed
-                    } else {
-                        swal.fire({
-                            title: 'Error',
-                            text: 'Failed to add data',
-                            icon: 'error',
-                            button: 'Ok',
-                        });
-                        // Additional error handling if needed
-                    }
-                },
-                error: function() {
-                    swal.fire({
-                        title: 'Error',
-                        text: 'Error in Ajax request',
-                        icon: 'error',
-                        button: 'Ok',
-                    });
-                    // Additional error handling if needed
-                }
-            });
-        });
-    });
-
+    /*
+     * The four per-ledger Add forms that used to live here were removed with
+     * their tabs: the Add Entry tab posts to the same endpoints for all four,
+     * so the tabs held a second way in that had to be kept in step with it.
+     * Their submit handlers went with them — they could no longer fire, since
+     * nothing on the page carried those form ids any more.
+     *
+     * The #datepicke3 initialiser above stays: the Return Add form reuses that
+     * id, and that form is still on the page.
+     */
 
     $('.get_category').on('change', function() {
         var Category = $('#category').val();
@@ -467,56 +428,6 @@ if (!window.SITE_SETTINGS) {
     });
 
 
-    $(document).ready(function() {
-        // Handle form submission
-        $('#Bcategory_form').submit(function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Your form data
-            var formData = $(this).serialize();
-
-            // Ajax request
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        swal.fire({
-                            title: 'Success',
-                            text: 'Data added successfully',
-                            icon: 'success',
-                            button: 'Ok',
-                        });
-                        $('input[name="brick_quantity"]').val('');
-                        $('input[name="brick_price"]').val('');
-                        $('#b_catecory').val('');
-                        $('#datepicker2').val('');
-
-                        // Additional success handling if needed
-                    } else {
-                        swal.fire({
-                            title: 'Error',
-                            text: 'Failed to add data',
-                            icon: 'error',
-                            button: 'Ok',
-                        });
-                        // Additional error handling if needed
-                    }
-                },
-                error: function() {
-                    swal.fire({
-                        title: 'Error',
-                        text: 'Error in Ajax request',
-                        icon: 'error',
-                        button: 'Ok',
-                    });
-                    // Additional error handling if needed
-                }
-            });
-        });
-    });
 
 
     // 'change', not 'click': on a <select>, click fires when the list is merely
@@ -635,108 +546,8 @@ if (!window.SITE_SETTINGS) {
     });
 
 
-    $(document).ready(function() {
-        // Handle form submission
-        $('#labour_form').submit(function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Your form data
-            var formData = $(this).serialize();
-
-            // Ajax request
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        swal.fire({
-                            title: 'Success',
-                            text: 'Data added successfully',
-                            icon: 'success',
-                            button: 'Ok',
-                        });
-                        $('input[name="brick_quantity"]').val('');
-                        $('input[name="brick_price"]').val('');
-                        $('#c_category').val('');
-                        $('#datepicker').val('');
-                        v
-                        // Additional success handling if needed
-                    } else {
-                        swal.fire({
-                            title: 'Error',
-                            text: 'Failed to add data',
-                            icon: 'error',
-                            button: 'Ok',
-                        });
-                        // Additional error handling if needed
-                    }
-                },
-                error: function() {
-                    swal.fire({
-                        title: 'Error',
-                        text: 'Error in Ajax request',
-                        icon: 'error',
-                        button: 'Ok',
-                    });
-                    // Additional error handling if needed
-                }
-            });
-        });
-    });
 
 
-    $(document).ready(function() {
-        // Handle form submission
-        $('#misc_form').submit(function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Your form data
-            var formData = $(this).serialize();
-
-            // Ajax request
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        swal.fire({
-                            title: 'Success',
-                            text: 'Data added successfully',
-                            icon: 'success',
-                            button: 'Ok',
-                        });
-                        $('input[name="Detail_misc"]').val('');
-                        $('input[name="ammoun_misc"]').val('');
-                        $('input[name="ammoun_misc"]').val('');
-                        $('#datepicke3').val('');
-
-                        // Additional success handling if needed
-                    } else {
-                        swal.fire({
-                            title: 'Error',
-                            text: 'Failed to add data',
-                            icon: 'error',
-                            button: 'Ok',
-                        });
-                        // Additional error handling if needed
-                    }
-                },
-                error: function() {
-                    swal.fire({
-                        title: 'Error',
-                        text: 'Error in Ajax request',
-                        icon: 'error',
-                        button: 'Ok',
-                    });
-                    // Additional error handling if needed
-                }
-            });
-        });
-    });
 
     $(document).ready(function() {
         // Handle form submission
@@ -903,7 +714,7 @@ if (!window.SITE_SETTINGS) {
 
     var civilAccountTable = null; // Declare a variable to store DataTable instance
 
-    $('#total_pay').click(function() {
+    $('#total_civil').click(function() {
         // Check if DataTable is already initialized
         if (civilAccountTable) {
             civilAccountTable.destroy(); // Destroy the existing DataTable
@@ -1248,7 +1059,7 @@ if (!window.SITE_SETTINGS) {
 
     var finishAccountTable = null; // Declare a variable to store DataTable instance
 
-    $('#total_pay').click(function() {
+    $('#total_finish').click(function() {
         // Check if DataTable is already initialized
         if (finishAccountTable) {
             finishAccountTable.destroy(); // Destroy the existing DataTable
@@ -1443,7 +1254,7 @@ if (!window.SITE_SETTINGS) {
 
     var miscleAccountTable = null; // Declare a variable to store DataTable instance
 
-    $('#total_pay').click(function() {
+    $('#total_misc').click(function() {
         // Check if DataTable is already initialized
         if (miscleAccountTable) {
             miscleAccountTable.destroy(); // Destroy the existing DataTable
@@ -1534,7 +1345,7 @@ if (!window.SITE_SETTINGS) {
 
     var labourAccountTable = null; // Declare a variable to store DataTable instance
 
-    $('#total_pay').click(function() {
+    $('#total_labour').click(function() {
         // Check if DataTable is already initialized
         if (labourAccountTable) {
             labourAccountTable.destroy(); // Destroy the existing DataTable
