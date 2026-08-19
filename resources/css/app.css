@@ -1228,6 +1228,27 @@
     .ui-icon-btn > svg { @apply size-[18px]; }
     .ui-icon-btn-plain { @apply border-transparent bg-transparent hover:border-transparent; }
 
+    /* A hover label for controls that are only an icon. The text comes from
+       data-tip, so the same element can carry aria-label for screen readers
+       without the pair drifting apart. Shown on focus as well as hover: the
+       button is reachable by keyboard and would otherwise be unlabelled. */
+    .ui-tip { @apply relative; }
+    .ui-tip::after {
+        content: attr(data-tip);
+        @apply pointer-events-none absolute bottom-full left-1/2 z-30 mb-1.5 -translate-x-1/2
+               whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white
+               opacity-0 shadow-pop transition-opacity duration-150;
+        background-color: #18181b;
+    }
+    .ui-tip:hover::after,
+    .ui-tip:focus-visible::after { @apply opacity-100; }
+
+    /* Refetch button. The glyph spins while the request it triggered is in
+       flight, which is the only feedback there is — the table underneath does
+       not visibly change until the rows come back. */
+    .ui-reload.is-busy { @apply pointer-events-none; }
+    .ui-reload.is-busy > svg { animation: ui-spin 0.7s linear infinite; }
+
     /* Theme switch. Both glyphs are stacked in the same box and cross-faded, so
        the button never changes width when the theme flips. */
     .ui-theme-toggle > svg {

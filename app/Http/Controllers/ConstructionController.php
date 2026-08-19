@@ -172,7 +172,7 @@ class ConstructionController extends Controller
             'payment' => $data['price1'],
             'source' => $data['source1'] ?? '',
             'date' => $date,
-            'date_n' => $this->normalisePaymentDate($date),
+            'date_n' => $this->normaliseDate($date),
             'proj_id' => $data['proj_id1'],
             'status' => Setting::current()->paymentEntryStatus(),
         ])->exists);
@@ -220,7 +220,7 @@ class ConstructionController extends Controller
             'payment' => $data['price1'],
             'source' => $data['source1'] ?? '',
             'date' => $date,
-            'date_n' => $this->normalisePaymentDate($date),
+            'date_n' => $this->normaliseDate($date),
             'status' => Setting::current()->paymentEntryStatus(),
         ]));
     }
@@ -238,7 +238,19 @@ class ConstructionController extends Controller
      * boundary. Anything that does not parse cleanly stores null rather than
      * a guess.
      */
-    private function normalisePaymentDate(?string $value): ?string
+    /**
+     * The sortable form of a date the user typed.
+     *
+     * Every date field on this side of the app is a jQuery UI picker set to
+     * dd/mm/yyyy, and the legacy column it lands in is a VARCHAR that cannot be
+     * ordered. `date_n` is the DATE column added alongside it for exactly that,
+     * and rows written without one sort to the bottom whatever their date says,
+     * so every create that stores `date` must fill this too.
+     *
+     * Null for anything unparseable, which is what the column already holds for
+     * the handful of legacy rows whose date was blank or malformed.
+     */
+    private function normaliseDate(?string $value): ?string
     {
         $value = trim((string) $value);
 
@@ -412,9 +424,15 @@ class ConstructionController extends Controller
     {
         $category = $this->decodeCategory($category);
 
+        // Newest first. `date` is the legacy VARCHAR and sorts alphabetically,
+        // so the ordering is done on the normalised DATE column beside it; id
+        // breaks ties, which keeps several entries on one day in the order they
+        // were recorded. Rows with no parseable date sort to the bottom.
         $rows = Material::where('project_id', $id)
             ->where('type', $category)
             ->where('status', 1)
+            ->orderByDesc('date_n')
+            ->orderByDesc('id')
             ->get();
 
         // Legacy: heading totals deliberately NOT status-filtered (line 82).
@@ -432,9 +450,15 @@ class ConstructionController extends Controller
     {
         $category = $this->decodeCategory($category);
 
+        // Newest first. `date` is the legacy VARCHAR and sorts alphabetically,
+        // so the ordering is done on the normalised DATE column beside it; id
+        // breaks ties, which keeps several entries on one day in the order they
+        // were recorded. Rows with no parseable date sort to the bottom.
         $rows = BMaterial::where('project_id', $id)
             ->where('type', $category)
             ->where('status', 1)
+            ->orderByDesc('date_n')
+            ->orderByDesc('id')
             ->get();
 
         return response()->json([
@@ -449,9 +473,15 @@ class ConstructionController extends Controller
     {
         $category = $this->decodeCategory($category);
 
+        // Newest first. `date` is the legacy VARCHAR and sorts alphabetically,
+        // so the ordering is done on the normalised DATE column beside it; id
+        // breaks ties, which keeps several entries on one day in the order they
+        // were recorded. Rows with no parseable date sort to the bottom.
         $rows = LabourInstalment::where('project_id', $id)
             ->where('type', $category)
             ->where('status', 1)
+            ->orderByDesc('date_n')
+            ->orderByDesc('id')
             ->get();
 
         // Legacy: heading total NOT status-filtered (line 400).
@@ -505,7 +535,14 @@ class ConstructionController extends Controller
 
     public function showMiscTotal(string $id)
     {
-        $rows = Misc::where('proj_id', $id)->get();
+        // Newest first. `date` is the legacy VARCHAR and sorts alphabetically,
+        // so the ordering is done on the normalised DATE column beside it; id
+        // breaks ties, which keeps several entries on one day in the order they
+        // were recorded. Rows with no parseable date sort to the bottom.
+        $rows = Misc::where('proj_id', $id)
+            ->orderByDesc('date_n')
+            ->orderByDesc('id')
+            ->get();
 
         return response()->json([
             'total_price' => $this->sum($rows->pluck('price')),
@@ -643,6 +680,7 @@ class ConstructionController extends Controller
             'login_user' => Auth::guard('web')->user()?->name,
             'project_id' => $data['proj_id'],
             'date' => $data['selected_date1'] ?? '',
+            'date_n' => $this->normaliseDate($data['selected_date1'] ?? null),
             'type' => $data['catgory'],
             'status' => Setting::current()->civilEntryStatus(),
         ]);
@@ -672,6 +710,7 @@ class ConstructionController extends Controller
             'price' => $data['brick_price'] ?? 0,
             'project_id' => $data['proj_id'],
             'date' => $data['selected_date2'] ?? '',
+            'date_n' => $this->normaliseDate($data['selected_date2'] ?? null),
             'type' => $data['catgory'],
             'login_user' => Auth::guard('web')->user()?->name,
             'proj_name' => $site->stamp_name,
@@ -697,6 +736,7 @@ class ConstructionController extends Controller
         LabourInstalment::create([
             'description' => $data['Detail'] ?? '',
             'date' => $data['selected_date'] ?? '',
+            'date_n' => $this->normaliseDate($data['selected_date'] ?? null),
             'instalmet' => $data['bill_labour'] ?? 0,
             'project_id' => $data['proj_id'],
             'type' => $data['labour_type'],
@@ -736,6 +776,7 @@ class ConstructionController extends Controller
         return [
             'detail' => $input['Detail_misc'] ?? '',
             'date' => $input['selected_date3'] ?? '',
+            'date_n' => $this->normaliseDate($input['selected_date3'] ?? null),
             'price' => $input['ammoun_misc'] ?? 0,
             'proj_id' => $input['proj_id'],
         ];

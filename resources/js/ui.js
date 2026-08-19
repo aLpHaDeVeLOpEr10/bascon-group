@@ -365,6 +365,54 @@ function initDelegatedHandlers() {
 }
 
 /**
+ * Refetch buttons.
+ *
+ * `data-reload` names a control whose change handler already knows how to load
+ * the thing being shown, so replaying that handler is the whole implementation.
+ * There is deliberately no second fetch path here: a copy would drift from the
+ * original the first time either one changed.
+ *
+ * The glyph spins until the page falls idle again, which is the only feedback
+ * available — a refetch that returns the same rows looks identical to one that
+ * never happened.
+ */
+function initReloadButtons() {
+    on(doc, 'click', (e) => {
+        const btn = e.target.closest('[data-reload]');
+        if (!btn || btn.classList.contains('is-busy')) return;
+
+        const target = $1(btn.dataset.reload);
+        if (!target) return;
+
+        // The first option of these lists is a "Select ..." placeholder. Asking
+        // the server for it returns nothing and would blank the table, so with
+        // nothing chosen there is nothing to reload.
+        if (target.tagName === 'SELECT' && target.selectedIndex <= 0) return;
+
+        btn.classList.add('is-busy');
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+
+        const jq = window.jQuery;
+        if (!jq) {
+            window.setTimeout(() => btn.classList.remove('is-busy'), 400);
+            return;
+        }
+
+        const done = () => {
+            jq(doc).off('ajaxStop', done);
+            btn.classList.remove('is-busy');
+        };
+
+        // Every one of these handlers loads over jQuery AJAX, so the library's
+        // own idle event is the honest end of the request. The checks behind it
+        // cover a handler that issued none and one whose request never returns.
+        jq(doc).on('ajaxStop', done);
+        window.setTimeout(() => { if (!jq.active) done(); }, 60);
+        window.setTimeout(done, 15000);
+    });
+}
+
+/**
  * Several views render a tab strip where no <li> and no pane carries `active`,
  * so the card sat empty until the user guessed to click. Open the first tab of
  * any strip that has nothing selected. This never fires the pages' own click
@@ -1185,6 +1233,26 @@ function initDatepickerDefaults() {
     });
 }
 
+/**
+ * Attach a picker to every field that carries the class.
+ *
+ * The legacy pages each wire their own by id — #datepicker, #datepicker1 and
+ * friends — so a field added without one of those exact ids silently had no
+ * picker at all. Anything marked `.datepicker` now gets one wherever it lives,
+ * which is what the class was already implying on the newer forms.
+ *
+ * Guarded so a page that still calls .datepicker() itself does not end up
+ * initialising the same input twice.
+ */
+function initDatepickers() {
+    const jq = window.jQuery;
+    if (!jq || !jq.datepicker) return;
+
+    jq('input.datepicker').each(function () {
+        if (!jq.data(this, 'datepicker')) jq(this).datepicker();
+    });
+}
+
 /* ------------------------------------------------------ DataTables defaults */
 
 /** Defaults only — every per-table config in the views still wins. */
@@ -1290,6 +1358,7 @@ function initDataTableMoney() {
 function init() {
     installJqueryShims();
     initDelegatedHandlers();
+    initReloadButtons();
     initDefaultTab();
     initTheme();
     initSidebar();
@@ -1301,6 +1370,7 @@ function init() {
     initDropzones();
     initRouteProgress();
     initDatepickerDefaults();
+    initDatepickers();
     initDataTableDefaults();
     initDataTableMoney();
 

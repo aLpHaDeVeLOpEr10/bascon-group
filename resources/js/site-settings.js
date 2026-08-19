@@ -45,28 +45,28 @@ if (!window.SITE_SETTINGS) {
      */
     var ENTRY_KINDS = {
         civil: {
-            url: "S.url('construction/Add_brick')",
+            url: S.url('construction/Add_brick'),
             item: 'catgory', detail: null, quantity: 'brick_quantity',
             amount: 'brick_price', date: 'selected_date1',
             itemLabel: 'Material', amountLabel: 'Price',
             options: S.options.civil
         },
         finishing: {
-            url: "S.url('construction/Add_b_category')",
+            url: S.url('construction/Add_b_category'),
             item: 'catgory', detail: 'Detail', quantity: 'brick_quantity',
             amount: 'brick_price', date: 'selected_date2',
             itemLabel: 'Material', amountLabel: 'Price',
             options: S.options.finishing
         },
         labour: {
-            url: "S.url('construction/labour_instalment')",
+            url: S.url('construction/labour_instalment'),
             item: 'labour_type', detail: 'Detail', quantity: null,
             amount: 'bill_labour', date: 'selected_date',
             itemLabel: 'Labour type', amountLabel: 'Instalment',
             options: S.options.labour
         },
         misc: {
-            url: "S.url('construction/misc_add')",
+            url: S.url('construction/misc_add'),
             item: null, detail: 'Detail_misc', quantity: null,
             amount: 'ammoun_misc', date: 'selected_date3',
             itemLabel: null, amountLabel: 'Amount',
@@ -175,12 +175,13 @@ if (!window.SITE_SETTINGS) {
 
                     message('success', 'Entry added to ' + $('#entry_kind option:selected').text() + '.');
 
-                    // Keep the category and date: entries are usually added in
-                    // runs of the same kind on the same day, and retyping the
-                    // date every time is the slow part.
+                    // Keep only the category: entries are usually added in
+                    // runs of the same kind. Everything else clears, so a stale
+                    // value can never be carried into the next entry unnoticed.
                     $('#entry_item').val('');
                     $('#entry_detail').val('');
                     $('#entry_quantity').val('');
+                    $('#entry_date').val('');
                     $('#entry_amount').val('').focus();
                 },
                 error: function (xhr) {
@@ -353,7 +354,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_bricks/' + S.siteId)/" + Category,
+            url: S.url('construction/show_bricks/' + S.siteId) + '/' + Category,
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -529,7 +530,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_b_category/' + S.siteId)/" + Category,
+            url: S.url('construction/show_b_category/' + S.siteId) + '/' + Category,
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -799,7 +800,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_labour/' + S.siteId)/" + Category,
+            url: S.url('construction/show_labour/' + S.siteId) + '/' + Category,
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -909,7 +910,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_civil_total/' + S.siteId)",
+            url: S.url('construction/show_civil_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1000,7 +1001,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/misc_total/' + S.siteId)",
+            url: S.url('construction/misc_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1106,7 +1107,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/return_total/' + S.siteId)",
+            url: S.url('construction/return_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1215,7 +1216,7 @@ if (!window.SITE_SETTINGS) {
                 Swal.showLoading();
                 // Fetch user details via AJAX
                 $.ajax({
-                    url: "S.url('construction/get_return_details')",
+                    url: S.url('construction/get_return_details'),
                     type: 'GET',
                     data: {
                         userId: userId
@@ -1254,7 +1255,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_finish_total/' + S.siteId)",
+            url: S.url('construction/show_finish_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1349,7 +1350,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/total_entries/' + S.siteId)",
+            url: S.url('construction/total_entries/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1449,7 +1450,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_misc_total/' + S.siteId)",
+            url: S.url('construction/show_misc_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1540,7 +1541,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: "S.url('construction/show_labour_total/' + S.siteId)",
+            url: S.url('construction/show_labour_total/' + S.siteId),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -1635,7 +1636,7 @@ if (!window.SITE_SETTINGS) {
                 Swal.showLoading();
                 // Fetch user details via AJAX
                 $.ajax({
-                    url: "S.url('construction/get_civil_details')",
+                    url: S.url('construction/get_civil_details'),
                     type: 'GET',
                     data: {
                         userId: userId
@@ -1675,7 +1676,7 @@ if (!window.SITE_SETTINGS) {
             var formData = $(this).serialize();
 
             $.ajax({
-                url: "S.url('construction/update_civil')",
+                url: S.url('construction/update_civil'),
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -1734,7 +1735,7 @@ if (!window.SITE_SETTINGS) {
             if (result.isConfirmed) {
                 // Send AJAX request
                 $.ajax({
-                    url: "S.url('construction/delete_civil')",
+                    url: S.url('construction/delete_civil'),
                     type: "POST",
                     data: {
                         userId: userId
@@ -1785,7 +1786,7 @@ if (!window.SITE_SETTINGS) {
                 Swal.showLoading();
                 // Fetch user details via AJAX
                 $.ajax({
-                    url: "S.url('construction/get_finish_details')",
+                    url: S.url('construction/get_finish_details'),
                     type: 'GET',
                     data: {
                         userId: userId
@@ -1827,7 +1828,7 @@ if (!window.SITE_SETTINGS) {
             var formData = $(this).serialize();
 
             $.ajax({
-                url: "S.url('construction/update_finish')",
+                url: S.url('construction/update_finish'),
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -1879,7 +1880,7 @@ if (!window.SITE_SETTINGS) {
             if (result.isConfirmed) {
                 // Send AJAX request
                 $.ajax({
-                    url: "S.url('construction/delete_finish')",
+                    url: S.url('construction/delete_finish'),
                     type: "POST",
                     data: {
                         userId: userId
@@ -1935,7 +1936,7 @@ if (!window.SITE_SETTINGS) {
             if (result.isConfirmed) {
                 // Send AJAX request
                 $.ajax({
-                    url: "S.url('construction/delete_labour')",
+                    url: S.url('construction/delete_labour'),
                     type: "POST",
                     data: {
                         userId: userId
@@ -1991,7 +1992,7 @@ if (!window.SITE_SETTINGS) {
             if (result.isConfirmed) {
                 // Send AJAX request
                 $.ajax({
-                    url: "S.url('construction/delete_misc')",
+                    url: S.url('construction/delete_misc'),
                     type: "POST",
                     data: {
                         userId: userId
@@ -2046,7 +2047,7 @@ if (!window.SITE_SETTINGS) {
             if (result.isConfirmed) {
                 // Send AJAX request
                 $.ajax({
-                    url: "S.url('construction/return_delete')",
+                    url: S.url('construction/return_delete'),
                     type: "POST",
                     data: {
                         userId: userId
@@ -2095,7 +2096,7 @@ if (!window.SITE_SETTINGS) {
                 Swal.showLoading();
                 // Fetch user details via AJAX
                 $.ajax({
-                    url: "S.url('construction/get_labour_details')",
+                    url: S.url('construction/get_labour_details'),
                     type: 'GET',
                     data: {
                         userId: userId
@@ -2136,7 +2137,7 @@ if (!window.SITE_SETTINGS) {
             var formData = $(this).serialize();
 
             $.ajax({
-                url: "S.url('construction/update_labour')",
+                url: S.url('construction/update_labour'),
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -2182,7 +2183,7 @@ if (!window.SITE_SETTINGS) {
                 Swal.showLoading();
                 // Fetch user details via AJAX
                 $.ajax({
-                    url: "S.url('construction/get_misc_details')",
+                    url: S.url('construction/get_misc_details'),
                     type: 'GET',
                     data: {
                         userId: userId
@@ -2218,7 +2219,7 @@ if (!window.SITE_SETTINGS) {
             var formData = $(this).serialize();
 
             $.ajax({
-                url: "S.url('construction/update_misc')",
+                url: S.url('construction/update_misc'),
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -2260,7 +2261,7 @@ if (!window.SITE_SETTINGS) {
             var formData = $(this).serialize();
 
             $.ajax({
-                url: "S.url('construction/update_rerturn')",
+                url: S.url('construction/update_rerturn'),
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
