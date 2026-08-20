@@ -6,7 +6,6 @@
         …body…
         <x-slot:footer>…</x-slot:footer>
     </x-card>
-
     `flush` removes the body padding and clips the corners — use it when the
     body is a table or a DataTable, so rows meet the card edge cleanly.
 --}}
