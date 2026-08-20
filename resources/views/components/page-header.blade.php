@@ -12,7 +12,6 @@
     top of the body would say the same thing twice. The prop is kept — every
     view passes it, and it is still the accessible name of the region — so no
     call site had to change.
-
     Breadcrumbs are separate — they render in the sticky header too; see
     partials/topbar.blade.php.
 --}}
