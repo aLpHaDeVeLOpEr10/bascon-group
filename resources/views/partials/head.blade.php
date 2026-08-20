@@ -5,7 +5,6 @@
     forms.css, datatable.css, custom.css, bascon-ui.css and the jQuery UI
     stylesheet are no longer loaded. Styling is now a single Tailwind v4 bundle
     compiled by Vite from resources/css/app.css.
-
     What is still loaded as classic (non-module) scripts, and why — this is
     exactly what the views call by global name, nothing more:
 
