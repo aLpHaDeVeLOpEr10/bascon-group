@@ -11,6 +11,7 @@
     $navInitials = collect(preg_split('/\s+/', $navName))
         ->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('');
 
+        
     /* A section is either a link (a `url`) or an expandable group (`items`).
        Dashboard is the landing page and has nothing under it, so a group with
        one child would have meant an extra click to reach the only thing in
