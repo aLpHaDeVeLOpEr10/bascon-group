@@ -63,7 +63,6 @@
 @endphp
 
 <aside class="app-sidebar" id="app-sidebar" aria-label="Admin navigation">
-
     {{-- The light-on-dark colourway only; the panel is dark in both themes. --}}
     <div class="app-logo shrink-0 border-b border-line p-4">
         <a href="{{ url('admin_setting/dashboard') }}" class="block rounded-lg"
@@ -72,7 +71,6 @@
                 <img src="{{ asset('assets/images/logo-dark.png') }}" alt="BASCON Group"
                      width="560" height="181" class="h-auto w-full object-contain" />
             </span>
-
             <span data-logo-mark class="hidden">
                 <img src="{{ asset('assets/images/logo-mark-dark.png') }}" alt="BASCON Group"
                      width="240" height="68" class="h-auto w-full object-contain" />
@@ -98,7 +96,6 @@
 
                 @continue
             @endif
-
             @php
                 $groupActive = collect($section['items'])->contains(fn ($item) => $is($item[0]));
             @endphp
@@ -146,7 +143,6 @@
                 <p class="truncate text-[13px] font-semibold text-neutral-900">{{ $navName }}</p>
                 <p class="truncate text-[11.5px] text-neutral-500">Administrator</p>
             </div>
-
             <a href="{{ url('admin/logout') }}"
                data-sidebar-hide
                aria-label="Log out"
@@ -162,5 +158,4 @@
         </div>
     </div>
 </aside>
-
 <div class="app-backdrop" data-sidebar-backdrop aria-hidden="true"></div>
