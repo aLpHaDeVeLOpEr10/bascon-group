@@ -384,10 +384,17 @@ function initReloadButtons() {
         const target = $1(btn.dataset.reload);
         if (!target) return;
 
-        // The first option of these lists is a "Select ..." placeholder. Asking
-        // the server for it returns nothing and would blank the table, so with
-        // nothing chosen there is nothing to reload.
-        if (target.tagName === 'SELECT' && target.selectedIndex <= 0) return;
+        // Some of these lists open on a "Select ..." placeholder: a first
+        // option with a label but no value attribute, so reading it gives the
+        // label text and the server has nothing to match. There is nothing to
+        // reload while that is what is chosen.
+        //
+        // An explicit value — including the empty string an "All ..." option
+        // carries — is a real choice and does reload.
+        if (target.tagName === 'SELECT') {
+            const chosen = target.selectedOptions[0];
+            if (chosen && !chosen.hasAttribute('value')) return;
+        }
 
         btn.classList.add('is-busy');
         target.dispatchEvent(new Event('change', { bubbles: true }));

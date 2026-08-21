@@ -149,6 +149,11 @@ Route::prefix('client')->group(function () {
         Route::get('profile', [ClientController::class, 'profile']);
         Route::post('profile_photo', [ClientController::class, 'saveProfilePhoto']);
 
+        // Every entry in the four cost ledgers, the same view the site team
+        // has. The roll-up pages below stay; this is the detail behind them.
+        Route::get('construction_payments', [ClientController::class, 'constructionPayments']);
+        Route::get('con_entries', [ClientController::class, 'conEntries']);
+
         Route::get('show_payments', [ClientController::class, 'showPayments']);
         Route::get('finish_payments', [ClientController::class, 'finishPayments']);
         Route::get('labour_payment', [ClientController::class, 'labourPayment']);

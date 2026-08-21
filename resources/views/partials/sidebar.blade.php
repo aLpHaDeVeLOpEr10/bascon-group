@@ -35,7 +35,11 @@
         || $is('construction/add_finishing')
         || $is('construction/add_labour');
     $paymentActive = $is('construction/payments') || $is('construction/payment_details/*');
-    $clientActive = $is('client/*');
+    $conPaymentsActive = $is('client/construction_payments');
+    $grandTotalActive = $is('client/total_payment');
+    // Both of those are top-level items, so the Payment Detail group must not
+    // also light up for them — the rest of the client pages are under it.
+    $clientActive = $is('client/*') && ! $conPaymentsActive && ! $grandTotalActive;
 
     // Mirrors the admin sidebar's Category group. Same three screens, same
     // order — see partials/admin_sidebar.
@@ -45,15 +49,13 @@
         ['construction/add_labour',    'Labour'],
     ];
 
+    // The four cost ledgers moved out of this group and into the
+    // Construction Payments page above it, which shows the same four as tabs
+    // and lists every entry rather than a per-material roll-up.
     $clientLinks = [
-        ['client/show_payments',        'Civil Material Payments'],
-        ['client/finish_payments',      'Finishing Material Payments'],
-        ['client/labour_payment',       'Labour Payments'],
-        ['client/misc_payment',         'Miscellaneous Payments'],
         ['client/project_mangement',    'Project Management Fee'],
         ['client/architect_management', 'Architect'],
         ['client/payment_recieved',     'Construction Payments'],
-        ['client/total_payment',        'Grand Total'],
     ];
 @endphp
 
@@ -166,6 +168,20 @@
         @if ($user && $user->isClient())
             <p class="ui-nav-heading" data-sidebar-hide>Payments</p>
 
+            <a href="{{ url('client/construction_payments') }}"
+               data-tip="Construction Costs"
+               class="ui-nav-link {{ $conPaymentsActive ? 'is-active' : '' }}"
+               @if ($conPaymentsActive) aria-current="page" @endif>
+                {{-- A price tag: what things cost, and currency-neutral, which
+                     a dollar glyph would not be in a PKR app. --}}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z" />
+                    <path d="M7.5 7.5h.01" />
+                </svg>
+                <span class="flex-1 truncate text-left" data-nav-label>Construction Costs</span>
+            </a>
+
             <div class="ui-nav-group {{ $clientActive ? 'is-open' : '' }}">
                 <button type="button"
                         data-nav-toggle
@@ -197,6 +213,23 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Last, and at the top level: it is the sum of everything above
+                 it rather than another one of the parts. --}}
+            <a href="{{ url('client/total_payment') }}"
+               data-tip="Grand Total"
+               class="ui-nav-link {{ $grandTotalActive ? 'is-active' : '' }}"
+               @if ($grandTotalActive) aria-current="page" @endif>
+                {{-- A receipt, torn edge and all: the final bill for everything
+                     above it. Its lines are plain rules rather than a currency
+                     glyph, which would be wrong in a PKR app. --}}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 2v20l2.5-1.5L10 22l2-1.5L14 22l2.5-1.5L19 22V2z" />
+                    <path d="M9 8h6" /><path d="M9 12h6" /><path d="M9 16h3" />
+                </svg>
+                <span class="flex-1 truncate text-left" data-nav-label>Grand Total</span>
+            </a>
         @endif
     </nav>
     {{-- Account card. Collapsed to just the avatar on the icon rail. --}}

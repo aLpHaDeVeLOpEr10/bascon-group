@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ArchitectDetailCompany;
+use App\Models\BCategory;
 use App\Models\BMaterial;
+use App\Models\Category;
 use App\Models\ConstructionDetail;
 use App\Models\FinishTotal;
+use App\Models\Labour;
 use App\Models\LabourInstalment;
 use App\Models\LabourTotal;
 use App\Models\Material;
@@ -72,6 +75,73 @@ class ClientController extends Controller
     public function miscPayment()
     {
         return view('client.misc_payment', ['id' => $this->projectId()]);
+    }
+
+    /**
+     * The four cost ledgers, entry by entry.
+     *
+     * The pages above are roll-ups: one line per material, and no way to see
+     * what makes up a figure. This is the same view of the same four tables
+     * that the site team works in — pick a category, see every entry recorded
+     * against it — read-only and fixed to this client's own project.
+     *
+     * The category lists are catalogues shared by every site, except labour
+     * types, which are created per project.
+     */
+    public function constructionPayments()
+    {
+        $project = $this->projectId();
+
+        return view('client.construction_payments', [
+            'id' => $project,
+            'civilCategories' => Category::orderBy('material_name')->pluck('material_name')->values(),
+            'finishCategories' => BCategory::orderBy('material_name')->pluck('material_name')->values(),
+            'labourTypes' => Labour::where('project_id', $project)->pluck('type')->values(),
+        ]);
+    }
+
+    /**
+     * Ledger  => [model, project column, category column, amount column,
+     *             does it have an approval status?]
+     *
+     * Miscellaneous has no categories and no approval step, which is why both
+     * of its entries here are null/false rather than a special case in the
+     * query below.
+     */
+    private const LEDGERS = [
+        'civil' => [Material::class, 'project_id', 'type', 'price', true],
+        'finishing' => [BMaterial::class, 'project_id', 'type', 'price', true],
+        'labour' => [LabourInstalment::class, 'project_id', 'type', 'instalmet', true],
+        'misc' => [Misc::class, 'proj_id', null, 'price', false],
+    ];
+
+    /** Entries in one ledger, narrowed to one category where it has them. */
+    public function conEntries(Request $request)
+    {
+        $kind = (string) $request->query('kind');
+
+        abort_unless(isset(self::LEDGERS[$kind]), 404);
+
+        [$model, $projectKey, $categoryKey, $amount, $gated] = self::LEDGERS[$kind];
+        $category = trim((string) $request->query('category', ''));
+
+        $rows = $model::where($projectKey, $this->projectId())
+            ->when($gated, fn ($q) => $q->where('status', 1))
+            // Only civil, finishing and labour have categories; misc is asked
+            // for whole, so the caller sends no category and none is applied.
+            ->when($kind !== 'misc' && $category !== '', fn ($q) => $q->where($categoryKey, $category))
+            // Newest first, matching the site team's tables. `date` is the
+            // legacy VARCHAR and sorts alphabetically; date_n is the DATE
+            // column beside it.
+            ->orderByDesc('date_n')
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json([
+            'total_price' => $this->sum($rows->pluck($amount)),
+            'quantity' => $this->sum($rows->pluck('quantity')),
+            'data' => $rows,
+        ]);
     }
 
     /** Client.php:120-214 — the grand-total roll-up page. */
