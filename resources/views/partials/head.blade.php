@@ -101,8 +101,6 @@
 <script src="{{ asset('assets/js/jquery-ui/js/jquery-ui-1.10.3.custom.min.js') }}"></script>
 
 <script>
-    // The legacy app sent no CSRF token on any of its ~90 AJAX calls.
-    // Registering it once here covers every $.ajax on every page.
     $.ajaxSetup({
         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
     });
