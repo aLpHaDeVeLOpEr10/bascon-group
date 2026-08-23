@@ -36,10 +36,9 @@
         || $is('construction/add_labour');
     $paymentActive = $is('construction/payments') || $is('construction/payment_details/*');
     $conPaymentsActive = $is('client/construction_payments');
-    $grandTotalActive = $is('client/total_payment');
-    // Both of those are top-level items, so the Payment Detail group must not
-    // also light up for them — the rest of the client pages are under it.
-    $clientActive = $is('client/*') && ! $conPaymentsActive && ! $grandTotalActive;
+    // Its own top-level item, so the Payment Detail group must not also light
+    // up for it — the rest of the client pages are under that group.
+    $clientActive = $is('client/*') && ! $conPaymentsActive;
 
     // Mirrors the admin sidebar's Category group. Same three screens, same
     // order — see partials/admin_sidebar.
@@ -53,9 +52,9 @@
     // Construction Payments page above it, which shows the same four as tabs
     // and lists every entry rather than a per-material roll-up.
     $clientLinks = [
+        ['client/payment_recieved',     'Construction Payments'],
         ['client/project_mangement',    'Project Management Fee'],
         ['client/architect_management', 'Architect'],
-        ['client/payment_recieved',     'Construction Payments'],
     ];
 @endphp
 
@@ -214,22 +213,7 @@
                 </div>
             </div>
 
-            {{-- Last, and at the top level: it is the sum of everything above
-                 it rather than another one of the parts. --}}
-            <a href="{{ url('client/total_payment') }}"
-               data-tip="Grand Total"
-               class="ui-nav-link {{ $grandTotalActive ? 'is-active' : '' }}"
-               @if ($grandTotalActive) aria-current="page" @endif>
-                {{-- A receipt, torn edge and all: the final bill for everything
-                     above it. Its lines are plain rules rather than a currency
-                     glyph, which would be wrong in a PKR app. --}}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M5 2v20l2.5-1.5L10 22l2-1.5L14 22l2.5-1.5L19 22V2z" />
-                    <path d="M9 8h6" /><path d="M9 12h6" /><path d="M9 16h3" />
-                </svg>
-                <span class="flex-1 truncate text-left" data-nav-label>Grand Total</span>
-            </a>
+
         @endif
     </nav>
     {{-- Account card. Collapsed to just the avatar on the icon rail. --}}

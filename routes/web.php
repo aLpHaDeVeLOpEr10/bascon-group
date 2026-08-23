@@ -156,6 +156,7 @@ Route::prefix('client')->group(function () {
         // has. The roll-up pages below stay; this is the detail behind them.
         Route::get('construction_payments', [ClientController::class, 'constructionPayments']);
         Route::get('con_entries', [ClientController::class, 'conEntries']);
+        Route::get('con_all_entries', [ClientController::class, 'conAllEntries']);
 
         Route::get('show_payments', [ClientController::class, 'showPayments']);
         Route::get('finish_payments', [ClientController::class, 'finishPayments']);

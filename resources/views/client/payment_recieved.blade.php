@@ -13,7 +13,11 @@
                subtitle="Payments received against your construction contract." />
 
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <x-stat-card label="Total payments" :value="money($total_payments)" icon="wallet" tone="success" />
+    <x-stat-card label="Total payments" :value="money($total_payments)" icon="wallet" tone="success" wash />
+    {{-- The same balance the Grand Total tab shows, and read the same way:
+         below zero is money still owed. --}}
+    <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)" icon="clock"
+                 :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
 </div>
 
 <x-card flush>

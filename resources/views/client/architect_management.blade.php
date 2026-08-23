@@ -15,7 +15,7 @@
 {{-- The same three figures the old view printed in one run-on <h4>, now split
      into tiles. The values still come straight from the controller. --}}
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <x-stat-card label="Total fee" :value="money($total_fee)" icon="wallet" />
+    <x-stat-card label="Project done" :value="money($total_fee)" icon="wallet" />
     <x-stat-card label="Total instalments" :value="money($total_instalments)" icon="check" tone="success" />
     <x-stat-card label="Remaining instalments" :value="money($remaing_instalment)" icon="clock" tone="warning" />
 </div>

@@ -92,12 +92,97 @@ class ClientController extends Controller
     {
         $project = $this->projectId();
 
+        // The same figures as the Grand Total page, which is now the last tab
+        // on this one rather than a page of its own.
+        $civil = $this->sum(Material::where('project_id', $project)->where('status', 1)->pluck('price'));
+        $finish = $this->sum(BMaterial::where('project_id', $project)->where('status', 1)->pluck('price'));
+        $misc = $this->sum(Misc::where('proj_id', $project)->pluck('price'));
+        $labour = $this->sum(LabourInstalment::where('project_id', $project)->where('status', 1)->pluck('instalmet'));
+        $received = $this->sum(PaymentReceived::where('proj_id', $project)->pluck('payment'));
+        $returned = $this->sum(ReturnPayment::where('proj_id', $project)->pluck('price'));
+
+        $grandTotal = ($labour + $misc + $finish + $civil) - $returned;
+
         return view('client.construction_payments', [
             'id' => $project,
             'civilCategories' => Category::orderBy('material_name')->pluck('material_name')->values(),
             'finishCategories' => BCategory::orderBy('material_name')->pluck('material_name')->values(),
             'labourTypes' => Labour::where('project_id', $project)->pluck('type')->values(),
+
+            'civil_price' => $civil,
+            'finish_price' => $finish,
+            'labour_price' => $labour,
+            'misc_price' => $misc,
+            'return_total' => $returned,
+            'payment_recieved' => $received,
+            'Grand_total' => $grandTotal,
+            'Remainung_Balace' => $received - $grandTotal,
         ]);
+    }
+
+    /**
+     * Every ledger at once, in date order — the client's copy of the site
+     * team's All Entries table.
+     *
+     * The four cost ledgers plus returns, flattened onto one shape. Sorted on
+     * `date_n` rather than by parsing the legacy `date` string: that column
+     * holds two different conventions depending on the row's age, and the
+     * normalised DATE column beside it is what resolves them.
+     */
+    public function conAllEntries()
+    {
+        $project = $this->projectId();
+        $rows = collect();
+
+        $push = function ($model, string $source, array $map) use ($rows) {
+            foreach ($model as $row) {
+                $rows->push([
+                    'source' => $source,
+                    'date' => $row->date,
+                    'date_n' => $row->date_n,
+                    'type' => $map['type'] ? (string) $row->{$map['type']} : '',
+                    'detail' => $map['detail'] ? (string) $row->{$map['detail']} : '',
+                    'quantity' => $map['quantity'] ? $row->{$map['quantity']} : '',
+                    'price' => $row->{$map['price']},
+                ]);
+            }
+        };
+
+        $push(Material::where('project_id', $project)->where('status', 1)->get(), 'Civil',
+            ['type' => 'type', 'detail' => null, 'quantity' => 'quantity', 'price' => 'price']);
+
+        $push(BMaterial::where('project_id', $project)->where('status', 1)->get(), 'Finishing',
+            ['type' => 'type', 'detail' => 'detail', 'quantity' => 'quantity', 'price' => 'price']);
+
+        $push(LabourInstalment::where('project_id', $project)->where('status', 1)->get(), 'Labour Instalment',
+            ['type' => 'type', 'detail' => 'description', 'quantity' => null, 'price' => 'instalmet']);
+
+        $push(Misc::where('proj_id', $project)->get(), 'Miscellaneous',
+            ['type' => null, 'detail' => 'detail', 'quantity' => null, 'price' => 'price']);
+
+        // A label like the other four rather than the table's name. The view
+        // keys its row highlight off this string.
+        $push(ReturnPayment::where('proj_id', $project)->get(), 'Return Payment',
+            ['type' => null, 'detail' => 'detail', 'quantity' => null, 'price' => 'price']);
+
+        // Newest first. Undated rows sort last rather than to the top, where a
+        // missing date would otherwise read as the most recent thing recorded.
+        $sorted = $rows
+            ->sortByDesc(fn (array $row) => $row['date_n'] ?: '')
+            ->values()
+            ->map(function (array $row) {
+                unset($row['date_n']);
+
+                return $row;
+            });
+
+        // Returns are money coming back, so they come off the figure rather
+        // than adding to it. Summing the column as-is would count them twice
+        // in the wrong direction and disagree with the Grand Total tab.
+        $costs = $this->sum($sorted->where('source', '!=', 'Return Payment')->pluck('price'));
+        $returned = $this->sum($sorted->where('source', 'Return Payment')->pluck('price'));
+
+        return response()->json(['total_price' => $costs - $returned, 'data' => $sorted]);
     }
 
     /**
@@ -176,11 +261,16 @@ class ClientController extends Controller
         $id = $this->projectId();
         $site = Site::find($id);
 
+        $fee = (float) ($site?->total_price ?? 0);
+        $paid = $this->sum(ConstructionDetail::where('proj_id', $id)->pluck('payment'));
+
         return view('client.project_mangement', [
             'id' => $id,
             'name' => $site?->display_name ?? '',
-            'total_fee' => $site?->total_price ?? 0,
-            'total_instalments' => $this->sum(ConstructionDetail::where('proj_id', $id)->pluck('payment')),
+            'total_fee' => $fee,
+            'total_instalments' => $paid,
+            // Same figure the architect page has shown all along.
+            'remaing_instalment' => $fee - $paid,
         ]);
     }
 
@@ -208,10 +298,22 @@ class ClientController extends Controller
         $id = $this->projectId();
         $site = Site::find($id);
 
+        $received = $this->sum(PaymentReceived::where('proj_id', $id)->pluck('payment'));
+
+        // The balance against everything recorded on the project, worked out
+        // exactly as the Grand Total tab does it — the two are the same
+        // question asked on two pages, and they have to give one answer.
+        $civil = $this->sum(Material::where('project_id', $id)->where('status', 1)->pluck('price'));
+        $finish = $this->sum(BMaterial::where('project_id', $id)->where('status', 1)->pluck('price'));
+        $misc = $this->sum(Misc::where('proj_id', $id)->pluck('price'));
+        $labour = $this->sum(LabourInstalment::where('project_id', $id)->where('status', 1)->pluck('instalmet'));
+        $returned = $this->sum(ReturnPayment::where('proj_id', $id)->pluck('price'));
+
         return view('client.payment_recieved', [
             'id' => $id,
             'name' => $site?->display_name ?? '',
-            'total_payments' => $this->sum(PaymentReceived::where('proj_id', $id)->pluck('payment')),
+            'total_payments' => $received,
+            'Remainung_Balace' => $received - (($labour + $misc + $finish + $civil) - $returned),
         ]);
     }
 

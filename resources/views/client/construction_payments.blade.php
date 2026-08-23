@@ -80,6 +80,24 @@
                 ['data' => 'price', 'title' => 'Price'],
             ],
         ],
+        // The four above plus returns, on one timeline. Its own endpoint, so
+        // `all` is not a category the others have to make an exception for.
+        [
+            'key' => 'all',
+            'label' => 'All Data Entries',
+            'options' => null,
+            'pick' => null,
+            'endpoint' => 'client/con_all_entries',
+            'columns' => [
+                ['data' => 'serial_number', 'title' => 'Sr No'],
+                ['data' => 'date', 'title' => 'Date'],
+                ['data' => 'source', 'title' => 'Source'],
+                ['data' => 'type', 'title' => 'Type'],
+                ['data' => 'detail', 'title' => 'Detail'],
+                ['data' => 'quantity', 'title' => 'Quantity'],
+                ['data' => 'price', 'title' => 'Price'],
+            ],
+        ],
     ];
 
     // What the script below needs: the same list, minus the <option> values it
@@ -90,6 +108,7 @@
         'label' => $ledger['label'],
         'hasCategories' => $ledger['options'] !== null,
         'columns' => $ledger['columns'],
+        'url' => url($ledger['endpoint'] ?? 'client/con_entries'),
     ])->values();
 @endphp
 
@@ -105,6 +124,11 @@
                    role="tab" data-toggle="tab">{{ $ledger['label'] }}</a>
             </li>
         @endforeach
+
+        {{-- Last, because it is the sum of the five before it. --}}
+        <li role="presentation">
+            <a href="#pane_grand" aria-controls="pane_grand" role="tab" data-toggle="tab">Grand Total</a>
+        </li>
     </ul>
 
     <div class="tab-content">
@@ -161,6 +185,55 @@
                 </div>
             </div>
         @endforeach
+
+        {{-- Grand Total. Everything here is known at render time, so the table
+             is written out in Blade and DataTables is attached to the rows that
+             are already in it — there is nothing to fetch. --}}
+        <div role="tabpanel" class="tab-pane" id="pane_grand">
+            <div class="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <x-stat-card label="Payments received" :value="money($payment_recieved)"
+                             icon="check" tone="success" wash />
+                {{-- Below zero is money still owed, and reads as such. --}}
+                <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)" icon="clock"
+                             :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
+            </div>
+
+            <table id="table_grand" width="100%" class="ui-table">
+                <thead>
+                    <tr><th>Sr No</th><th>Type</th><th class="text-right">Total</th></tr>
+                </thead>
+                <tbody>
+                    @foreach ([
+                        ['Civil Total', $civil_price],
+                        ['Finishing Total', $finish_price],
+                        ['Labour Total', $labour_price],
+                        ['Miscellaneous Total', $misc_price],
+                    ] as $i => [$label, $amount])
+                        <tr>
+                            <td>{{ $i + 1 }}</td>
+                            <td>{{ $label }}</td>
+                            <td class="text-right tabular-nums">@money($amount)</td>
+                        </tr>
+                    @endforeach
+
+                    {{-- Returns come off the total, so they are shown as the
+                         deduction they are rather than another cost. --}}
+                    @if ($return_total)
+                        <tr>
+                            <td>5</td>
+                            <td>Less returns</td>
+                            <td class="text-right tabular-nums text-rose-600">-@money($return_total)</td>
+                        </tr>
+                    @endif
+
+                    <tr class="font-semibold">
+                        <td>{{ $return_total ? 6 : 5 }}</td>
+                        <td>Grand Total</td>
+                        <td class="text-right tabular-nums">@money($Grand_total)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection
@@ -168,7 +241,7 @@
 @push('scripts')
 <script>
     window.CLIENT_LEDGERS = {!! json_encode($ledgerConfig) !!};
-    window.CLIENT_ENTRIES_URL = {!! json_encode(url('client/con_entries')) !!};
+
 </script>
 
 <script>
@@ -184,7 +257,7 @@
 
         function load(ledger, category) {
             $.ajax({
-                url: window.CLIENT_ENTRIES_URL,
+                url: ledger.url,
                 type: 'GET',
                 data: { kind: ledger.key, category: category || '' },
                 dataType: 'json',
@@ -210,6 +283,9 @@
                         data: rows,
                         columns: ledger.columns,
                         dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
+                        createdRow: function (tr, data) {
+                            if (data.source === 'Return Payment') $(tr).addClass('is-return');
+                        },
                         buttons: [
                             {
                                 extend: 'print',
@@ -257,6 +333,40 @@
                 }
             });
         }
+
+        $('#table_grand').DataTable({
+            dom: '<"ui-dt-bar"B>rt',
+            paging: false,
+            searching: false,
+            info: false,
+            ordering: false,
+            buttons: [
+                {
+                    extend: 'print',
+                    text: 'Print Record',
+                    className: 'dt-button',
+                    title: '',
+                    customize: function (win) {
+                        $(win.document.body).prepend(
+                            '<h1 style="text-align:center;font-size:20px;margin:0 0 14px;">BASCON GROUP</h1>'
+                        );
+                        $(win.document.body).prepend(
+                            '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;">' +
+                            '<img src="{{ asset('assets/images/water_mak.jpeg') }}" style="width:500px;" /></div>'
+                        );
+                        $(win.document.body).find('table thead').prepend(
+                            '<tr><th colspan="3" style="text-align:left;font-size:13px;">Grand Total</th></tr>'
+                        );
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: 'Download Excel',
+                    className: 'dt-button',
+                    filename: 'construction_grand_total'
+                }
+            ]
+        });
 
         window.CLIENT_LEDGERS.forEach(function (ledger) {
             // Everything first; the picker filters from there. An empty
