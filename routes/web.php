@@ -88,6 +88,9 @@ Route::prefix('construction')->group(function () {
         Route::post('save_amaterial', [ConstructionController::class, 'saveAMaterial']);
         Route::post('save_bmaterial', [ConstructionController::class, 'saveBMaterial']);
         Route::post('save_labour', [ConstructionController::class, 'saveLabourType']);
+        // The labour type catalogue behind that form's picker.
+        Route::post('save_labour_category', [ConstructionController::class, 'saveLabourCategory']);
+        Route::post('delete_labour_category', [ConstructionController::class, 'deleteLabourCategory']);
         Route::post('delete_category', [ConstructionController::class, 'deleteCategory']);
         Route::post('delete_bcategory', [ConstructionController::class, 'deleteBCategory']);
 
@@ -237,6 +240,8 @@ Route::prefix('admin_setting')->group(function () {
         Route::post('save_amaterial', [AdminSettingController::class, 'saveAMaterial']);
         Route::post('save_bmaterial', [AdminSettingController::class, 'saveBMaterial']);
         Route::post('save_labour', [AdminSettingController::class, 'saveLabour']);
+        Route::post('save_labour_category', [AdminSettingController::class, 'saveLabourCategory']);
+        Route::post('delete_labour_category', [AdminSettingController::class, 'deleteLabourCategory']);
         Route::post('save_setting', [AdminSettingController::class, 'saveSetting']);
         Route::post('save_site', [AdminSettingController::class, 'saveSite']);
         Route::post('save_company_site', [AdminSettingController::class, 'saveCompanySite']);

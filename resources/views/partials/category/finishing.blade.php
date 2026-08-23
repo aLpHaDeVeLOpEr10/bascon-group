@@ -46,7 +46,7 @@
 </x-field>
 
                                         <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-secondary">Add</button>
+    <button type="submit" class="ui-btn ui-btn-primary ui-btn-lg">Add</button>
 </div>
                                     </form>
 

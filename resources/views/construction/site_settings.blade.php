@@ -31,7 +31,9 @@
                                 <li role="presentation"><a href="#labour" id="total_labour" aria-controls="profile" role="tab" data-toggle="tab">Labour</a></li>
                                 <li role="presentation"><a href="#Misc" id="total_misc" aria-controls="profile" role="tab" data-toggle="tab">Miscellaneous</a></li>
 
-                                <li role="presentation"><a href="#payment" aria-controls="profile" id="total_pay" role="tab" data-toggle="tab">Sub Total</a></li>
+                                <li role="presentation"><a href="#return" aria-controls="return" role="tab" data-toggle="tab">Return</a></li>
+                                <li role="presentation"><a href="#Total_entries" id="total_pay" aria-controls="Total_entries" role="tab" data-toggle="tab">All Entries</a></li>
+                                <li role="presentation"><a href="#grand_total" aria-controls="grand_total" role="tab" data-toggle="tab">Grand Total</a></li>
 
                             </ul>
                         </div>
@@ -457,150 +459,131 @@
 
                             <!-- End Miscellaneous -->
 
-                            <!-- Start Payment -->
-
-                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="payment">
+                            <!-- Start Return -->
+                            <div role="tabpanel" class="tab-pane ui-tab-total-host" id="return">
 
                                 <ul class="ui-tabs" role="tablist">
 
-
-
-                                    <li role="presentation"><a href="#Total_entries" aria-controls="profile" role="tab" data-toggle="tab">All Entries</a></li>
-                                    <li role="presentation"><a href="#return" aria-controls="profile" role="tab" data-toggle="tab"> Return </a></li>
-                                    <li role="presentation"><a href="#grand_total" aria-controls="profile" role="tab" data-toggle="tab"> Grand Total</a></li>
-
+                                    <li role="presentation"><a href="#return_add" aria-controls="home" role="tab" data-toggle="tab">Return Add</a></li>
+                                    <li role="presentation"><a href="#return_show" id="return_tab" aria-controls="profile" role="tab" data-toggle="tab">Return Show</a></li>
                                 </ul>
-
                                 <div class="tab-content">
-                                    <div role="tabpanel" class="tab-pane" id="Total_entries">
+                                    <div role="tabpanel" class="tab-pane" id="return_add">
+                                        <form role="form" id="return_form" action="{{ url('construction/return_payment') }}">
+
+                                            <x-field label="Detail">
+    <input type="text" class="ui-input" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
+</x-field>
+
+                                            <x-field label="Ammount">
+    <input type="number" class="ui-input" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
+</x-field>
+
+                                            <x-field label="Date">
+    <input type="text" class="ui-input" name="selected_date3" id="datepicke3" placeholder="Select a date" required>
+</x-field>
+                                            <div class="ui-row">
 
 
+                                                <div class="min-w-0 flex-1">
+                                                    <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2.5 pt-5">
+    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
+</div>
+                                        </form>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="return_show">
                                         <div class="mt-4">
-
-
-                                            <table id="Total_entries_account" width="100%" class="ui-table">
-
+                                            <div class="ui-total mb-4" id="return_total"></div>
+                                            <table id="return_table" width="100%" class="ui-table">
                                                 <thead>
                                                     <tr>
                                                         <!-- Add your table headers here -->
                                                         <th>Sr No</th>
                                                         <th>Date</th>
-                                                        <th>Source</th>
-                                                        <th>Type</th>
                                                         <th>Detail</th>
-                                                        <th>Quantity</th>
                                                         <th>Price</th>
+                                                        <th>Action</th>
 
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                            {{-- No total card here: this pane used to carry a second
-                                                 <div id="finish_total324">, the same id as the one in
-                                                 the Finishing Total pane above. Only the first of a
-                                                 duplicated id is ever written to, so it sat empty
-                                                 (and hidden by .ui-total:empty) on every visit. --}}
-                                        </div>
-
-                                    </div>
-
-
-                                    <div role="tabpanel" class="tab-pane" id="return">
-
-                                        <ul class="ui-tabs" role="tablist">
-
-                                            <li role="presentation"><a href="#return_add" aria-controls="home" role="tab" data-toggle="tab">Return Add</a></li>
-                                            <li role="presentation"><a href="#return_show" id="return_tab" aria-controls="profile" role="tab" data-toggle="tab">Return Show</a></li>
-                                        </ul>
-                                        <div class="tab-content">
-                                            <div role="tabpanel" class="tab-pane" id="return_add">
-                                                <form role="form" id="return_form" action="{{ url('construction/return_payment') }}">
-
-                                                    <x-field label="Detail">
-    <input type="text" class="ui-input" name="Detail_misc" id="field-1" placeholder="Add Detail" required>
-</x-field>
-
-                                                    <x-field label="Ammount">
-    <input type="number" class="ui-input" name="ammoun_misc" id="field-1" placeholder="Add Price" required>
-</x-field>
-
-                                                    <x-field label="Date">
-    <input type="text" class="ui-input" name="selected_date3" id="datepicke3" placeholder="Select a date" required>
-</x-field>
-                                                    <div class="ui-row">
-
-
-                                                        <div class="min-w-0 flex-1">
-                                                            <input type="hidden" class="ui-input" value="{{ $const_id }}" name="proj_id" id="sector" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex flex-wrap items-center gap-2.5 pt-5">
-    <button type="submit" class="ui-btn ui-btn-primary submit-form">Add</button>
-</div>
-                                                </form>
-                                            </div>
-                                            <div role="tabpanel" class="tab-pane" id="return_show">
-                                                <div class="mt-4">
-                                                    <div class="ui-total mb-4" id="return_total"></div>
-                                                    <table id="return_table" width="100%" class="ui-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <!-- Add your table headers here -->
-                                                                <th>Sr No</th>
-                                                                <th>Date</th>
-                                                                <th>Detail</th>
-                                                                <th>Price</th>
-                                                                <th>Action</th>
-
-
-                                                            </tr>
-                                                        </thead>
-                                                    </table>
-
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div role="tabpanel" class="tab-pane" id="grand_total">
-
-
-                                        <div class="mt-4">
-
-
-                                            {{-- Stat cards in flow rather than the pinned pills the other
-                                                 Sub Total tabs use. Two long money figures side by side ran
-                                                 past the card's right edge once pinned to the tab line, and
-                                                 this is the same pair the client sees on their Grand Total —
-                                                 so it is presented the same way, with the same labels, icons
-                                                 and the danger tone when the balance is overdrawn. --}}
-                                            <div class="mb-4 grid gap-4 sm:grid-cols-2">
-                                                <x-stat-card label="Payments received" :value="money($payment_recieved)" wash
-                                                             icon="check" tone="success" />
-                                                <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)"
-                                                             icon="clock"
-                                                             :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
-                                            </div>
-                                            <table id="grand_account" width="100%" class="ui-table">
-
-                                                <thead>
-                                                    <tr>
-                                                        <!-- Add your table headers here -->
-                                                        <th>Sr No</th>
-                                                        <th>Type</th>
-                                                        <th>Total</th>
 
                                                     </tr>
                                                 </thead>
                                             </table>
 
                                         </div>
+
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Start All Entries -->
+                            <div role="tabpanel" class="tab-pane" id="Total_entries">
 
 
-                                <!-- End Payment -->
+                                <div class="mt-4">
 
+
+                                    <table id="Total_entries_account" width="100%" class="ui-table">
+
+                                        <thead>
+                                            <tr>
+                                                <!-- Add your table headers here -->
+                                                <th>Sr No</th>
+                                                <th>Date</th>
+                                                <th>Source</th>
+                                                <th>Type</th>
+                                                <th>Detail</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                    {{-- No total card here: this pane used to carry a second
+                                         <div id="finish_total324">, the same id as the one in
+                                         the Finishing Total pane above. Only the first of a
+                                         duplicated id is ever written to, so it sat empty
+                                         (and hidden by .ui-total:empty) on every visit. --}}
+                                </div>
+
+                            </div>
+
+                            <!-- Start Grand Total -->
+                            <div role="tabpanel" class="tab-pane" id="grand_total">
+
+
+                                <div class="mt-4">
+
+
+                                    {{-- Stat cards in flow rather than the pinned pills the other
+                                         Sub Total tabs use. Two long money figures side by side ran
+                                         past the card's right edge once pinned to the tab line, and
+                                         this is the same pair the client sees on their Grand Total —
+                                         so it is presented the same way, with the same labels, icons
+                                         and the danger tone when the balance is overdrawn. --}}
+                                    <div class="mb-4 grid gap-4 sm:grid-cols-2">
+                                        <x-stat-card label="Payments received" :value="money($payment_recieved)" wash
+                                                     icon="check" tone="success" />
+                                        <x-stat-card label="Remaining balance" :value="money($Remainung_Balace)"
+                                                     icon="clock"
+                                                     :tone="$Remainung_Balace < 0 ? 'danger' : 'success'" wash />
+                                    </div>
+                                    <table id="grand_account" width="100%" class="ui-table">
+
+                                        <thead>
+                                            <tr>
+                                                <!-- Add your table headers here -->
+                                                <th>Sr No</th>
+                                                <th>Type</th>
+                                                <th>Total</th>
+
+                                            </tr>
+                                        </thead>
+                                    </table>
+
+                                </div>
                             </div>
 
                         </div>

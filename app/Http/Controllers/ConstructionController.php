@@ -7,6 +7,7 @@ use App\Models\BMaterial;
 use App\Models\Category;
 use App\Models\Labour;
 use App\Models\LabourInstalment;
+use App\Models\LabourCategory;
 use App\Models\Material;
 use App\Models\Misc;
 use App\Models\PaymentReceived;
@@ -333,7 +334,10 @@ class ConstructionController extends Controller
 
     public function addLabour()
     {
-        return view('construction.add_labour', ['sites' => Site::all()]);
+        return view('construction.add_labour', [
+            'sites' => Site::all(),
+            'labourTypes' => $this->labourTypeList(),
+        ]);
     }
 
     /** Swapped by legacy naming: returns FINISHING categories. */
@@ -386,6 +390,82 @@ class ConstructionController extends Controller
             'total' => $data['price'] ?? 0,
             'project_id' => $data['project_id'],
         ])->exists);
+    }
+
+    /**
+     * The labour type catalogue behind the picker on the Add Category page.
+     *
+     * Union of the catalogue and the names actually in use: the legacy
+     * CodeIgniter app writes to `labour` directly and knows nothing about
+     * `labour_category`, so a type it introduces would otherwise be missing
+     * from the list while sites were recording instalments against it.
+     */
+    private function labourTypeList()
+    {
+        return LabourCategory::pluck('type')
+            ->merge(Labour::whereNotNull('type')->where('type', '!=', '')->distinct()->pluck('type'))
+            ->map(fn ($type) => trim((string) $type))
+            ->filter()
+            ->unique(fn ($type) => mb_strtolower($type))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+    }
+
+    /** Adds a name to the catalogue. Idempotent, and case-insensitively so. */
+    public function saveLabourCategory(Request $request)
+    {
+        $name = trim((string) $request->validate([
+            'name' => ['required', 'string', 'max:200'],
+        ])['name']);
+
+        $existing = LabourCategory::get()->first(
+            fn ($row) => mb_strtolower(trim((string) $row->type)) === mb_strtolower($name)
+        );
+
+        if (! $existing) {
+            LabourCategory::create(['type' => $name]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'name' => $existing ? trim((string) $existing->type) : $name,
+            'existed' => (bool) $existing,
+            'types' => $this->labourTypeList(),
+        ]);
+    }
+
+    /**
+     * Removes a name from the catalogue.
+     *
+     * Refused while any site still has that type assigned. Deleting the name
+     * would not touch those rows — nothing is keyed to this table — so the
+     * type would simply reappear in the list, sourced from the sites using it,
+     * and the delete would look broken rather than blocked.
+     */
+    public function deleteLabourCategory(Request $request)
+    {
+        $name = trim((string) $request->validate([
+            'name' => ['required', 'string', 'max:200'],
+        ])['name']);
+
+        $sites = Labour::get()->filter(
+            fn ($row) => mb_strtolower(trim((string) $row->type)) === mb_strtolower($name)
+        );
+
+        if ($sites->isNotEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => '"'.$name.'" is assigned to '.$sites->count().' '
+                    .\Illuminate\Support\Str::plural('site', $sites->count())
+                    .' and cannot be removed.',
+            ]);
+        }
+
+        LabourCategory::get()
+            ->filter(fn ($row) => mb_strtolower(trim((string) $row->type)) === mb_strtolower($name))
+            ->each(fn ($row) => $row->delete());
+
+        return response()->json(['success' => true, 'types' => $this->labourTypeList()]);
     }
 
     /** Swapped by legacy naming: delete_category removes a FINISHING one. */
