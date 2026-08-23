@@ -1025,24 +1025,49 @@ class AdminSettingController extends Controller
             'name' => ['required', 'string', 'max:200'],
         ])['name']);
 
-        $sites = Labour::get()->filter(
-            fn ($row) => mb_strtolower(trim((string) $row->type)) === mb_strtolower($name)
-        );
+        $matches = fn ($value) => mb_strtolower(trim((string) $value)) === mb_strtolower($name);
 
-        if ($sites->isNotEmpty()) {
+        $assignments = Labour::get()->filter(fn ($row) => $matches($row->type));
+
+        /*
+         * An assignment that carries a contract value, or that has instalments
+         * recorded against it, is real work — removing the name would leave
+         * those rows referring to a type no longer on offer, and the union in
+         * labourTypeList() would put it straight back in the list anyway.
+         *
+         * An assignment with neither is a leftover: someone picked a site while
+         * creating the type, or the type turned out to be wrong. Those go with
+         * the name, which is what makes this button usable for the tidying-up
+         * it exists to do.
+         */
+        $inUse = $assignments->filter(function ($row) use ($name) {
+            $hasInstalments = LabourInstalment::where('project_id', $row->project_id)
+                ->get()
+                ->contains(fn ($i) => mb_strtolower(trim((string) $i->type)) === mb_strtolower($name));
+
+            return (float) ($row->total ?: 0) !== 0.0 || $hasInstalments;
+        });
+
+        if ($inUse->isNotEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => '"'.$name.'" is assigned to '.$sites->count().' '
-                    .\Illuminate\Support\Str::plural('site', $sites->count())
+                'message' => '"'.$name.'" is in use on '.$inUse->count().' '
+                    .\Illuminate\Support\Str::plural('site', $inUse->count())
                     .' and cannot be removed.',
             ]);
         }
 
+        $assignments->each(fn ($row) => $row->delete());
+
         LabourCategory::get()
-            ->filter(fn ($row) => mb_strtolower(trim((string) $row->type)) === mb_strtolower($name))
+            ->filter(fn ($row) => $matches($row->type))
             ->each(fn ($row) => $row->delete());
 
-        return response()->json(['success' => true, 'types' => $this->labourTypeList()]);
+        return response()->json([
+            'success' => true,
+            'removed' => $assignments->count(),
+            'types' => $this->labourTypeList(),
+        ]);
     }
 
     public function deleteCategory(Request $request)
