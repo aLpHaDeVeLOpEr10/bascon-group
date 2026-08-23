@@ -30,7 +30,7 @@ class EnsureWorker
         }
 
         if ($user->isClient()) {
-            return redirect(url('client/total_payment'));
+            return redirect(url('client/construction_payments'));
         }
 
         return $next($request);

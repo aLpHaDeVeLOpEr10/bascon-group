@@ -3,7 +3,7 @@
 @section('title', 'Finishing Material Payments · BASCON GROUP')
 
 @section('breadcrumbs')
-    <a href="{{ url('client/total_payment') }}">Payments</a>
+    <a href="{{ url('client/construction_payments') }}">Payments</a>
     <span data-crumb-sep>|</span>
     <span data-crumb-current>Finishing Materials</span>
 @endsection

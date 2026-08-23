@@ -12,10 +12,24 @@ use Illuminate\Support\Facades\Auth;
  */
 class LoginController extends Controller
 {
+    /**
+     * Where a signed-in user belongs.
+     *
+     * A client has no access to the construction module, so sending one there
+     * bounces off the worker middleware; they land on Construction Costs, which
+     * is the first thing in their own menu.
+     */
+    protected function home(): string
+    {
+        return url(Auth::guard('web')->user()?->isClient()
+            ? 'client/construction_payments'
+            : 'construction/show_site');
+    }
+
     public function index()
     {
         if (Auth::guard('web')->check()) {
-            return redirect(url('construction/show_site'));
+            return redirect($this->home());
         }
 
         return view('login');
@@ -46,9 +60,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        $user = Auth::guard('web')->user();
-
-        return redirect(url($user->isClient() ? 'client/total_payment' : 'construction/show_site'));
+        return redirect($this->home());
     }
 
     public function logout(Request $request)
