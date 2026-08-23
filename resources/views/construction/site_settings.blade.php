@@ -25,7 +25,7 @@
 
                             <!-- Nav tabs -->
                             <ul class="ui-tabs" role="tablist">
-                                <li role="presentation"><a href="#add_entry" aria-controls="add_entry" role="tab" data-toggle="tab">Add Entry</a></li>
+                                <li role="presentation"><a href="#add_entry" aria-controls="add_entry" role="tab" data-toggle="tab">Add Entries</a></li>
                                 <li role="presentation"><a href="#A_category" id="total_civil" aria-controls="home" role="tab" data-toggle="tab">Civil Materials</a></li>
                                 <li role="presentation"><a href="#B_category" id="total_finish" aria-controls="profile" role="tab" data-toggle="tab">Finshing Materials</a></li>
                                 <li role="presentation"><a href="#labour" id="total_labour" aria-controls="profile" role="tab" data-toggle="tab">Labour</a></li>
