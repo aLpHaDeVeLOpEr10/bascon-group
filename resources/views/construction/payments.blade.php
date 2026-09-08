@@ -32,7 +32,8 @@
             <tr>
                 <th>Sr No</th>
                 <th>Site</th>
-                <th class="text-right">Total payment</th>
+                <th class="text-right">Payment received</th>
+                <th class="text-right">Remaining balance</th>
                 <th class="w-px whitespace-nowrap text-right">Action</th>
             </tr>
         </thead>
@@ -42,7 +43,12 @@
                     data-row-href="{{ url('construction/payment_details/' . $site['id']) }}">
                     <td></td>
                     <td class="font-medium text-neutral-900">{{ $site['name'] }}</td>
-                    <td class="text-right tabular-nums">@money($site['total'])</td>
+                    <td class="text-right tabular-nums" data-order="{{ $site['total'] }}">@money($site['total'])</td>
+                    {{-- Same figure as the site's Grand Total tab: payments
+                         received less the site's costs. Negative means the site
+                         has spent past what the client has paid in. --}}
+                    <td class="text-right tabular-nums {{ $site['remaining'] < 0 ? 'text-rose-600 font-medium' : '' }}"
+                        data-order="{{ $site['remaining'] }}">@money($site['remaining'])</td>
                     <td class="whitespace-nowrap text-right">
                         <a href="{{ url('construction/payment_details/' . $site['id']) }}"
                            class="ui-btn ui-btn-sm ui-btn-secondary">View detail</a>

@@ -111,14 +111,46 @@ class ConstructionController extends Controller
             ->groupBy('proj_id')
             ->pluck('total', 'proj_id');
 
+        // The same four cost buckets less returns that showDetails() puts in
+        // the Grand Total tab, but grouped for every site at once so the list
+        // costs a fixed five queries instead of five per row.
+        $civil = $this->totalsByProject(Material::where('status', 1), 'project_id', 'price');
+        $finish = $this->totalsByProject(BMaterial::where('status', 1), 'project_id', 'price');
+        $misc = $this->totalsByProject(Misc::query(), 'proj_id', 'price');
+        $labour = $this->totalsByProject(LabourInstalment::where('status', 1), 'project_id', 'instalmet');
+        $returned = $this->totalsByProject(ReturnPayment::query(), 'proj_id', 'price');
+
         return view('construction.payments', [
-            'sites' => Site::all()->map(fn ($site) => [
-                'id' => $site->id,
-                'name' => $site->display_name,
-                'closed' => $site->site_status === Site::STATUS_CLOSED,
-                'total' => (float) ($totals[$site->id] ?? 0),
-            ])->values(),
+            'sites' => Site::all()->map(function ($site) use ($totals, $civil, $finish, $misc, $labour, $returned) {
+                $received = (float) ($totals[$site->id] ?? 0);
+
+                $grandTotal = (float) ($civil[$site->id] ?? 0)
+                    + (float) ($finish[$site->id] ?? 0)
+                    + (float) ($misc[$site->id] ?? 0)
+                    + (float) ($labour[$site->id] ?? 0)
+                    - (float) ($returned[$site->id] ?? 0);
+
+                return [
+                    'id' => $site->id,
+                    'name' => $site->display_name,
+                    'closed' => $site->site_status === Site::STATUS_CLOSED,
+                    'total' => $received,
+                    'remaining' => $received - $grandTotal,
+                ];
+            })->values(),
         ]);
+    }
+
+    /**
+     * sum(column) per project for one table, keyed by project id. The money
+     * columns are VARCHAR in the legacy schema, hence the cast.
+     */
+    protected function totalsByProject($query, string $key, string $column)
+    {
+        return $query
+            ->selectRaw("$key, sum(cast($column as decimal(18,2))) total")
+            ->groupBy($key)
+            ->pluck('total', $key);
     }
 
     /** One site's payment ledger. */
