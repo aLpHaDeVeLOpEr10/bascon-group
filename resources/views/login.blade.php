@@ -211,11 +211,6 @@
                         </li>
                     @endforeach
                 </ul>
-
-                <p class="mt-10 text-[13px] text-white/35">
-                    Administrator? <a href="{{ url('admin') }}" class="text-white/70 underline underline-offset-4
-                        hover:text-white">Go to the admin panel</a>
-                </p>
             </div>
         </div>
     </div>
