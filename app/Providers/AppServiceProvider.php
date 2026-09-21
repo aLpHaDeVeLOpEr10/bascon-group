@@ -75,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
 
   To rebuild this database deliberately, import a dump and then migrate:
 
-    <info>mysql -u USER -p {$db} < /root/bascon-backups/<dump>.sql</info>
+    <info>mysql -u USER -p {$db} < your-backup.sql</info>
     <info>php artisan migrate --force</info>
 
   Guard: AppServiceProvider::blockDestructiveMigrateCommands().

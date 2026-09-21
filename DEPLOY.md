@@ -1,182 +1,197 @@
 # Deploying Bascon Accounts
 
-Operational guide for the Laravel app at <https://petal-monetary-cube.ngrok-free.dev>.
-For *why* the port works the way it does, read [MIGRATION.md](MIGRATION.md) first —
-this file assumes you already know it is a CodeIgniter port sharing the legacy
-schema.
+Laravel 12 application. Steps to deploy on a new server.
 
----
+## Requirements
 
-## The one thing that will catch you out
+- PHP 8.2+ with `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`, `curl`
+- MySQL 5.7+ or MariaDB 10.4+
+- Composer 2
+- Web server able to serve a document root (nginx + PHP-FPM, or Apache)
 
-**This app's schema came from a SQL dump, and migrations were retrofitted on top.**
-
-`database/migrations/2026_07_01_000000_create_legacy_schema.php` now creates the
-24 legacy tables, so `migrate` works against an empty database. But it is a
-*reconstruction* of the dump, and there are **no seeders**. A rebuilt database is
-structurally perfect and completely empty.
-
-So: `migrate:fresh` on production gives you a working, blank accounts system.
-There is a guard in `AppServiceProvider::blockDestructiveMigrateCommands()` that
-refuses `migrate:fresh`, `migrate:refresh` and `migrate:reset` while
-`APP_ENV=production`. Don't remove it.
-
----
-
-## The server
-
-| | |
-|---|---|
-| Host | `204.168.226.248` — Hetzner, `ubuntu-8gb-hel1-1` |
-| Access | `ssh root@204.168.226.248` |
-| App root | `/var/www/bascon` |
-| Repo | `git@github.com:aLpHaDeVeLOpEr10/bascon-group.git`, branch `main` |
-| Web root | `/var/www/bascon/public` |
-| nginx | `/etc/nginx/sites-enabled/bascon` — listens on **8090**, not 80/443 |
-| PHP | 8.2.30 FPM, socket `/run/php/php8.2-fpm.sock`, workers run as `www-data` |
-| Database | MySQL Community Server (`mysql.service`), schema `bascon`, user `bascon` |
-| Public URL | ngrok, systemd unit `ngrok-bascon.service`, config `/etc/ngrok/bascon.yml` |
-| Backups | `/root/bascon-backups/` |
-| Tooling | Composer 2.9.5, Node 18.19.1, npm 9.2.0 |
-
-This box hosts eight sites. **Pixbee is on the same machine** and serves the
-default HTTPS vhost, so hitting the bare IP in a browser shows Pixbee, not
-Bascon. Always confirm you are in `/var/www/bascon` before touching anything.
-
-### How the public URL works
-
-nginx serves Bascon on port **8090**, bound to localhost. `ngrok-bascon.service`
-tunnels `https://petal-monetary-cube.ngrok-free.dev` → `http://localhost:8090`.
-The domain is reserved on the ngrok account, so it survives agent restarts.
+## 1. Get the code
 
 ```bash
-systemctl status ngrok-bascon      # tunnel health
-systemctl restart ngrok-bascon     # if the public URL 502s but localhost:8090 works
-curl -I http://localhost:8090/     # does nginx serve it at all?
+git clone <repo-url> bascon
+cd bascon
+git checkout main
+```
+
+## 2. Install dependencies
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+## 3. Create the database
+
+```sql
+CREATE DATABASE bascon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'bascon'@'localhost' IDENTIFIED BY '<password>';
+GRANT ALL PRIVILEGES ON bascon.* TO 'bascon'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+## 4. Configure `.env`
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Set:
+
+```ini
+APP_NAME="Bascon Accounts"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bascon
+DB_USERNAME=bascon
+DB_PASSWORD=<password>
+
+SESSION_DRIVER=file
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+
+AUTH_LEGACY_REHASH=false
+```
+
+> Change the three driver lines. `.env.example` defaults them to `database`, and
+> this app has no migrations creating the `sessions`, `cache` or `jobs` tables —
+> leave them and the app fails on first request.
+
+## 5. Set up the database
+
+**With existing data** — import first, migrate second:
+
+```bash
+mysql -u bascon -p bascon < dump.sql
+php artisan migrate --force
+php artisan dates:normalize --apply
+```
+
+**Empty system:**
+
+```bash
+php artisan migrate --force
+```
+
+> Order matters. Most migrations only add columns to tables the dump creates,
+> and they skip silently if those tables are absent.
+
+> `migrate` creates the schema but no rows — there are no seeders. On an empty
+> system you must insert the first `admin` row by hand; there is no admin
+> registration screen.
+
+## 6. Permissions
+
+```bash
+chown -R www-data:www-data storage bootstrap/cache public/uploads
+chmod -R 775 storage bootstrap/cache public/uploads
+```
+
+> `php artisan storage:link` is not needed — uploads are written directly to
+> `public/uploads`.
+
+## 7. Web server
+
+Document root must be **`public/`**, not the project root.
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain;
+    root /path/to/bascon/public;
+    index index.php;
+
+    client_max_body_size 64M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        include fastcgi_params;
+        fastcgi_read_timeout 300;
+    }
+
+    location ~ /\.(?!well-known).* { deny all; }
+}
+```
+
+Apache: enable `mod_rewrite`, point `DocumentRoot` at `public/`.
+
+Behind a TLS-terminating proxy, also pass `fastcgi_param HTTPS on;`.
+
+## 8. Cache and verify
+
+```bash
+php artisan optimize
+chown -R www-data:www-data storage bootstrap/cache
+
+curl -s -o /dev/null -w "%{http_code}\n" https://your-domain/
+php artisan migrate:status
+tail -20 storage/logs/laravel.log
 ```
 
 ---
 
-## Routine deploy
-
-No deploy script exists for Bascon yet. `/root/02-deploy.sh` is **Pixbee's**
-(`APP=/var/www/pixbee`) — useful as a template, not runnable here.
+## Updating a deployment
 
 ```bash
-ssh root@204.168.226.248
-cd /var/www/bascon
+mysqldump -u bascon -p --single-transaction --no-tablespaces bascon > backup-$(date +%F-%H%M).sql
 
-# 1. Back up the database first. Always.
-bash /root/backup.sh
-
-# 2. Maintenance mode
 php artisan down --retry=60
 
-# 3. Pull
 git fetch origin main
 git merge --ff-only origin/main
-git rev-parse --short HEAD          # note this — it is your rollback target
+git rev-parse --short HEAD                          # rollback target
 
-# 4. Dependencies, only if composer.lock changed
-composer install --no-dev --optimize-autoloader --no-interaction
-# otherwise just refresh the classmap:
-composer dump-autoload -o --no-interaction
+composer install --no-dev --optimize-autoloader     # only if composer.lock changed
+composer dump-autoload -o                           # otherwise just this
 
-# 5. Migrations
 php artisan migrate --force
-
-# 6. Rebuild caches
 php artisan optimize:clear
 php artisan optimize
 
-# 7. Fix ownership — artisan ran as root, php-fpm runs as www-data
 chown -R www-data:www-data storage bootstrap/cache
-systemctl reload php8.2-fpm
-
-# 8. Back up
 php artisan up
-
-# 9. Verify
-curl -s -o /dev/null -w "%{http_code}\n" https://petal-monetary-cube.ngrok-free.dev/
-tail -20 storage/logs/laravel.log
-tail -20 /var/log/nginx/bascon-error.log
 ```
 
-**Step 7 is not optional.** Running artisan as root leaves root-owned files in
-`storage/framework/views` and `bootstrap/cache`; php-fpm then cannot write them
-and every page 500s. It is the most common way to break this deploy.
+> If you ran any of the above as root, the `chown` is required — root-owned
+> files in `storage/framework/views` and `bootstrap/cache` make every page 500.
 
-### Frontend assets
-
-`public/build/` **is committed to git**, so a normal deploy needs no Node step.
-Build locally, commit the output, push.
+### Rollback
 
 ```bash
-npm run build && git add public/build && git commit
+php artisan down
+git checkout <previous-sha>
+composer install --no-dev --optimize-autoloader     # only if the lock changed
+php artisan optimize:clear && php artisan optimize
+chown -R www-data:www-data storage bootstrap/cache
+php artisan up
 ```
 
-If you do build on the server, commit or delete the result — the server
-currently carries two untracked files in `public/build/assets/` that are not in
-git, which means the deployed CSS/JS does not match any commit.
-
-`php artisan storage:link` is **not** needed. Avatars are written straight to
-`public/uploads/avatars` (see `App\Services\AvatarService`), not to
-`storage/app/public`. That directory must stay writable by `www-data`.
+If a migration caused it, restore the backup rather than relying on `down()`.
 
 ---
 
-## Database operations
+## Frontend assets
 
-The `bascon` MySQL user is scoped to its own schema and has no `PROCESS`
-privilege, so `mysqldump` prints:
-
-```
-mysqldump: Error: 'Access denied; you need (at least one of) the PROCESS
-privilege(s) for this operation' when trying to dump tablespaces
-```
-
-**This is a warning, not a failure** — the dump still completes with every table
-and a clean `-- Dump completed` footer. Pass `--no-tablespaces` to silence it.
-Verify a dump by its footer and table count, not by whether that line appeared.
-
-### Back up
+`public/build/` is committed, so no Node is needed on the server. To change
+assets, build locally and commit:
 
 ```bash
-bash /root/backup.sh        # → /root/bascon-backups/, .sql plus .sql.gz
-```
-
-### Restore
-
-```bash
-cd /var/www/bascon
-DBU=$(sed -n 's/^DB_USERNAME=//p' .env | tr -d '"\r')
-export MYSQL_PWD=$(sed -n 's/^DB_PASSWORD=//p' .env | tr -d '"\r')
-mysql -u"$DBU" bascon < /root/bascon-backups/<dump>.sql
-php artisan optimize:clear
-chown -R www-data:www-data storage bootstrap/cache
-```
-
-### Rebuild from a dump
-
-Import **first**, migrate **second**. The additive migrations all guard on
-`Schema::hasTable()`, so running them against an empty database silently does
-nothing useful.
-
-```bash
-mysql -u root -p -e "DROP DATABASE bascon; CREATE DATABASE bascon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -p bascon < <dump>.sql
-php artisan migrate --force
-php artisan dates:normalize --apply     # see the warning below
-```
-
-### Copying files to/from this server
-
-`pscp`/`scp` is unreliable against this host — it failed 11 consecutive attempts
-during the last migration. Base64 over the SSH channel works first time:
-
-```bash
-ssh root@204.168.226.248 "base64 -w0 /root/file.gz" > out.b64
-base64 -d out.b64 > file.gz
+npm ci && npm run build
+git add public/build && git commit -m "build assets"
 ```
 
 ---
@@ -184,88 +199,47 @@ base64 -d out.b64 > file.gz
 ## Console commands
 
 ```bash
-php artisan dates:normalize         # dry run
-php artisan dates:normalize --apply
-php artisan rollups:repair          # dry run
-php artisan rollups:repair --apply
+php artisan dates:normalize          # dry run; --apply to write
+php artisan rollups:repair           # dry run; --apply to write
 ```
 
-### `dates:normalize`
+**`dates:normalize`** backfills the `date_n` columns from the legacy VARCHAR
+dates. Run after every import. Confirm the dry run reports zero unparsed rows
+before applying.
 
-Populates the `date_n DATE` columns from the legacy VARCHAR `date` strings. It
-is a **point-in-time backfill** — it only fills what exists when it runs. Run it
-after any data import, never before.
-
-> **Known issue, not yet deployed.** The server's copy of
-> `app/Console/Commands/NormalizeDates.php` still carries a stale rule at line 65:
-> `'payments_recieved' => ['mdy_max_id' => 293]`. Production data is entirely
-> `m/d/Y`; that boundary leaves 12 payment dates NULL and silently records 4 more
-> in the wrong month. The fix (`'payments_recieved' => 'mdy'`) is in the repo —
-> **deploy it before ever running this command again.**
-
-### `rollups:repair`
-
-`total_payement`, `finish_total` and `labour_total` are denormalised caches the
-client dashboards read directly. The legacy app only refreshed them on insert,
-so edits and deletes left them drifted. Currently **57 rows drifted, 21 on money
-columns**. Applying rewrites customer-visible financial figures — get a human
-decision first. Safe to leave alone.
+**`rollups:repair`** reconciles the `total_payement`, `finish_total` and
+`labour_total` caches. `--apply` rewrites customer-visible financial figures —
+review the dry run first.
 
 ---
 
-## Things that bite
+## Notes
 
-**Never run `migrate:fresh` against production.** Guarded, but understand why:
-migrations rebuild the schema, nothing rebuilds the rows, and there are no
-seeders.
+**Never run `migrate:fresh` on a deployment holding data.** Migrations rebuild
+the schema, nothing rebuilds the rows, and there are no seeders. A guard in
+`AppServiceProvider` blocks it while `APP_ENV=production`; leave it in place.
 
-**`AUTH_LEGACY_REHASH` stays `false`** while the CodeIgniter app is still live.
-Flipping it upgrades passwords to bcrypt on login, which locks those users out
-of the old app — it compares md5/plaintext with a raw SQL `WHERE`. Set it to
-`true` only once CodeIgniter is retired for good.
+**`AUTH_LEGACY_REHASH`** upgrades legacy md5/plaintext passwords to bcrypt on
+login. Keep it `false` while the original CodeIgniter app still runs against the
+same database, or those users lose access to it. Enable only after that app is
+retired.
 
-**`config:cache` is safe here.** There are zero `env()` calls outside `config/`,
-and routes contain no closures, so `php artisan optimize` will not silently
-break configuration. Verified.
+**Table name case matters on Linux.** `Company_architect_site` is capitalised
+and `App\Models\CompanyArchitectSite` expects it. A dump taken on Windows or
+macOS may fold it to lowercase. Check after importing.
 
-**Table name case matters on Linux.** `Company_architect_site` has a capital C
-in production and in `App\Models\CompanyArchitectSite`. A dump taken on Windows
-folds it to lowercase, and the lowercase table will not resolve here.
+**Mixed table charsets are intentional** — some legacy tables are `latin1`,
+some `utf8mb4`. Do not normalise without checking the effect on sorting.
 
-**`QUEUE_CONNECTION=database` with no `jobs` table.** Nothing in `app/` dispatches
-jobs or uses `Cache::`, so this is latent rather than broken. If you start using
-either, create the tables or switch to `sync`/`file`.
-
----
-
-## Rollback
-
-```bash
-cd /var/www/bascon
-php artisan down
-git checkout <previous-sha>
-composer install --no-dev --optimize-autoloader     # only if lock changed
-php artisan optimize:clear && php artisan optimize
-chown -R www-data:www-data storage bootstrap/cache
-php artisan up
-```
-
-If a migration is the problem, restore the database from the backup taken in
-step 1 rather than relying on `down()` — several migrations are guarded and
-their `down()` is deliberately conservative.
-
----
+See [MIGRATION.md](MIGRATION.md) for background on the legacy schema.
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| Every page 500s after a deploy | root-owned cache files | `chown -R www-data:www-data storage bootstrap/cache && systemctl reload php8.2-fpm` |
-| Public URL 502s, `localhost:8090` fine | ngrok agent died | `systemctl restart ngrok-bascon` |
-| Bare IP shows a wallpaper site | that is Pixbee's default vhost | expected — use the ngrok URL |
-| `Table 'bascon.labour' doesn't exist` during migrate | migrating an empty database that was never imported | import a dump, then `migrate` |
-| `mysqldump: ... PROCESS privilege` | `bascon` user is schema-scoped | harmless — dump still completes; add `--no-tablespaces` to silence |
-| Config change has no effect | stale cache | `php artisan optimize:clear && php artisan optimize` |
-
-Logs: `storage/logs/laravel.log`, `/var/log/nginx/bascon-error.log`,
-`journalctl -u ngrok-bascon -n 50`.
+| Symptom | Fix |
+|---|---|
+| Every page 500s after deploy | `chown -R www-data:www-data storage bootstrap/cache` |
+| `Table '<db>.labour' doesn't exist` when migrating | Import the dump first, then migrate |
+| `Table '<db>.sessions'` / `'.cache'` missing | Set the drivers to `file`/`file`/`sync` |
+| Config or route change ignored | `php artisan optimize:clear && php artisan optimize` |
+| URLs are `http://` behind TLS | Pass `HTTPS on` to PHP; check `APP_URL` |
+| `.env` reachable in a browser | Document root must be `public/` |
