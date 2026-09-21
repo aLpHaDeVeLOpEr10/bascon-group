@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\DB;
  *     material           mm/dd for id <= 226, dd/mm from id 237
  *     labour_instalment  mm/dd for id <= 66,  dd/mm from id 73
  *     misc               mm/dd for id <= 35,  dd/mm from id 39
- *     payments_recieved  mm/dd for id <= 293, dd/mm from id 294
  *
  *     expense            mm/dd for id <= 143, dd/mm from id 144
  *     misc_admin         mm/dd for id <= 18,  dd/mm from id 19
@@ -34,9 +33,11 @@ use Illuminate\Support\Facades\DB;
  *     architect_detail_company  mm/dd for id <= 24, dd/mm from id 25
  *     construction_detail       mm/dd for id <= 37, dd/mm from id 38
  *
- * The payments boundary is 293 because the rows above it were already entered
- * as dd/mm by hand — '22/04/2026' cannot be a month — before either payment
- * form had a picker.
+ * payments_recieved is mm/dd for its whole life. It briefly carried a boundary
+ * at id 293, read off a development snapshot in which the rows above it looked
+ * hand-entered as dd/mm. Production has no such rows: across all 300 rows, 187
+ * have a second component over 12 and so must be mm/dd, and not one row has a
+ * first component over 12. The boundary only mis-read the newer payments.
  *
  * The rest are deliberate: every date picker on the admin side was switched to
  * dd/mm/yy in one change, so everything written from those ids on is dd/mm.
@@ -62,7 +63,7 @@ class NormalizeDates extends Command
 
 
         // switched format mid-life; boundary verified against the data
-        'payments_recieved' => ['mdy_max_id' => 293],
+        'payments_recieved' => 'mdy',
         'expense' => ['mdy_max_id' => 143],
         'misc_admin' => ['mdy_max_id' => 18],
         'architect_detail' => ['mdy_max_id' => 46],
