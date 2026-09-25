@@ -176,7 +176,7 @@
 
                 <div class="mb-8 h-px w-28 bg-white/25"></div>
 
-                <h2 class="text-[30px] font-bold leading-tight tracking-[-0.02em]">Admin Panel</h2>
+                <h2 class="text-[30px] font-bold leading-tight tracking-[-0.02em] text-white">Admin Panel</h2>
 
                 <p class="mt-3 max-w-sm text-[15px] leading-relaxed text-white/60">
                     Manage users, projects, material catalogues and expenses securely from
