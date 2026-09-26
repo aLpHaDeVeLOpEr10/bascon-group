@@ -40,7 +40,7 @@
 
                 <h1 class="text-center text-[34px] font-extrabold leading-tight tracking-[-0.02em] text-neutral-900
                            sm:text-[38px]">
-                    Welcome Back!
+                    Welcome Back
                 </h1>
                 <p class="mt-2 text-center text-[14px] text-neutral-500">
                     Sign in to your dashboard to continue.
