@@ -166,11 +166,11 @@
             {{-- ------------------------------------------------ brand side --}}
             <div class="hidden rounded-[0px_28px_28px_0px] bg-[#0b1120] px-11 py-12 text-white lg:flex lg:flex-col lg:justify-center">
 
-                {{-- The existing site logo, unchanged. It sits on a white chip
-                     so it stays legible against the dark panel whatever
-                     colours the artwork uses. --}}
+                {{-- The white artwork, sitting directly on the dark panel.
+                     logo-dark.png is the 560px copy of the 18080x5840 original
+                     — same image, ~50x smaller. --}}
                 <div class="mb-7 inline-flex w-fit px-5 py-4">
-                    <img src="{{ asset('assets/images/bg.png') }}" alt="BASCON Group"
+                    <img src="{{ asset('assets/images/logo-dark.png') }}" alt="BASCON Group"
                          class="w-auto object-contain" />
                 </div>
 

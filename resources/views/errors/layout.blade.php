@@ -29,8 +29,10 @@
 
         <div class="w-full max-w-lg text-center">
 
-            {{-- Logo is unchanged, as required. --}}
-            <img src="{{ asset('assets/images/bg.png') }}" alt="BASCON Group"
+            {{-- The black artwork: this page sits on --color-canvas (#f4f4f5),
+                 where the white colourway used here before was invisible.
+                 Pinned rather than swapped on .dark, matching both sidebars. --}}
+            <img src="{{ asset('assets/images/logo-light.png') }}" alt="BASCON Group"
                  class="mx-auto mb-10 h-8 w-auto object-contain" />
 
             <div class="rounded-3xl bg-white p-9 shadow-pop ring-1 ring-neutral-900/5">
