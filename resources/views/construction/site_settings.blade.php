@@ -8,7 +8,10 @@
 @section('breadcrumbs')
     <a href="{{ url('construction/show_site') }}">Construction</a>
     <span data-crumb-sep>|</span>
-    <span data-crumb-current>Site details</span>
+    {{-- The site's own name, not "Site details": the topbar takes its page
+         title from this crumb, and on a screen that is entirely about one
+         site the name is the useful thing to read there. --}}
+    <span data-crumb-current>{{ $name }}</span>
 @endsection
 
 @section('content')
