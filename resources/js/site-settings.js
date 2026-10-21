@@ -71,6 +71,48 @@ function renumberRows(table) {
     table.draw(false);
 }
 
+/**
+ * Fold an edit form's values back into the row it just saved, so the table
+ * shows the change without a page reload.
+ *
+ * The inputs are named after the same columns the row data carries, so the
+ * overlap between form and row is the update; the hidden id, and anything else
+ * a form carries that a row has no field for, is left alone. The edited amount
+ * may have moved, so the difference comes off the tab's total.
+ *
+ * `scope` is for the three tabs that show one category at a time: if the edit
+ * changed the category, the row now belongs to a different list and is taken
+ * out of this one rather than shown under the wrong heading.
+ */
+function applyEdit(form, tableId, amountField, scope) {
+    if (!$.fn.DataTable.isDataTable(tableId)) return;
+
+    var table = $(tableId).DataTable();
+    var row = table.row('#tr_' + $(form).find('[name="id"]').val());
+    var data = row.data();
+
+    if (!data) return;
+
+    var before = Number(data[amountField]) || 0;
+
+    $(form).serializeArray().forEach(function (field) {
+        if (Object.prototype.hasOwnProperty.call(data, field.name)) {
+            data[field.name] = field.value;
+        }
+    });
+
+    if (scope && String(data[scope.field]) !== String($(scope.select).val())) {
+        row.remove();
+        renumberRows(table);
+        ledgerDeduct(tableId, before);
+
+        return;
+    }
+
+    row.data(data).draw(false);
+    ledgerDeduct(tableId, before - (Number(data[amountField]) || 0));
+}
+
 function ledgerDeduct(tableId, amount) {
     var ledger = ledgerTotals[tableId];
     if (!ledger) return;
@@ -1567,6 +1609,9 @@ if (!window.SITE_SETTINGS) {
         $('#updateForm').submit(function(event) {
             event.preventDefault();
 
+            // Held for applyEdit below: `this` is not the form inside the
+            // success callback.
+            var form = this;
             var formData = $(this).serialize();
 
             $.ajax({
@@ -1576,6 +1621,11 @@ if (!window.SITE_SETTINGS) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
+                        // The saved values, straight into the row that was
+                        // edited — this screen used to show the old ones until
+                        // the page was reloaded.
+                        applyEdit(form, '#show_site', 'price', { select: '#category', field: 'type' });
+
                         // Close the update modal
                         $('#updateModal').modal('hide');
 
@@ -1586,12 +1636,12 @@ if (!window.SITE_SETTINGS) {
                             icon: 'success',
                             confirmButtonColor: '#3085d6',
                             confirmButtonText: 'OK'
-                        }).then((result) => {
-                            // Reload the DataTable upon success
-                            var oAllLinksTable = $('#show_site').DataTable();
-                            oAllLinksTable.destroy();
-                            // Set to false to use the same page
                         });
+                        /* The dismissal used to destroy() this DataTable,
+                           which tears the table down to the empty markup it
+                           was built from — the rows only came back on a
+                           reload. applyEdit above updates the row in place
+                           instead, so there is nothing to tear down. */
                     } else {
                         // Show error message with SweetAlert
                         Swal.fire({
@@ -1724,6 +1774,9 @@ if (!window.SITE_SETTINGS) {
         $('#finishForm').submit(function(event) {
             event.preventDefault();
 
+            // Held for applyEdit below: `this` is not the form inside the
+            // success callback.
+            var form = this;
             var formData = $(this).serialize();
 
             $.ajax({
@@ -1733,6 +1786,11 @@ if (!window.SITE_SETTINGS) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
+                        // The saved values, straight into the row that was
+                        // edited — this screen used to show the old ones until
+                        // the page was reloaded.
+                        applyEdit(form, '#b_categoer_table', 'price', { select: '#b_category', field: 'type' });
+
                         // Close the update modal
                         $('#finishModal').modal('hide');
 
@@ -2059,6 +2117,9 @@ if (!window.SITE_SETTINGS) {
         $('#labourForm').submit(function(event) {
             event.preventDefault();
 
+            // Held for applyEdit below: `this` is not the form inside the
+            // success callback.
+            var form = this;
             var formData = $(this).serialize();
 
             $.ajax({
@@ -2068,6 +2129,11 @@ if (!window.SITE_SETTINGS) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
+                        // The saved values, straight into the row that was
+                        // edited — this screen used to show the old ones until
+                        // the page was reloaded.
+                        applyEdit(form, '#labour_table', 'instalmet', { select: '#labour_value', field: 'type' });
+
                         // Close the update modal
                         $('#openlabourModal').modal('hide');
 
@@ -2141,6 +2207,9 @@ if (!window.SITE_SETTINGS) {
         $('#miscForm').submit(function(event) {
             event.preventDefault();
 
+            // Held for applyEdit below: `this` is not the form inside the
+            // success callback.
+            var form = this;
             var formData = $(this).serialize();
 
             $.ajax({
@@ -2150,6 +2219,11 @@ if (!window.SITE_SETTINGS) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
+                        // The saved values, straight into the row that was
+                        // edited — this screen used to show the old ones until
+                        // the page was reloaded.
+                        applyEdit(form, '#misc_table', 'price');
+
                         // Close the update modal
                         $('#openmiscrModal').modal('hide');
 
@@ -2183,6 +2257,9 @@ if (!window.SITE_SETTINGS) {
         $('#returnform').submit(function(event) {
             event.preventDefault();
 
+            // Held for applyEdit below: `this` is not the form inside the
+            // success callback.
+            var form = this;
             var formData = $(this).serialize();
 
             $.ajax({
@@ -2192,6 +2269,11 @@ if (!window.SITE_SETTINGS) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
+                        // The saved values, straight into the row that was
+                        // edited — this screen used to show the old ones until
+                        // the page was reloaded.
+                        applyEdit(form, '#return_table', 'price');
+
                         // Close the update modal
                         $('#openreturnrModal').modal('hide');
 
