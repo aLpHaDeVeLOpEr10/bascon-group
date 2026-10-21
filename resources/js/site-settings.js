@@ -23,6 +23,62 @@
 
 const S = window.SITE_SETTINGS || {};
 
+/**
+ * The DOM id DataTables puts on a row, and the one the delete buttons look up
+ * with table.row('#tr_<id>'). Defined once: the two have to agree, and they
+ * did not before — no table set a rowId at all, so every lookup missed and the
+ * row stayed on screen until something reloaded it.
+ *
+ * Prefixed rather than the bare id because '#5' is not a valid CSS selector.
+ */
+function ROW_ID(row) {
+    return 'tr_' + row.id;
+}
+
+/*
+ * Each ledger tab shows a total above its table. It comes from the server with
+ * the rows, so removing a row on the client leaves it one entry too high.
+ *
+ * A loader registers its figure and how to draw it; a delete deducts what it
+ * removed and redraws. Deducting the deleted row's own amount is right whether
+ * or not the server's figure was status-filtered, which summing the visible
+ * rows would not be.
+ */
+var ledgerTotals = {};
+
+function registerLedger(tableId, total, render) {
+    ledgerTotals[tableId] = { total: Number(total) || 0, render: render };
+    render(ledgerTotals[tableId].total);
+}
+
+/**
+ * Close the gap a removed row leaves in the Sr No column.
+ *
+ * The number is a field on the row rather than a rendered index, so deleting
+ * row 2 of five otherwise leaves 1, 3, 4, 5 on screen.
+ */
+function renumberRows(table) {
+    table.rows({ order: 'applied', search: 'applied' }).every(function (rowIdx, tableLoop, rowLoop) {
+        var data = this.data();
+
+        data.serial_number = rowLoop + 1;
+        this.data(data);
+
+        return true;
+    });
+
+    // false: keep the reader on the page they were on.
+    table.draw(false);
+}
+
+function ledgerDeduct(tableId, amount) {
+    var ledger = ledgerTotals[tableId];
+    if (!ledger) return;
+
+    ledger.total -= Number(amount) || 0;
+    ledger.render(ledger.total);
+}
+
 /** Absolute URL for an application path, the way Blade's url() built them. */
 S.url = function (path) {
     return String(S.base || '').replace(/\/$/, '') + '/' + String(path).replace(/^\//, '');
@@ -332,10 +388,19 @@ if (!window.SITE_SETTINGS) {
                 sites_data.forEach(function(record, index) {
                     record.serial_number = index + 1;
                 });
-                $('#total_price').html('<h4>Total Amount: ' + money(total_price) + '</h4>');
+                // Drawn through registerLedger so a delete can redraw it with
+                // the same markup instead of leaving a stale figure.
+                registerLedger('#show_site', total_price, function (n) {
+                    $('#total_price').html('<h4>Total Amount: ' + money(n) + '</h4>');
+                });
 
                 var oAllLinksTable = $('#show_site').DataTable({
                     "data": sites_data,
+                    /* Gives each <tr> the id the delete buttons look for.
+                       Without it table.row('#tr_<id>') matched nothing and the
+                       deleted row sat there until the next load. ROW_ID is
+                       shared so the writer and the reader cannot drift. */
+                    "rowId": ROW_ID,
                     "columns": [{
                             "data": "serial_number"
                         }, {
@@ -457,10 +522,13 @@ if (!window.SITE_SETTINGS) {
                     record.serial_number = index + 1;
                 });
 
-                $('#total_price_b').html('<h4>Total Amount: ' + money(total_price) + '</h4>');
+                registerLedger('#b_categoer_table', total_price, function (n) {
+                    $('#total_price_b').html('<h4>Total Amount: ' + money(n) + '</h4>');
+                });
 
                 var oAllLinksTable = $('#b_categoer_table').DataTable({
                     "data": sites_data,
+                    "rowId": ROW_ID,
                     "columns": [{
                             "data": "serial_number"
                         }, {
@@ -627,10 +695,16 @@ if (!window.SITE_SETTINGS) {
                     record.serial_number = index + 1;
                 });
 
-                $('#total_price_labour').html('<h4>Projcet Done: ' + money(total_priceaaa) + '</h4><h4>Total payed: ' + money(total_price) + '</h4>');
+                // Only "Total payed" moves when an instalment is deleted; the
+                // project figure is the contract value and is captured here.
+                registerLedger('#labour_table', total_price, function (n) {
+                    $('#total_price_labour').html('<h4>Projcet Done: ' + money(total_priceaaa) +
+                        '</h4><h4>Total payed: ' + money(n) + '</h4>');
+                });
 
                 var oAllLinksTable = $('#labour_table').DataTable({
                     "data": sites_data,
+                    "rowId": ROW_ID,
                     "columns": [{
                             "data": "serial_number"
                         },
@@ -827,11 +901,14 @@ if (!window.SITE_SETTINGS) {
                     record.serial_number = index + 1;
                 });
 
-                $('#misclanious_total').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
+                registerLedger('#misc_table', total_price, function (n) {
+                    $('#misclanious_total').html('<h3>Total Amount: ' + money(n) + '</h3>');
+                });
 
                 // Initialize DataTable and store the instance in the variable
                 miscTable = $('#misc_table').DataTable({
                     "data": sites_data,
+                    "rowId": ROW_ID,
                     "columns": [{
                             "data": "serial_number"
                         },
@@ -933,11 +1010,14 @@ if (!window.SITE_SETTINGS) {
                     record.serial_number = index + 1;
                 });
 
-                $('#return_total').html('<h3>Total Amount: ' + money(total_price) + '</h3>');
+                registerLedger('#return_table', total_price, function (n) {
+                    $('#return_total').html('<h3>Total Amount: ' + money(n) + '</h3>');
+                });
 
                 // Initialize DataTable and store the instance in the variable
                 returnTable = $('#return_table').DataTable({
                     "data": sites_data,
+                    "rowId": ROW_ID,
                     "columns": [{
                             "data": "serial_number"
                         },
@@ -1560,9 +1640,14 @@ if (!window.SITE_SETTINGS) {
                             // Find the row by userId
                             var table = $('#show_site').DataTable();
                             var row = table.row('#tr_' + userId);
+                            // The row's own amount, read before it goes, so the
+                            // total above the table comes down with it.
+                            var gone = row.data();
 
                             // Remove the row from DataTable
-                            row.remove().draw();
+                            row.remove();
+                            renumberRows(table);
+                            ledgerDeduct('#show_site', gone && gone.price);
 
                             Swal.fire(
                                 'Deleted!',
@@ -1703,11 +1788,18 @@ if (!window.SITE_SETTINGS) {
                     success: function(response) {
                         if (response.success) {
                             // Find the row by userId
-                            var table = $('#finishModal').DataTable();
+                            var table = $('#b_categoer_table').DataTable();
                             var row = table.row('#tr_' + userId);
+                            // #finishModal is the edit dialog, not this table; the
+                            // old selector found no DataTable at all.
+                            // The row's own amount, read before it goes, so the
+                            // total above the table comes down with it.
+                            var gone = row.data();
 
                             // Remove the row from DataTable
-                            row.remove().draw();
+                            row.remove();
+                            renumberRows(table);
+                            ledgerDeduct('#b_categoer_table', gone && gone.price);
 
                             Swal.fire(
                                 'Deleted!',
@@ -1761,8 +1853,14 @@ if (!window.SITE_SETTINGS) {
                             // Find the row by userId
                             var table = $('#labour_table').DataTable();
                             var row = table.row('#tr_' + userId);
+                            // The row's own amount, read before it goes, so the
+                            // total above the table comes down with it.
+                            var gone = row.data();
+
                             // Remove the row from DataTable
-                            row.remove().draw();
+                            row.remove();
+                            renumberRows(table);
+                            ledgerDeduct('#labour_table', gone && gone.instalmet);
 
                             Swal.fire(
                                 'Deleted!',
@@ -1817,8 +1915,14 @@ if (!window.SITE_SETTINGS) {
                             // Find the row by userId
                             var table = $('#misc_table').DataTable();
                             var row = table.row('#tr_' + userId);
+                            // The row's own amount, read before it goes, so the
+                            // total above the table comes down with it.
+                            var gone = row.data();
+
                             // Remove the row from DataTable
-                            row.remove().draw();
+                            row.remove();
+                            renumberRows(table);
+                            ledgerDeduct('#misc_table', gone && gone.price);
 
                             Swal.fire(
                                 'Deleted!',
@@ -1870,10 +1974,17 @@ if (!window.SITE_SETTINGS) {
                     success: function(response) {
                         if (response.success) {
                             // Find the row by userId
-                            var table = $('#returnTable').DataTable();
+                            var table = $('#return_table').DataTable();
                             var row = table.row('#tr_' + userId);
+                            // The table is #return_table; #returnTable never existed.
+                            // The row's own amount, read before it goes, so the
+                            // total above the table comes down with it.
+                            var gone = row.data();
+
                             // Remove the row from DataTable
-                            row.remove().draw();
+                            row.remove();
+                            renumberRows(table);
+                            ledgerDeduct('#return_table', gone && gone.price);
 
                             Swal.fire(
                                 'Deleted!',
