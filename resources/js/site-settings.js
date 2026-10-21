@@ -315,7 +315,10 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: S.url('construction/show_bricks/' + S.siteId) + '/' + Category,
+            // encodeURIComponent, not raw: a category name is free text and the
+            // characters that are legal in it are not all legal in a path
+            // segment. See ConstructionController::decodeCategory.
+            url: S.url('construction/show_bricks/' + S.siteId) + '/' + encodeURIComponent(Category),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -441,7 +444,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: S.url('construction/show_b_category/' + S.siteId) + '/' + Category,
+            url: S.url('construction/show_b_category/' + S.siteId) + '/' + encodeURIComponent(Category),
             type: "GET",
             dataType: "json",
             success: function(response) {
@@ -611,7 +614,7 @@ if (!window.SITE_SETTINGS) {
         }
 
         $.ajax({
-            url: S.url('construction/show_labour/' + S.siteId) + '/' + Category,
+            url: S.url('construction/show_labour/' + S.siteId) + '/' + encodeURIComponent(Category),
             type: "GET",
             dataType: "json",
             success: function(response) {

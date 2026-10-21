@@ -1101,11 +1101,19 @@ class ConstructionController extends Controller
 
     // -------------------------------------------------------------- helpers
 
-    /** The legacy URLs are built by string concatenation, so a category with a
-     *  space arrives percent-encoded; Construction.php:394 undid that by hand. */
+    /**
+     * The category name out of a URL segment.
+     *
+     * Construction.php:394 called urldecode() here because CodeIgniter handed
+     * the segment over raw. Laravel does not: route parameters are matched
+     * against the already-decoded path, so decoding again was one decode too
+     * many — and urldecode() turns a literal "+" into a space, which silently
+     * emptied the table for a type like "Contractor+Tile fixing". The segment
+     * arrives decoded; it only needs trimming.
+     */
     protected function decodeCategory(?string $category): string
     {
-        return trim(urldecode((string) $category));
+        return trim((string) $category);
     }
 
     protected function found($model)
