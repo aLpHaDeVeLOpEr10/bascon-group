@@ -788,10 +788,17 @@ class ConstructionController extends Controller
                 'quantity' => '', 'price' => $r->price, 'source' => 'Return Payment']);
         }
 
-        $sorted = $rows->sortBy(function (array $row) {
+        /* Newest first, matching every other ledger on this screen. `date` is
+           the legacy VARCHAR and these rows are pooled from five tables, so
+           there is no shared column to order on in SQL — the string is parsed
+           here instead. A row whose date never parsed sorts to the bottom
+           rather than the top, which is where an unreadable date belongs.
+           sortByDesc is stable, so rows sharing a date keep the order the
+           ledgers were read in. */
+        $sorted = $rows->sortByDesc(function (array $row) {
             $parsed = \DateTime::createFromFormat('d/m/Y', trim((string) ($row['date'] ?? '')));
 
-            return $parsed ? $parsed->getTimestamp() : 0;
+            return $parsed ? $parsed->getTimestamp() : PHP_INT_MIN;
         })->values();
 
         return response()->json(['data' => $sorted]);
