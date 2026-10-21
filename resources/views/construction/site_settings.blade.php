@@ -133,11 +133,17 @@
                                             <label class="ui-label" >Select List</label>
 
                                             <div class="shrink-0">
+                                                {{-- Every real option carries an explicit value; only the
+                                                     placeholder is without one. The Reload button reads exactly
+                                                     that to tell "nothing chosen yet" from a real choice (see
+                                                     [data-reload] in ui.js), and a value attribute also keeps the
+                                                     name byte-for-byte as stored rather than as the browser
+                                                     collapses the option's text. --}}
                                                 <select class="ui-select get_category" id="category" name="catgory">
                                                     <option> Select Material</option>
                                                     @foreach ($civilCategories as $row)
 
-                                                        <option> {{ $row->material_name }}</option>
+                                                        <option value="{{ $row->material_name }}"> {{ $row->material_name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -226,11 +232,12 @@
                                             <label class="ui-label" >Select List</label>
 
                                             <div class="shrink-0">
+                                                {{-- Values as on #category above. --}}
                                                 <select class="ui-select get__b_category" id="b_category" name="catgory">
                                                     <option> Select Material</option>
                                                     @foreach ($finishCategories as $row)
 
-                                                        <option> {{ $row->material_name }}</option>
+                                                        <option value="{{ $row->material_name }}"> {{ $row->material_name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -325,11 +332,12 @@
                                             <label class="ui-label" >Select List</label>
 
                                             <div class="shrink-0">
+                                                {{-- Values as on #category above. --}}
                                                 <select class="ui-select get__labour" id="labour_value" name="labour_value">
                                                     <option> Select </option>
                                                     @foreach ($labourTypes as $row)
 
-                                                        <option> {{ $row->type }}</option>
+                                                        <option value="{{ $row->type }}"> {{ $row->type }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
