@@ -2109,6 +2109,10 @@ if (!window.SITE_SETTINGS) {
         });
     });
 
+    /* The Grand Total table, kept in module scope so an entry added on the
+       Add Entries tab can redraw it. See refreshGrandTotal below. */
+    var grandTable = null;
+
     $(document).ready(function() {
         var dataTable = $('#grand_account').DataTable({
             dom: '<"ui-dt-bar"lBf>rt<"ui-dt-foot"ip>',
@@ -2144,38 +2148,93 @@ if (!window.SITE_SETTINGS) {
             ]
         });
 
-        // Add a new row with values
-        dataTable.row.add([
-            '1',
-            'Civil Total',
-            '' + S.totals.civil + '',
-        ]).draw();
-
-        dataTable.row.add([
-            '2',
-            'Finish Total',
-            '' + S.totals.finishing + '',
-        ]).draw();
-
-        dataTable.row.add([
-            '3',
-            'Labour total',
-            '' + S.totals.labour + '',
-        ]).draw();
-
-        dataTable.row.add([
-            '4',
-            'Miscellaneous Total',
-            '' + S.totals.misc + '',
-        ]).draw();
-
-        dataTable.row.add([
-            '<h3>5</h3>',
-            '<h3>Grand Total</h3>',
-            '<h3>' + S.totals.grand + '</h3>',
-        ]).draw();
+        grandTable = dataTable;
+        drawGrandTotal();
     });
 
+    /* The five rows, from whatever S.totals currently holds. Written in one
+       pass and drawn once, rather than five row.add().draw() calls. */
+    function drawGrandTotal() {
+        if (!grandTable) return;
+
+        grandTable.clear();
+        grandTable.rows.add([
+            ['1', 'Civil Total', '' + S.totals.civil + ''],
+            ['2', 'Finish Total', '' + S.totals.finishing + ''],
+            ['3', 'Labour total', '' + S.totals.labour + ''],
+            ['4', 'Miscellaneous Total', '' + S.totals.misc + ''],
+            ['<h3>5</h3>', '<h3>Grand Total</h3>', '<h3>' + S.totals.grand + '</h3>']
+        ]).draw();
+    }
+
+    /*
+     * Re-read the site's totals and repaint the Grand Total tab.
+     *
+     * Called after anything that moves a figure — an entry added, edited or
+     * deleted. Previously these numbers were whatever the server rendered at
+     * page load, so the tab only caught up on a refresh.
+     *
+     * An entry waiting on admin approval deliberately does NOT move the
+     * totals: the endpoint counts approved rows only, exactly as the first
+     * render did, so what is shown stays the ledger rather than the intent.
+     */
+    function refreshGrandTotal() {
+        $.ajax({
+            url: S.url('construction/get_grand_total/' + S.siteId),
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                // Kept on S.totals so the print and Excel footers, which read
+                // the same object, export the current figures too.
+                S.totals.civil = response.civil;
+                S.totals.finishing = response.finishing;
+                S.totals.labour = response.labour;
+                S.totals.misc = response.misc;
+                S.totals.grand = response.grand;
+
+                drawGrandTotal();
+
+                $('#grand_received [data-stat-value]').text(response.received);
+                $('#grand_remaining [data-stat-value]').text(response.remaining);
+
+                // The overdrawn card carries a rose wash and a rose icon chip;
+                // both are set server-side on first render, so both move here.
+                var tone = response.overdrawn ? 'danger' : 'success';
+
+                $('#grand_remaining')
+                    .attr('data-tone', tone)
+                    .find('span[aria-hidden="true"]')
+                    .toggleClass('bg-rose-50 text-rose-600', response.overdrawn)
+                    .toggleClass('bg-brand-50 text-brand-600', !response.overdrawn);
+            }
+            // No error branch on purpose: a failed refresh leaves the previous
+            // figures standing, which is what a page that never refreshed did.
+        });
+    }
+
+
+    /*
+     * Anything that writes to one of this site's ledgers moves the Grand
+     * Total, so the tab is repainted whenever one of those calls comes back.
+     *
+     * Hooked globally rather than at each call site: the adds, the five edit
+     * modals and the five delete buttons are fourteen separate handlers
+     * written in four different styles, and a refresh dropped into thirteen of
+     * them is a refresh forgotten in the fourteenth. The endpoint list is the
+     * writes group in routes/web.php; the read this triggers is a GET, so it
+     * cannot feed itself.
+     */
+    var LEDGER_WRITES = /construction\/(add_brick|add_b_category|labour_instalment|misc_add|return_payment|update_civil|update_finish|update_labour|update_misc|update_rerturn|delete_civil|delete_finish|delete_labour|delete_misc|return_delete)(\?|$)/i;
+
+    $(document).ajaxSuccess(function (event, xhr, settings, data) {
+        if ((settings.type || '').toUpperCase() !== 'POST') return;
+        if (!LEDGER_WRITES.test(settings.url || '')) return;
+
+        // A rejected write leaves the figures alone, same as the page did.
+        if (data && data.success === false) return;
+
+        refreshGrandTotal();
+    });
 
 /*
  * The tables render their action buttons as HTML with inline onclick handlers,

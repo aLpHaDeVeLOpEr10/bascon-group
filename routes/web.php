@@ -108,6 +108,10 @@ Route::prefix('construction')->group(function () {
         Route::get('return_total/{id}', [ConstructionController::class, 'returnTotal']);
         Route::get('total_entries/{id}', [ConstructionController::class, 'totalEntries']);
 
+        // New: the Grand Total tab re-reads this after an entry is added, so
+        // the figures move without a page refresh.
+        Route::get('get_grand_total/{id}', [ConstructionController::class, 'grandTotal']);
+
         // edit-modal prefills (the views send these as GET with ?userId=)
         Route::get('get_site_details', [ConstructionController::class, 'getSiteDetails']);
         Route::get('get_civil_details', [ConstructionController::class, 'getCivilDetails']);

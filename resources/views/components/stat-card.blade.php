@@ -74,7 +74,11 @@
         </span>
     </div>
 
-    <p class="text-[26px] font-semibold leading-tight tracking-[-0.03em] text-neutral-900 tabular-nums">
+    {{-- data-stat-value marks the figure for pages that refresh it in place
+         (construction/site_settings rewrites both Grand Total cards after an
+         entry is added). Inert everywhere else. --}}
+    <p data-stat-value
+       class="text-[26px] font-semibold leading-tight tracking-[-0.03em] text-neutral-900 tabular-nums">
         {{ $value }}
     </p>
 

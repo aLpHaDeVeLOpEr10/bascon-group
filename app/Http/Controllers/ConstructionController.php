@@ -57,6 +57,63 @@ class ConstructionController extends Controller
     {
         $site = Site::findOrFail($id);
 
+        $totals = $this->siteTotals($id);
+
+        return view('construction.site_settings', [
+            'const_id' => $id,
+            'name' => $site->display_name,
+            'civil_price' => $totals['civil'],
+            'finish_price' => $totals['finish'],
+            'misc_price' => $totals['misc'],
+            'labour_price' => $totals['labour'],
+            'return_total' => $totals['returned'],
+            'total_payments' => $totals['received'],
+            'payment_recieved' => $totals['received'],
+            'Grand_total' => $totals['grand'],
+            'Remainung_Balace' => $totals['remaining'],
+            // Dropdowns the legacy view queried for itself (site_settings.php
+            // lines 134, 194, 267, 333, 406, 466).
+            'civilCategories' => Category::orderBy('material_name')->get(),
+            'finishCategories' => BCategory::orderBy('material_name')->get(),
+            'labourTypes' => Labour::where('project_id', $id)->get(),
+        ]);
+    }
+
+    /**
+     * The Grand Total figures on their own, for the tab to re-read after an
+     * entry is added. Without this the tab kept whatever was rendered at page
+     * load and only moved on a refresh.
+     *
+     * Formatted here rather than in the browser so the figures go through the
+     * same money() helper the first render used — one place decides how a
+     * rupee amount looks.
+     */
+    public function grandTotal(string $id)
+    {
+        $totals = $this->siteTotals($id);
+
+        return response()->json([
+            'civil' => money($totals['civil']),
+            'finishing' => money($totals['finish']),
+            'labour' => money($totals['labour']),
+            'misc' => money($totals['misc']),
+            'grand' => money($totals['grand']),
+            'received' => money($totals['received']),
+            'remaining' => money($totals['remaining']),
+            // Raw, for the card that turns rose when the site is overdrawn.
+            'overdrawn' => $totals['remaining'] < 0,
+        ]);
+    }
+
+    /**
+     * One site's running totals.
+     *
+     * Status filtering matches the legacy screen exactly: civil, finishing and
+     * labour count approved rows only, while misc, returns and payments have
+     * no approval step and count everything.
+     */
+    protected function siteTotals(string $id): array
+    {
         $civil = $this->sum(Material::where('project_id', $id)->where('status', 1)->pluck('price'));
         $finish = $this->sum(BMaterial::where('project_id', $id)->where('status', 1)->pluck('price'));
         $misc = $this->sum(Misc::where('proj_id', $id)->pluck('price'));
@@ -64,26 +121,18 @@ class ConstructionController extends Controller
         $returned = $this->sum(ReturnPayment::where('proj_id', $id)->pluck('price'));
         $received = $this->sum(PaymentReceived::where('proj_id', $id)->pluck('payment'));
 
-        $grandTotal = ($labour + $misc + $finish + $civil) - $returned;
+        $grand = ($labour + $misc + $finish + $civil) - $returned;
 
-        return view('construction.site_settings', [
-            'const_id' => $id,
-            'name' => $site->display_name,
-            'civil_price' => $civil,
-            'finish_price' => $finish,
-            'misc_price' => $misc,
-            'labour_price' => $labour,
-            'return_total' => $returned,
-            'total_payments' => $received,
-            'payment_recieved' => $received,
-            'Grand_total' => $grandTotal,
-            'Remainung_Balace' => $received - $grandTotal,
-            // Dropdowns the legacy view queried for itself (site_settings.php
-            // lines 134, 194, 267, 333, 406, 466).
-            'civilCategories' => Category::orderBy('material_name')->get(),
-            'finishCategories' => BCategory::orderBy('material_name')->get(),
-            'labourTypes' => Labour::where('project_id', $id)->get(),
-        ]);
+        return [
+            'civil' => $civil,
+            'finish' => $finish,
+            'misc' => $misc,
+            'labour' => $labour,
+            'returned' => $returned,
+            'received' => $received,
+            'grand' => $grand,
+            'remaining' => $received - $grand,
+        ];
     }
 
     // ------------------------------------------------------------ payments
